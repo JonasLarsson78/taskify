@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Fira_Code } from 'next/font/google'
+import Header from './components/header/header'
 import './globals.css'
 
 const fira = Fira_Code({
@@ -21,7 +22,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${fira.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <Header />
+        {children}
+      </body>
     </html>
   )
 }

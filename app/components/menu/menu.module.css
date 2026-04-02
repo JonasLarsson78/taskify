@@ -1,0 +1,89 @@
+/* Top-level classes for CSS Modules (no nesting) */
+.nav {
+  background: var(--surface);
+  border-bottom: 1px solid rgba(15, 23, 36, 0.06);
+  height: 64px;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  box-shadow: 0 2px 8px rgba(2, 6, 23, 0.03);
+}
+
+.inner {
+  margin: 0 auto;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  color: var(--primary);
+  font-size: 18px;
+  margin-right: 100px;
+}
+
+.links {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.right {
+  display: flex;
+  align-items: center;
+}
+
+.link {
+  color: var(--foreground);
+  text-decoration: none;
+  font-size: 15px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: background-color 120ms ease, color 120ms ease,
+    transform 120ms ease;
+}
+
+.link:hover {
+  background: var(--primary);
+  transform: translateY(-1px);
+  color: white;
+}
+
+.active {
+  background: var(--primary);
+  color: white;
+  box-shadow: 0 2px 8px rgba(2, 6, 23, 0.06);
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, #e6f0ff, #d9ecff);
+  display: inline-block;
+}
+
+@media (max-width: 640px) {
+  .nav {
+    padding: 0 10px;
+  }
+  .links {
+    gap: 6px;
+  }
+  .brand {
+    font-size: 16px;
+  }
+}
