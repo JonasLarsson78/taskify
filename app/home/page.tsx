@@ -9,15 +9,37 @@ export default function HomePage() {
   const [checking, setChecking] = useState(true)
 
   useEffect(() => {
-    try {
-      const token = localStorage.getItem('token')
-      if (!token) {
+    let mounted = true
+
+    async function verify() {
+      try {
+        const token = localStorage.getItem('token')
+        if (!token) {
+          router.replace('/login')
+          return
+        }
+
+        const res = await fetch('/api/verify', {
+          method: 'GET',
+          headers: { Authorization: `Bearer ${token}` },
+        })
+
+        if (!res.ok) {
+          router.replace('/login')
+          return
+        }
+
+        if (mounted) setChecking(false)
+      } catch (e) {
+        console.error('verify error', e)
         router.replace('/login')
-        return
       }
-      setChecking(false)
-    } catch {
-      router.replace('/login')
+    }
+
+    void verify()
+
+    return () => {
+      mounted = false
     }
   }, [router])
 
@@ -31,7 +53,7 @@ export default function HomePage() {
 
   return (
     <main className="center-screen">
-      <h1>Welcome to the Home Page</h1>
+      <h1>{`Welcome to the => Home Page`}</h1>
     </main>
   )
 }
