@@ -9,7 +9,10 @@ export async function GET() {
     return NextResponse.json(users)
   } catch (e) {
     console.error('GET /api/user error', e)
-    return NextResponse.json({ error: 'Failed to fetch users' }, { status: 500 })
+    return NextResponse.json(
+      { error: 'Failed to fetch users' },
+      { status: 500 }
+    )
   }
 }
 
@@ -18,7 +21,10 @@ export async function POST(request: Request) {
   try {
     body = await request.json()
   } catch (e: Error | unknown) {
-    console.error('Failed to parse JSON body:', e instanceof Error ? e.message : String(e))
+    console.error(
+      'Failed to parse JSON body:',
+      e instanceof Error ? e.message : String(e)
+    )
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
@@ -40,6 +46,9 @@ export async function POST(request: Request) {
     return NextResponse.json(safe)
   } catch (e) {
     console.error('POST /api/user error', e)
-    return NextResponse.json({ error: 'Failed to create user' }, { status: 500 })
+    return NextResponse.json(
+      { error: 'Failed to create user' },
+      { status: 500 }
+    )
   }
 }

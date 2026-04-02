@@ -1,0 +1,45 @@
+.form {
+  width: 360px;
+  padding: 24px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: 8px;
+}
+
+.title {
+  margin-top: 0;
+}
+
+.error {
+  color: crimson;
+  margin-bottom: 12px;
+}
+
+.label {
+  display: block;
+  margin-bottom: 8px;
+}
+
+.labelTitle {
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
+.input {
+  width: 100%;
+  padding: 8px 10px;
+  box-sizing: border-box;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--foreground);
+  background: transparent;
+}
+
+.submit {
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 6px;
+}

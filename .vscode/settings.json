@@ -1,0 +1,13 @@
+{
+  "css.lint.unknownAtRules": "ignore",
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "Prettier-vsc.vsce-prettier"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "Prettier-vsc.vsce-prettier"
+  },
+  "[css]": {
+    "editor.defaultFormatter": "Prettier-vsc.vsce-prettier"
+  },
+  "editor.formatOnSave": true
+}
