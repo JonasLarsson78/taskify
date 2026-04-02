@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server'
 import prisma from '../../../lib/prisma'
+import bcrypt from 'bcryptjs'
+import type { User } from '@prisma/client'
 
 export async function GET() {
   try {
@@ -21,8 +23,21 @@ export async function POST(request: Request) {
   }
 
   try {
-    const user = await prisma.user.create({ data: { name: body.name ?? null, email: body.email ?? null } })
-    return NextResponse.json(user)
+    const plain = typeof body?.password === 'string' ? body.password : null
+    const hashed = plain ? await bcrypt.hash(plain, 10) : null
+
+    const created = await prisma.user.create({
+      data: {
+        name: body.name ?? null,
+        email: body.email ?? null,
+        password: hashed,
+      },
+    })
+
+    // Do not return the password hash in the response
+    const { password: _, ...safe } = created as User
+    void _
+    return NextResponse.json(safe)
   } catch (e) {
     console.error('POST /api/user error', e)
     return NextResponse.json({ error: 'Failed to create user' }, { status: 500 })
