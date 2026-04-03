@@ -537,7 +537,9 @@
   left: 0;
   min-width: 140px;
   max-height: 170px;
+  overflow-x: hidden;
   overflow-y: auto;
+  overscroll-behavior: contain;
   background: #fff;
   border: 1px solid rgba(32, 33, 67, 0.1);
   border-radius: 8px;
