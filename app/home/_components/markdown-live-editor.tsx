@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { marked } from 'marked'
 import styles from '../page.module.css'
 
@@ -13,7 +13,11 @@ type MarkdownLiveEditorProps = {
 }
 
 function markdownToHtml(value: string): string {
-  const rendered = marked.parse(value || '', { async: false })
+  const rendered = marked.parse(value || '', {
+    async: false,
+    gfm: true,
+    breaks: true,
+  })
   return typeof rendered === 'string' ? rendered : ''
 }
 
@@ -27,6 +31,10 @@ export default function MarkdownLiveEditor({
   const [mode, setMode] = useState<'text' | 'preview'>(initialMode)
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
   const previewHtml = useMemo(() => markdownToHtml(value), [value])
+
+  useEffect(() => {
+    setMode(initialMode)
+  }, [initialMode])
 
   function updateSelection(nextValue: string, start: number, end: number) {
     onChange(nextValue)
@@ -60,6 +68,14 @@ export default function MarkdownLiveEditor({
     const start = textarea.selectionStart
     const end = textarea.selectionEnd
     const selected = value.slice(start, end)
+    if (selected.length === 0) {
+      const insert = numbered ? '1. ' : prefix
+      const nextValue = value.slice(0, start) + insert + value.slice(end)
+      const cursor = start + insert.length
+      updateSelection(nextValue, cursor, cursor)
+      return
+    }
+
     const lines = selected.split('\n')
     const nextLines = lines.map((line, index) => {
       if (line.trim().length === 0) return line

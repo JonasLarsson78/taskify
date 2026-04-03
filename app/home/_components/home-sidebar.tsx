@@ -1,13 +1,15 @@
 import styles from '../page.module.css'
-import type { Space } from '../model'
+import type { Space, ViewMode } from '../model'
 import { getInitial } from '../model'
 
 type HomeSidebarProps = {
   personInitials: string
   personName: string
   userEmail: string
+  viewMode: ViewMode
   spaces: Space[]
   selectedSpaceId: number | null
+  onChangeView: (next: ViewMode) => void
   onSelectSpace: (space: Space) => void
   onCreateSpace: () => void
 }
@@ -16,8 +18,10 @@ export default function HomeSidebar({
   personInitials,
   personName,
   userEmail,
+  viewMode,
   spaces,
   selectedSpaceId,
+  onChangeView,
   onSelectSpace,
   onCreateSpace,
 }: HomeSidebarProps) {
@@ -33,15 +37,36 @@ export default function HomeSidebar({
 
       <section className={styles.navSection}>
         <div className={styles.sectionLabel}>Workspace</div>
-        <button className={styles.navItem} type="button">
+        <button
+          className={`${styles.navItem} ${
+            viewMode === 'list' ? styles.navItemActive : ''
+          }`}
+          type="button"
+          onClick={() => onChangeView('list')}
+          title="Open home view"
+        >
           <span className={styles.navIcon}>⌂</span>
           Home
         </button>
-        <button className={styles.navItem} type="button">
+        <button
+          className={`${styles.navItem} ${
+            viewMode === 'board' ? styles.navItemActive : ''
+          }`}
+          type="button"
+          onClick={() => onChangeView('board')}
+          title="Open notifications view"
+        >
           <span className={styles.navIcon}>◌</span>
           Notifications
         </button>
-        <button className={styles.navItem} type="button">
+        <button
+          className={`${styles.navItem} ${
+            viewMode === 'box' ? styles.navItemActive : ''
+          }`}
+          type="button"
+          onClick={() => onChangeView('box')}
+          title="Open goals view"
+        >
           <span className={styles.navIcon}>◎</span>
           Goals
         </button>

@@ -99,6 +99,12 @@
   background: rgba(102, 112, 241, 0.08);
 }
 
+.navItemActive {
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 8px 18px rgba(39, 43, 95, 0.08);
+  font-weight: 700;
+}
+
 .navIcon,
 .spaceIcon {
   display: inline-flex;

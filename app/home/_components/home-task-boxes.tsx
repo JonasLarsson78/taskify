@@ -2,6 +2,19 @@ import styles from '../page.module.css'
 import type { AssigneeOption, BoardGroup, UiTask } from '../model'
 import TaskAssigneeDropdown from './task-assignee-dropdown'
 
+function getTagTextColor(background: string): string {
+  const match = /^#?([0-9a-fA-F]{6})$/.exec(background.trim())
+  if (!match) return '#ffffff'
+
+  const hex = match[1]
+  const red = Number.parseInt(hex.slice(0, 2), 16)
+  const green = Number.parseInt(hex.slice(2, 4), 16)
+  const blue = Number.parseInt(hex.slice(4, 6), 16)
+  const brightness = (red * 299 + green * 587 + blue * 114) / 1000
+
+  return brightness > 160 ? '#2d324c' : '#ffffff'
+}
+
 type HomeTaskBoxesProps = {
   groups: BoardGroup[]
   busyTaskId: number | null
@@ -39,12 +52,14 @@ export default function HomeTaskBoxes({
           >
             <div
               className={styles.taskTileSection}
-              style={{ background: task.sectionColor }}
+              style={{
+                background: task.sectionColor,
+                color: getTagTextColor(task.sectionColor),
+              }}
             >
               {task.section}
             </div>
             <div className={styles.taskViewCardTitle}>{task.title}</div>
-            <div className={styles.taskMeta}>{task.meta}</div>
             <div className={styles.taskViewMetaRow}>Due: {task.dueDate}</div>
             <div className={styles.taskViewMetaRow}>
               {task.id ? (

@@ -769,8 +769,10 @@ export default function HomePage() {
         personInitials={personInitials}
         personName={personName}
         userEmail={user?.email || 'Signed in'}
+        viewMode={viewMode}
         spaces={spaces}
         selectedSpaceId={selectedSpaceId}
+        onChangeView={handleChangeView}
         onSelectSpace={(space) => {
           setSelectedSpaceId(space.id)
           setSectionOptions(normalizeSectionList(space.taskSections))
