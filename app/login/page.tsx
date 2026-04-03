@@ -3,6 +3,7 @@
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import styles from './page.module.css'
+import useStore from '../../lib/store'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -31,7 +32,8 @@ export default function LoginPage() {
 
       if (data.token) {
         try {
-          localStorage.setItem('token', data.token)
+          useStore.getState().setToken(data.token)
+          if (data.user) useStore.getState().setUser(data.user)
         } catch {}
       }
 

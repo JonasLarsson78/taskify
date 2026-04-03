@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import styles from './menu.module.css'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import useStore from '../../../lib/store'
 
 type MenuItem = { href: string; label: string }
 
@@ -15,6 +16,8 @@ export default function Menu() {
   const [clientPath, setClientPath] = useState<string | null>(null)
 
   const pathname = usePathname()
+
+  const user = useStore((s) => s.user)
 
   useEffect(() => {
     let raf = 0
@@ -60,7 +63,7 @@ export default function Menu() {
         </div>
 
         <div className={styles.right}>
-          user
+          {user ? user.name : 'Guest'}
           <Link href="/logout" className={styles.link}>
             Logout
           </Link>

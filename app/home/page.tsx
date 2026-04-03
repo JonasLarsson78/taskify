@@ -3,9 +3,12 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Loader from '../components/loader/loader'
+import useStore from '../../lib/store'
 
 export default function HomePage() {
   const router = useRouter()
+  const token = useStore((s) => s.token)
+  const rehydrated = useStore((s) => s.rehydrated)
   const [checking, setChecking] = useState(true)
 
   useEffect(() => {
@@ -13,7 +16,7 @@ export default function HomePage() {
 
     async function verify() {
       try {
-        const token = localStorage.getItem('token')
+        if (!rehydrated) return
         if (!token) {
           router.replace('/login')
           return
@@ -41,7 +44,7 @@ export default function HomePage() {
     return () => {
       mounted = false
     }
-  }, [router])
+  }, [router, token, rehydrated])
 
   if (checking) {
     return (
