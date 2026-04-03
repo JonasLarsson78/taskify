@@ -1,12 +1,11 @@
 import { NextResponse } from 'next/server'
-import prisma from '../../../lib/prisma'
-import bcrypt from 'bcryptjs'
-import { signToken } from '../../../lib/auth'
+import { loginWithEmailPassword } from './service'
+import { parseJsonBody, validateLoginInput } from './validator'
 
 export async function POST(request: Request) {
-  let body = null
+  let body: unknown = null
   try {
-    body = await request.json()
+    body = await parseJsonBody(request)
   } catch (e: Error | unknown) {
     console.error(
       'Failed to parse JSON body:',
@@ -15,35 +14,26 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
-  const email = body?.email
-  const password = body?.password
+  const parsed = validateLoginInput(body)
+  if (!parsed.ok) {
+    return NextResponse.json({ error: parsed.error }, { status: 400 })
+  }
 
-  if (!email || typeof email !== 'string') {
-    return NextResponse.json({ error: 'Email is required' }, { status: 400 })
-  }
-  if (!password || typeof password !== 'string') {
-    return NextResponse.json({ error: 'Password is required' }, { status: 400 })
-  }
+  const { email, password } = parsed.data
 
   try {
-    const user = await prisma.user.findUnique({ where: { email } })
-    if (!user || !user.password)
+    const result = await loginWithEmailPassword(email, password)
+    if (!result)
       return NextResponse.json(
         { error: 'Invalid credentials' },
         { status: 401 }
       )
 
-    const valid = await bcrypt.compare(password, user.password)
-    if (!valid)
-      return NextResponse.json(
-        { error: 'Invalid credentials' },
-        { status: 401 }
-      )
-
-    const token = signToken({ userId: user.id })
-    const { password: _, ...safe } = user
-    void _
-    return NextResponse.json({ ok: true, user: safe, token })
+    return NextResponse.json({
+      ok: true,
+      user: result.user,
+      token: result.token,
+    })
   } catch (e) {
     console.error('POST /api/login error', e)
     return NextResponse.json({ error: 'Login failed' }, { status: 500 })

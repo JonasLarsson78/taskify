@@ -4,17 +4,32 @@
 // Get a free hosted Postgres database in seconds: `npx create-db`
 
 generator client {
-  provider = "prisma-client-js"
+  provider   = "prisma-client-js"
+  engineType = "binary"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "mysql"
 }
 
 model User {
+  id             Int           @id @default(autoincrement())
+  name           String?
+  email          String?       @unique
+  password       String?
+  createdAt      DateTime      @default(now())
+  organizationId Int?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+}
+
+model Organization {
   id        Int      @id @default(autoincrement())
   name      String?
-  email     String?  @unique
-  password  String?
+  address   String?
+  city      String?
+  zip       String?
+  phone     String?
+  email     String?
   createdAt DateTime @default(now())
+  users     User[]
 }

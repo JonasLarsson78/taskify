@@ -1,11 +1,10 @@
 import { NextResponse } from 'next/server'
-import prisma from '../../../lib/prisma'
-import bcrypt from 'bcryptjs'
-import type { User } from '@prisma/client'
+import { createUser, ensureOrganizationExists, listUsers } from './service'
+import { normalizeCreateUserInput, parseJsonBody } from './validator'
 
 export async function GET() {
   try {
-    const users = await prisma.user.findMany()
+    const users = await listUsers()
     return NextResponse.json(users)
   } catch (e) {
     console.error('GET /api/user error', e)
@@ -17,9 +16,9 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  let body = null
+  let body: unknown = null
   try {
-    body = await request.json()
+    body = await parseJsonBody(request)
   } catch (e: Error | unknown) {
     console.error(
       'Failed to parse JSON body:',
@@ -29,22 +28,16 @@ export async function POST(request: Request) {
   }
 
   try {
-    const plain = typeof body?.password === 'string' ? body.password : null
-    const hashed = plain ? await bcrypt.hash(plain, 10) : null
+    const input = normalizeCreateUserInput(body)
+    await ensureOrganizationExists(input.organizationId)
+    const safe = await createUser(input)
 
-    const created = await prisma.user.create({
-      data: {
-        name: body.name ?? null,
-        email: body.email ?? null,
-        password: hashed,
-      },
-    })
-
-    // Do not return the password hash in the response
-    const { password: _, ...safe } = created as User
-    void _
     return NextResponse.json(safe)
   } catch (e) {
+    if (e instanceof Error && e.message.startsWith('Organization with id')) {
+      return NextResponse.json({ error: e.message }, { status: 400 })
+    }
+
     console.error('POST /api/user error', e)
     return NextResponse.json(
       { error: 'Failed to create user' },
