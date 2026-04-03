@@ -6,6 +6,7 @@ type HomeTopbarProps = {
   workspaceSub: string
   viewMode: ViewMode
   onChangeView: (next: ViewMode) => void
+  onOpenSpaceSettings: () => void
 }
 
 export default function HomeTopbar({
@@ -13,6 +14,7 @@ export default function HomeTopbar({
   workspaceSub,
   viewMode,
   onChangeView,
+  onOpenSpaceSettings,
 }: HomeTopbarProps) {
   return (
     <div className={styles.topbar}>
@@ -52,8 +54,12 @@ export default function HomeTopbar({
         >
           □ Box
         </button>
-        <button className={styles.addView} type="button">
-          + Add view
+        <button
+          className={styles.addView}
+          type="button"
+          onClick={onOpenSpaceSettings}
+        >
+          Space settings
         </button>
       </div>
     </div>

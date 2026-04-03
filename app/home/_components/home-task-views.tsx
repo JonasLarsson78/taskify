@@ -1,4 +1,4 @@
-import type { BoardGroup, UiTask, ViewMode } from '../model'
+import type { AssigneeOption, BoardGroup, UiTask, ViewMode } from '../model'
 import HomeTaskBoard from './home-task-board'
 import HomeTaskBoxes from './home-task-boxes'
 import HomeTaskColumns from './home-task-columns'
@@ -7,12 +7,11 @@ type HomeTaskViewsProps = {
   viewMode: ViewMode
   groups: BoardGroup[]
   busyTaskId: number | null
-  assigneeOptions: string[]
-  onNextStage: (task: UiTask) => void
+  assigneeOptions: AssigneeOption[]
   onTogglePriority: (task: UiTask) => void
-  onDelete: (task: UiTask) => void
-  onMoveTask: (task: UiTask, targetSection: BoardGroup['label']) => void
-  onAssigneesChange: (task: UiTask, assignee: string | null) => void
+  onMoveTask: (task: UiTask, targetSection: string) => void
+  onAssigneesChange: (task: UiTask, assigneeId: number | null) => void
+  onOpenTask: (task: UiTask) => void
 }
 
 export default function HomeTaskViews({
@@ -20,11 +19,10 @@ export default function HomeTaskViews({
   groups,
   busyTaskId,
   assigneeOptions,
-  onNextStage,
   onTogglePriority,
-  onDelete,
   onMoveTask,
   onAssigneesChange,
+  onOpenTask,
 }: HomeTaskViewsProps) {
   if (viewMode === 'board') {
     return (
@@ -32,11 +30,10 @@ export default function HomeTaskViews({
         groups={groups}
         busyTaskId={busyTaskId}
         assigneeOptions={assigneeOptions}
-        onNextStage={onNextStage}
         onTogglePriority={onTogglePriority}
-        onDelete={onDelete}
         onMoveTask={onMoveTask}
         onAssigneesChange={onAssigneesChange}
+        onOpenTask={onOpenTask}
       />
     )
   }
@@ -47,11 +44,10 @@ export default function HomeTaskViews({
         groups={groups}
         busyTaskId={busyTaskId}
         assigneeOptions={assigneeOptions}
-        onNextStage={onNextStage}
         onTogglePriority={onTogglePriority}
-        onDelete={onDelete}
         onMoveTask={onMoveTask}
         onAssigneesChange={onAssigneesChange}
+        onOpenTask={onOpenTask}
       />
     )
   }
@@ -61,11 +57,10 @@ export default function HomeTaskViews({
       groups={groups}
       busyTaskId={busyTaskId}
       assigneeOptions={assigneeOptions}
-      onNextStage={onNextStage}
       onTogglePriority={onTogglePriority}
-      onDelete={onDelete}
       onMoveTask={onMoveTask}
       onAssigneesChange={onAssigneesChange}
+      onOpenTask={onOpenTask}
     />
   )
 }

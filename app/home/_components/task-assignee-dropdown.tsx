@@ -1,16 +1,17 @@
 import { useState } from 'react'
 import styles from '../page.module.css'
+import type { AssigneeOption } from '../model'
 
 type TaskAssigneeDropdownProps = {
-  value: string[]
-  options: string[]
+  value: number[]
+  options: AssigneeOption[]
   busy: boolean
-  onSelect: (nextAssignee: string | null) => void
+  onSelect: (nextAssigneeId: number | null) => void
 }
 
-function getAssigneeColor(label: string): string {
-  if (!label) return 'linear-gradient(135deg, #a8afc8, #8f96b1)'
-  const seed = label.charCodeAt(0) % 3
+function getAssigneeColor(seedValue: number): string {
+  if (!seedValue) return 'linear-gradient(135deg, #a8afc8, #8f96b1)'
+  const seed = seedValue % 3
   if (seed === 0) return 'linear-gradient(135deg, #ff8fab, #ff5f98)'
   if (seed === 1) return 'linear-gradient(135deg, #6f5ad6, #59a4ff)'
   return 'linear-gradient(135deg, #ffcc16, #ff9f1a)'
@@ -23,20 +24,30 @@ export default function TaskAssigneeDropdown({
   onSelect,
 }: TaskAssigneeDropdownProps) {
   const [open, setOpen] = useState(false)
-  const active = value[0] || ''
-  const activeLabel = active || 'Unassigned'
+  const activeAssigneeId = value[0] ?? null
+  const activeOption =
+    activeAssigneeId === null
+      ? null
+      : options.find((option) => option.id === activeAssigneeId) ?? null
+  const activeLabel = activeOption?.label || 'Unassigned'
 
   return (
-    <div className={styles.assigneeDropdownWrap}>
+    <div
+      className={styles.assigneeDropdownWrap}
+      onClick={(event) => event.stopPropagation()}
+    >
       <button
         className={styles.assigneeDropdownTrigger}
         type="button"
         disabled={busy}
-        onClick={() => setOpen((prev) => !prev)}
+        onClick={(event) => {
+          event.stopPropagation()
+          setOpen((prev) => !prev)
+        }}
       >
         <span
           className={styles.assigneeSwatch}
-          style={{ background: getAssigneeColor(active) }}
+          style={{ background: getAssigneeColor(activeAssigneeId ?? 0) }}
         />
         <span>{activeLabel}</span>
         <span className={styles.assigneeChevron}>▾</span>
@@ -46,17 +57,18 @@ export default function TaskAssigneeDropdown({
         <div className={styles.assigneeDropdownMenu}>
           <button
             className={`${styles.assigneeDropdownItem} ${
-              !active ? styles.assigneeDropdownItemActive : ''
+              activeAssigneeId === null ? styles.assigneeDropdownItemActive : ''
             }`}
             type="button"
-            onClick={() => {
+            onClick={(event) => {
+              event.stopPropagation()
               onSelect(null)
               setOpen(false)
             }}
           >
             <span
               className={styles.assigneeSwatch}
-              style={{ background: getAssigneeColor('') }}
+              style={{ background: getAssigneeColor(0) }}
             />
             Unassigned
           </button>
@@ -64,20 +76,23 @@ export default function TaskAssigneeDropdown({
           {options.map((option) => (
             <button
               className={`${styles.assigneeDropdownItem} ${
-                option === active ? styles.assigneeDropdownItemActive : ''
+                option.id === activeAssigneeId
+                  ? styles.assigneeDropdownItemActive
+                  : ''
               }`}
               type="button"
-              key={option}
-              onClick={() => {
-                onSelect(option)
+              key={option.id}
+              onClick={(event) => {
+                event.stopPropagation()
+                onSelect(option.id)
                 setOpen(false)
               }}
             >
               <span
                 className={styles.assigneeSwatch}
-                style={{ background: getAssigneeColor(option) }}
+                style={{ background: getAssigneeColor(option.id) }}
               />
-              {option}
+              {option.label}
             </button>
           ))}
         </div>

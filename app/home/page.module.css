@@ -597,6 +597,72 @@
   align-items: flex-start;
 }
 
+.priorityBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.priorityBadgeButton {
+  font: inherit;
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+
+.priorityBadgeButton:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.priorityBadgeButton:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.priorityBadgeDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+}
+
+.priorityBadgeHigh {
+  background: rgba(240, 75, 135, 0.14);
+  color: #d73d78;
+  border: 1px solid rgba(240, 75, 135, 0.26);
+}
+
+.priorityBadgeHigh .priorityBadgeDot {
+  background: linear-gradient(180deg, #ff8fb8 0%, #f04b87 100%);
+  box-shadow: 0 0 0 3px rgba(240, 75, 135, 0.16);
+}
+
+.priorityBadgeNormal {
+  background: rgba(111, 90, 214, 0.1);
+  color: #5f54c9;
+  border: 1px solid rgba(111, 90, 214, 0.18);
+}
+
+.priorityBadgeNormal .priorityBadgeDot {
+  background: linear-gradient(180deg, #9f95ff 0%, #6d62e7 100%);
+  box-shadow: 0 0 0 3px rgba(111, 90, 214, 0.14);
+}
+
+.priorityBadgeLow {
+  background: rgba(67, 187, 132, 0.14);
+  color: #2f9f6e;
+  border: 1px solid rgba(67, 187, 132, 0.28);
+}
+
+.priorityBadgeLow .priorityBadgeDot {
+  background: linear-gradient(180deg, #7ce2b3 0%, #33b276 100%);
+  box-shadow: 0 0 0 3px rgba(67, 187, 132, 0.16);
+}
+
 .taskActions {
   display: flex;
   gap: 4px;
@@ -654,21 +720,6 @@
   color: #d89b00;
 }
 
-.priorityFlag {
-  width: 11px;
-  height: 11px;
-  border-radius: 4px 4px 1px 1px;
-  background: linear-gradient(180deg, #ff8f8f 0%, #f04b4b 100%);
-  transform: skewX(-6deg);
-}
-
-.priorityMuted {
-  width: 11px;
-  height: 11px;
-  border-radius: 999px;
-  border: 2px solid rgba(135, 141, 165, 0.34);
-}
-
 .overview {
   display: flex;
   align-items: stretch;
@@ -717,31 +768,209 @@
 .createTaskGrid {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 10px;
 }
 
 .createTaskGrid > * {
-  flex: 1 1 180px;
+  flex: 1 1 220px;
+}
+
+.createFieldFull {
+  flex: 1 1 100%;
+  min-width: 0;
 }
 
 .createInput,
 .createSelect {
   width: 100%;
-  border-radius: 8px;
-  border: 1px solid rgba(32, 33, 67, 0.12);
-  background: rgba(255, 255, 255, 0.95);
-  color: #343953;
-  padding: 6px 8px;
+  border-radius: 12px;
+  border: 1px solid rgba(64, 69, 118, 0.18);
+  background: linear-gradient(180deg, #ffffff 0%, #f9faff 100%);
+  color: #2f3552;
+  padding: 9px 11px;
   font: inherit;
-  font-size: 0.78rem;
-  min-height: 33px;
+  font-size: 0.8rem;
+  min-height: 40px;
+  transition: border-color 140ms ease, box-shadow 140ms ease,
+    transform 120ms ease;
+}
+
+.createTextarea {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  border-radius: 12px;
+  border: 1px solid rgba(64, 69, 118, 0.18);
+  background: linear-gradient(180deg, #ffffff 0%, #f9faff 100%);
+  color: #2f3552;
+  padding: 10px 11px;
+  font: inherit;
+  font-size: 0.8rem;
+  min-height: 320px;
+  line-height: 1.45;
+  resize: vertical;
+  transition: border-color 140ms ease, box-shadow 140ms ease,
+    transform 120ms ease;
+}
+
+.markdownEditorShell {
+  width: 100%;
+}
+
+.markdownToolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+  align-items: center;
+}
+
+.markdownToolbarBtn {
+  border: 1px solid rgba(64, 69, 118, 0.18);
+  background: linear-gradient(180deg, #ffffff 0%, #f2f4ff 100%);
+  color: #4a4f6d;
+  border-radius: 999px;
+  padding: 6px 11px;
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1;
+  transition: border-color 120ms ease, color 120ms ease, box-shadow 120ms ease,
+    transform 120ms ease;
+}
+
+.markdownToolbarBtn:hover:not(:disabled) {
+  border-color: rgba(101, 88, 218, 0.34);
+  color: #5f54c9;
+  box-shadow: 0 2px 8px rgba(90, 84, 178, 0.14);
+  transform: translateY(-1px);
+}
+
+.markdownToolbarBtnActive {
+  border-color: rgba(101, 88, 218, 0.4);
+  background: linear-gradient(180deg, #efeefe 0%, #e4e2ff 100%);
+  color: #4f46b8;
+}
+
+.markdownToolbarSpacer {
+  flex: 1;
+  min-width: 10px;
+}
+
+.markdownToolbarBtn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.markdownPreview {
+  width: 100%;
+  min-height: 320px;
+  max-height: 520px;
+  overflow-y: auto;
+  box-sizing: border-box;
+  border-radius: 12px;
+  border: 1px solid rgba(64, 69, 118, 0.18);
+  background: linear-gradient(180deg, #ffffff 0%, #f9faff 100%);
+  color: #2f3552;
+  padding: 11px 12px;
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+.markdownPreview :global(ul) {
+  list-style: disc;
+  padding-left: 1.4rem;
+}
+
+.markdownPreview :global(ol) {
+  list-style: decimal;
+  padding-left: 1.4rem;
+}
+
+.markdownEditorContainer {
+  border-radius: 12px;
+  border: 1px solid rgba(64, 69, 118, 0.18);
+  overflow: hidden;
+  background: linear-gradient(180deg, #ffffff 0%, #f9faff 100%);
+}
+
+.markdownEditorShell :global(.rsw-toolbar) {
+  border: 0;
+  border-bottom: 1px solid rgba(64, 69, 118, 0.14);
+  background: linear-gradient(180deg, #f9faff 0%, #edf1ff 100%);
+  padding: 6px;
+}
+
+.markdownEditorShell :global(.rsw-btn) {
+  border-radius: 8px;
+}
+
+.markdownEditorShell :global(.rsw-ce) {
+  min-height: 150px;
+  max-height: 280px;
+  overflow-y: auto;
+  padding: 11px 12px;
+  color: #2f3552;
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+.markdownEditorShell :global(.rsw-ce:focus) {
+  outline: none;
+}
+
+.markdownEditorShell :global(.rsw-ce ul) {
+  list-style: disc;
+  padding-left: 1.4rem;
+}
+
+.markdownEditorShell :global(.rsw-ce ol) {
+  list-style: decimal;
+  padding-left: 1.4rem;
+}
+
+.createColorField {
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid rgba(64, 69, 118, 0.18);
+  background: linear-gradient(180deg, #ffffff 0%, #f9faff 100%);
+  min-height: 40px;
+  padding: 9px 11px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.createColorLabel {
+  color: #6f748f;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.createColorInput {
+  width: 34px;
+  height: 24px;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
 }
 
 .createInput:focus,
 .createSelect:focus {
   outline: none;
-  border-color: rgba(111, 90, 214, 0.35);
-  box-shadow: 0 0 0 3px rgba(111, 90, 214, 0.12);
+  border-color: rgba(101, 88, 218, 0.42);
+  box-shadow: 0 0 0 4px rgba(111, 90, 214, 0.14);
+  transform: translateY(-1px);
+}
+
+.createTextarea:focus {
+  outline: none;
+  border-color: rgba(101, 88, 218, 0.42);
+  box-shadow: 0 0 0 4px rgba(111, 90, 214, 0.14);
+  transform: translateY(-1px);
 }
 
 .createTaskButton {
@@ -760,28 +989,99 @@
   margin-bottom: 10px;
 }
 
+.settingsRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.settingsChipRow {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.settingsChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  border: 1px solid rgba(111, 90, 214, 0.2);
+  background: rgba(111, 90, 214, 0.08);
+  color: #4a439d;
+  padding: 4px 8px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: grab;
+  transition: transform 120ms ease, box-shadow 120ms ease,
+    border-color 120ms ease;
+}
+
+.settingsChipDragging {
+  opacity: 0.55;
+  cursor: grabbing;
+  transform: scale(0.98);
+}
+
+.settingsChipDropTarget {
+  border-color: rgba(111, 90, 214, 0.45);
+  box-shadow: 0 0 0 2px rgba(111, 90, 214, 0.12);
+}
+
+.settingsChipRemove {
+  border: 0;
+  background: rgba(255, 255, 255, 0.9);
+  color: #6d62e7;
+  border-radius: 999px;
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.66rem;
+  line-height: 1;
+}
+
+.settingsColorInput {
+  width: 18px;
+  height: 18px;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+
 .modalBackdrop {
   position: fixed;
   inset: 0;
-  background: rgba(17, 18, 38, 0.42);
-  backdrop-filter: blur(5px);
+  background: radial-gradient(
+      circle at 18% 20%,
+      rgba(255, 95, 152, 0.18),
+      transparent 30%
+    ),
+    radial-gradient(circle at 78% 12%, rgba(98, 89, 255, 0.16), transparent 34%),
+    rgba(14, 15, 31, 0.56);
+  backdrop-filter: blur(7px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 30;
-  padding: 16px;
+  padding: 20px;
 }
 
 .modalCard {
-  width: min(740px, 100%);
-  background: #ffffff;
-  border: 1px solid rgba(32, 33, 67, 0.1);
-  border-radius: 16px;
-  box-shadow: 0 24px 60px rgba(22, 23, 57, 0.24);
-  padding: 14px;
+  width: min(820px, 100%);
+  background: linear-gradient(180deg, #ffffff 0%, #f8f9ff 100%);
+  border: 1px solid rgba(51, 58, 109, 0.16);
+  border-radius: 22px;
+  box-shadow: 0 26px 70px rgba(16, 18, 48, 0.34),
+    0 8px 22px rgba(101, 88, 218, 0.12);
+  padding: 18px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
 }
 
 .modalHeader {
@@ -789,37 +1089,56 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(64, 69, 118, 0.12);
 }
 
 .modalTitle {
-  font-size: 0.95rem;
+  font-size: 1.08rem;
   font-weight: 800;
-  color: #232948;
+  color: #1f2443;
   letter-spacing: -0.02em;
 }
 
 .modalSub {
-  margin-top: 2px;
-  color: #8d91a5;
-  font-size: 0.76rem;
+  margin-top: 4px;
+  color: #7a809b;
+  font-size: 0.79rem;
 }
 
 .modalClose,
 .modalCancel {
-  border: 1px solid rgba(32, 33, 67, 0.12);
-  background: #fff;
+  border: 1px solid rgba(56, 62, 110, 0.18);
+  background: linear-gradient(180deg, #ffffff 0%, #f2f4ff 100%);
   color: #4a4f6d;
   border-radius: 999px;
-  padding: 6px 10px;
+  padding: 7px 12px;
   font: inherit;
-  font-size: 0.72rem;
+  font-size: 0.74rem;
   font-weight: 700;
+}
+
+.modalClose:hover:not(:disabled),
+.modalCancel:hover:not(:disabled) {
+  border-color: rgba(101, 88, 218, 0.34);
+  color: #5f54c9;
 }
 
 .modalActions {
   display: flex;
   justify-content: flex-end;
   gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(64, 69, 118, 0.1);
+}
+
+.modalActions .createTaskButton {
+  margin-bottom: 0;
+}
+
+.modalActions .taskActionBtn {
+  padding: 7px 12px;
+  font-size: 0.68rem;
 }
 
 .createTaskButton:disabled {
@@ -871,7 +1190,8 @@
   }
 
   .modalCard {
-    padding: 12px;
+    padding: 13px;
+    border-radius: 18px;
   }
 
   .modalHeader {
@@ -884,6 +1204,7 @@
   }
 
   .modalCancel,
+  .modalActions .taskActionBtn,
   .modalActions .createTaskButton {
     width: 100%;
   }

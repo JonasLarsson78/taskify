@@ -15,17 +15,26 @@ export type Organization = {
   email?: string
 }
 
+export type Space = {
+  id: number
+  organizationId: number
+  name: string
+  taskSections: string[]
+  taskSectionColors: Record<string, string>
+}
+
 export type ApiTask = {
   id: number
   title: string
   meta: string | null
-  assignees: string[]
+  assigneeIds: number[]
   dueDate: string | null
   stage: 'Initiation' | 'Planning' | 'Execution'
-  priority: 'flag' | 'muted'
-  section: 'Issues Found' | 'Review' | 'Ready'
+  priority: 'High' | 'Normal' | 'Low'
+  section: string
   color: string | null
   organizationId: number | null
+  spaceId: number | null
   createdAt: string
 }
 
@@ -33,21 +42,26 @@ export type UiTask = {
   id?: number
   title: string
   meta: string
-  assignees: string[]
+  assigneeIds: number[]
   dueDate: string
   stage: 'Initiation' | 'Planning' | 'Execution'
-  priority: 'flag' | 'muted'
-  section: 'Issues Found' | 'Review' | 'Ready'
+  priority: 'High' | 'Normal' | 'Low'
+  section: string
   color: string
 }
 
 export type BoardGroup = {
-  label: 'Issues Found' | 'Review' | 'Ready'
-  tone: 'pink' | 'yellow' | 'purple'
+  label: string
+  color: string
   items: UiTask[]
 }
 
 export type ViewMode = 'list' | 'board' | 'box'
+
+export type AssigneeOption = {
+  id: number
+  label: string
+}
 
 export function getInitial(
   value: string | undefined,
@@ -67,26 +81,47 @@ export function formatDueDate(raw: string | null): string {
   })
 }
 
-export function groupedTasksFromApi(tasks: ApiTask[]): BoardGroup[] {
-  const sections: Array<{
-    label: 'Issues Found' | 'Review' | 'Ready'
-    tone: 'pink' | 'yellow' | 'purple'
-  }> = [
-    { label: 'Issues Found', tone: 'pink' },
-    { label: 'Review', tone: 'yellow' },
-    { label: 'Ready', tone: 'purple' },
+export function groupedTasksFromApi(
+  tasks: ApiTask[],
+  sectionLabels: string[],
+  sectionColors: Record<string, string>
+): BoardGroup[] {
+  const configuredSections = sectionLabels
+    .map((label) => label.trim())
+    .filter(
+      (label, index, arr) => label.length > 0 && arr.indexOf(label) === index
+    )
+
+  const taskOnlySections = tasks
+    .map((task) => task.section.trim())
+    .filter(
+      (label, index, arr) =>
+        label.length > 0 &&
+        arr.indexOf(label) === index &&
+        !configuredSections.includes(label)
+    )
+
+  const allSections = [...configuredSections, ...taskOnlySections]
+  const fallbackColors = [
+    '#ff5f98',
+    '#ffb000',
+    '#6259ff',
+    '#2dbdb8',
+    '#49a4ff',
+    '#a35cff',
   ]
 
-  return sections.map((section) => ({
-    label: section.label,
-    tone: section.tone,
+  return allSections.map((label, index) => ({
+    label,
+    color:
+      sectionColors[label] || fallbackColors[index % fallbackColors.length],
     items: tasks
-      .filter((t) => t.section === section.label)
+      .filter((t) => t.section === label)
       .map((t) => ({
         id: t.id,
         title: t.title,
         meta: t.meta?.trim() || `${t.stage} task`,
-        assignees: t.assignees,
+        assigneeIds: t.assigneeIds,
         dueDate: formatDueDate(t.dueDate),
         stage: t.stage,
         priority: t.priority,
@@ -109,25 +144,16 @@ export function countDueThisWeek(tasks: ApiTask[]): number {
   }).length
 }
 
-export function getBusiestSection(
-  tasks: ApiTask[]
-): 'Issues Found' | 'Review' | 'Ready' {
-  const sectionCount = tasks.reduce(
-    (acc, t) => {
-      acc[t.section] += 1
-      return acc
-    },
-    { 'Issues Found': 0, Review: 0, Ready: 0 } as Record<
-      'Issues Found' | 'Review' | 'Ready',
-      number
-    >
-  )
+export function getBusiestSection(tasks: ApiTask[]): string {
+  if (tasks.length === 0) return 'Review'
+
+  const sectionCount = tasks.reduce((acc, task) => {
+    const section = task.section || 'Review'
+    acc[section] = (acc[section] || 0) + 1
+    return acc
+  }, {} as Record<string, number>)
 
   return (
-    (Object.entries(sectionCount).sort((a, b) => b[1] - a[1])[0]?.[0] as
-      | 'Issues Found'
-      | 'Review'
-      | 'Ready'
-      | undefined) || 'Review'
+    Object.entries(sectionCount).sort((a, b) => b[1] - a[1])[0]?.[0] || 'Review'
   )
 }

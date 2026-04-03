@@ -12,9 +12,12 @@
     "@prisma/client": "^7.6.0",
     "bcryptjs": "^3.0.3",
     "jsonwebtoken": "^9.0.3",
+    "marked": "^17.0.5",
     "next": "16.2.2",
     "react": "19.2.4",
     "react-dom": "19.2.4",
+    "react-simple-wysiwyg": "^3.4.1",
+    "turndown": "^7.2.4",
     "zustand": "^4.5.7"
   },
   "devDependencies": {
@@ -23,6 +26,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/turndown": "^5.0.6",
     "eslint": "^9",
     "eslint-config-next": "16.2.2",
     "prisma": "^7.6.0",

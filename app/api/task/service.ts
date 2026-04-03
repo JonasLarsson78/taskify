@@ -8,15 +8,28 @@ type TaskRow = {
   meta: string | null
   dueDate: Date | null
   stage: 'Initiation' | 'Planning' | 'Execution'
-  priority: 'flag' | 'muted'
-  section: 'Issues Found' | 'Review' | 'Ready'
+  priority: 'High' | 'Normal' | 'Low'
+  section: string
   color: string | null
-  assignees: string[]
+  assigneeIds: number[]
   organizationId: number | null
+  spaceId: number | null
   createdAt: Date
 }
 
 let initialized = false
+
+function parseAssigneePayload(raw: unknown): unknown[] {
+  if (Array.isArray(raw)) return raw
+  if (typeof raw !== 'string') return []
+
+  try {
+    const parsed = JSON.parse(raw)
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
+}
 
 function getDbConfigFromEnv() {
   const url = process.env.DATABASE_URL
@@ -36,6 +49,18 @@ function getDbConfigFromEnv() {
 
 const pool = mysql.createPool(getDbConfigFromEnv())
 
+function normalizePriority(raw: unknown): TaskRow['priority'] {
+  const value = typeof raw === 'string' ? raw : 'Normal'
+
+  if (value === 'High' || value === 'Normal' || value === 'Low') {
+    return value
+  }
+
+  if (value === 'flag') return 'High'
+  if (value === 'low') return 'Low'
+  return 'Normal'
+}
+
 async function ensureTaskTable() {
   if (initialized) return
 
@@ -46,27 +71,61 @@ async function ensureTaskTable() {
       \`meta\` VARCHAR(191) NULL,
       \`dueDate\` DATETIME(3) NULL,
       \`stage\` VARCHAR(32) NOT NULL DEFAULT 'Planning',
-      \`priority\` VARCHAR(16) NOT NULL DEFAULT 'muted',
+      \`priority\` VARCHAR(16) NOT NULL DEFAULT 'Normal',
       \`section\` VARCHAR(32) NOT NULL DEFAULT 'Review',
       \`color\` VARCHAR(32) NULL,
       \`assignees\` TEXT NULL,
       \`organization_id\` INT NULL,
+      \`space_id\` INT NULL,
       \`createdAt\` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
       PRIMARY KEY (\`id\`),
-      INDEX \`Task_organization_id_idx\` (\`organization_id\`)
+      INDEX \`Task_organization_id_idx\` (\`organization_id\`),
+      INDEX \`Task_space_id_idx\` (\`space_id\`)
     )
   `)
+
+  try {
+    await pool.query('ALTER TABLE `Task` ADD COLUMN `space_id` INT NULL')
+  } catch {
+    // Ignore if the column already exists.
+  }
+
+  try {
+    await pool.query('CREATE INDEX `Task_space_id_idx` ON `Task` (`space_id`)')
+  } catch {
+    // Ignore if the index already exists.
+  }
+
+  await pool.query(
+    "UPDATE `Task` SET `priority` = CASE WHEN `priority` = 'flag' THEN 'High' WHEN `priority` = 'muted' THEN 'Normal' WHEN `priority` = 'low' THEN 'Low' ELSE `priority` END"
+  )
+
+  try {
+    await pool.query(
+      "ALTER TABLE `Task` MODIFY COLUMN `priority` VARCHAR(16) NOT NULL DEFAULT 'Normal'"
+    )
+  } catch {
+    // Ignore if the database considers this alter a no-op.
+  }
 
   initialized = true
 }
 
 function mapTaskRow(row: Record<string, unknown>): TaskRow {
-  const parsedAssignees =
-    typeof row.assignees === 'string'
-      ? JSON.parse(row.assignees)
-      : Array.isArray(row.assignees)
-      ? row.assignees
-      : []
+  const parsedAssignees = parseAssigneePayload(row.assignees)
+
+  const assigneeIds = Array.isArray(parsedAssignees)
+    ? parsedAssignees
+        .map((value) => {
+          if (typeof value === 'number') return value
+          if (typeof value === 'string') {
+            const parsed = Number.parseInt(value, 10)
+            return Number.isNaN(parsed) ? null : parsed
+          }
+          return null
+        })
+        .filter((value): value is number => value !== null)
+    : []
 
   return {
     id: Number(row.id),
@@ -74,27 +133,46 @@ function mapTaskRow(row: Record<string, unknown>): TaskRow {
     meta: typeof row.meta === 'string' ? row.meta : null,
     dueDate: row.dueDate ? new Date(String(row.dueDate)) : null,
     stage: (row.stage as TaskRow['stage']) || 'Planning',
-    priority: (row.priority as TaskRow['priority']) || 'muted',
-    section: (row.section as TaskRow['section']) || 'Review',
+    priority: normalizePriority(row.priority),
+    section:
+      typeof row.section === 'string' && row.section.trim()
+        ? row.section
+        : 'Review',
     color: typeof row.color === 'string' ? row.color : null,
-    assignees: Array.isArray(parsedAssignees)
-      ? parsedAssignees.filter((v): v is string => typeof v === 'string')
-      : [],
+    assigneeIds,
     organizationId:
       typeof row.organization_id === 'number' ? row.organization_id : null,
+    spaceId: typeof row.space_id === 'number' ? row.space_id : null,
     createdAt: new Date(String(row.createdAt)),
   }
 }
 
-export async function listTasks(organizationId?: number | null) {
+export async function listTasks(
+  organizationId?: number | null,
+  spaceId?: number | null
+) {
   await ensureTaskTable()
 
-  const sql =
-    typeof organizationId === 'number'
-      ? 'SELECT * FROM `Task` WHERE organization_id = ? ORDER BY createdAt DESC, id DESC'
-      : 'SELECT * FROM `Task` ORDER BY createdAt DESC, id DESC'
+  let sql = 'SELECT * FROM `Task`'
+  const clauses: string[] = []
+  const params: unknown[] = []
 
-  const params = typeof organizationId === 'number' ? [organizationId] : []
+  if (typeof organizationId === 'number') {
+    clauses.push('organization_id = ?')
+    params.push(organizationId)
+  }
+
+  if (typeof spaceId === 'number') {
+    clauses.push('space_id = ?')
+    params.push(spaceId)
+  }
+
+  if (clauses.length > 0) {
+    sql += ` WHERE ${clauses.join(' AND ')}`
+  }
+
+  sql += ' ORDER BY createdAt DESC, id DESC'
+
   const [rows] = await pool.query(sql, params)
   return (rows as Record<string, unknown>[]).map(mapTaskRow)
 }
@@ -103,7 +181,7 @@ export async function createTask(input: CreateTaskInput) {
   await ensureTaskTable()
 
   const [res] = await pool.query<ResultSetHeader>(
-    'INSERT INTO `Task` (title,meta,dueDate,stage,priority,section,color,assignees,organization_id,createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(3))',
+    'INSERT INTO `Task` (title,meta,dueDate,stage,priority,section,color,assignees,organization_id,space_id,createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(3))',
     [
       input.title,
       input.meta,
@@ -112,8 +190,9 @@ export async function createTask(input: CreateTaskInput) {
       input.priority,
       input.section,
       input.color,
-      JSON.stringify(input.assignees),
+      JSON.stringify(input.assigneeIds),
       input.organizationId,
+      input.spaceId,
     ]
   )
 
@@ -160,13 +239,17 @@ export async function updateTask(id: number, patch: UpdateTaskInput) {
     fields.push('color = ?')
     values.push(patch.color)
   }
-  if (patch.assignees !== undefined) {
+  if (patch.assigneeIds !== undefined) {
     fields.push('assignees = ?')
-    values.push(JSON.stringify(patch.assignees))
+    values.push(JSON.stringify(patch.assigneeIds))
   }
   if (patch.organizationId !== undefined) {
     fields.push('organization_id = ?')
     values.push(patch.organizationId)
+  }
+  if (patch.spaceId !== undefined) {
+    fields.push('space_id = ?')
+    values.push(patch.spaceId)
   }
 
   if (fields.length === 0) return null

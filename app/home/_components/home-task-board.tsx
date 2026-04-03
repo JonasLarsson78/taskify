@@ -1,59 +1,29 @@
 import styles from '../page.module.css'
 import { useState, type DragEvent } from 'react'
-import type { BoardGroup, UiTask } from '../model'
+import type { AssigneeOption, BoardGroup, UiTask } from '../model'
 import TaskAssigneeDropdown from './task-assignee-dropdown'
 
 type HomeTaskBoardProps = {
   groups: BoardGroup[]
   busyTaskId: number | null
-  assigneeOptions: string[]
-  onNextStage: (task: UiTask) => void
+  assigneeOptions: AssigneeOption[]
   onTogglePriority: (task: UiTask) => void
-  onDelete: (task: UiTask) => void
-  onMoveTask: (task: UiTask, targetSection: BoardGroup['label']) => void
-  onAssigneesChange: (task: UiTask, assignee: string | null) => void
-}
-
-function getStageClass(stage: UiTask['stage']) {
-  switch (stage) {
-    case 'Initiation':
-      return styles.stageInitiation
-    case 'Planning':
-      return styles.stagePlanning
-    case 'Execution':
-      return styles.stageExecution
-    default:
-      return styles.stagePlanning
-  }
-}
-
-function getSectionToneClass(tone: BoardGroup['tone']) {
-  switch (tone) {
-    case 'pink':
-      return styles.sectionPink
-    case 'yellow':
-      return styles.sectionYellow
-    case 'purple':
-      return styles.sectionPurple
-    default:
-      return styles.sectionPink
-  }
+  onMoveTask: (task: UiTask, targetSection: string) => void
+  onAssigneesChange: (task: UiTask, assigneeId: number | null) => void
+  onOpenTask: (task: UiTask) => void
 }
 
 export default function HomeTaskBoard({
   groups,
   busyTaskId,
   assigneeOptions,
-  onNextStage,
   onTogglePriority,
-  onDelete,
   onMoveTask,
   onAssigneesChange,
+  onOpenTask,
 }: HomeTaskBoardProps) {
   const [draggingTaskId, setDraggingTaskId] = useState<number | null>(null)
-  const [dragOverSection, setDragOverSection] = useState<
-    BoardGroup['label'] | null
-  >(null)
+  const [dragOverSection, setDragOverSection] = useState<string | null>(null)
 
   function onDragStart(task: UiTask, event: DragEvent<HTMLElement>) {
     if (!task.id) return
@@ -65,11 +35,9 @@ export default function HomeTaskBoard({
     )
   }
 
-  function onDropSection(
-    section: BoardGroup['label'],
-    event: DragEvent<HTMLElement>
-  ) {
+  function onDropSection(section: string, event: DragEvent<HTMLElement>) {
     event.preventDefault()
+    setDraggingTaskId(null)
     setDragOverSection(null)
 
     const raw = event.dataTransfer.getData('application/taskify-task')
@@ -77,7 +45,7 @@ export default function HomeTaskBoard({
 
     const parsed = JSON.parse(raw) as {
       taskId?: number
-      section?: BoardGroup['label']
+      section?: string
     }
 
     if (!parsed.taskId) return
@@ -101,7 +69,6 @@ export default function HomeTaskBoard({
         <div>Task</div>
         <div>Assignee</div>
         <div>Due Date</div>
-        <div>Stage</div>
         <div>Priority</div>
       </div>
 
@@ -122,9 +89,8 @@ export default function HomeTaskBoard({
             onDrop={(event) => onDropSection(group.label, event)}
           >
             <div
-              className={`${styles.sectionHeader} ${getSectionToneClass(
-                group.tone
-              )}`}
+              className={styles.sectionHeader}
+              style={{ background: group.color }}
             >
               {group.label}
             </div>
@@ -138,6 +104,7 @@ export default function HomeTaskBoard({
                 draggable={!!task.id && busyTaskId !== task.id}
                 onDragStart={(event) => onDragStart(task, event)}
                 onDragEnd={onDragEnd}
+                onClick={() => onOpenTask(task)}
               >
                 <div className={styles.taskCell}>
                   <span
@@ -146,67 +113,68 @@ export default function HomeTaskBoard({
                   />
                   <div className={styles.taskMain}>
                     <div className={styles.taskTitle}>{task.title}</div>
-                    <div className={styles.taskMeta}>{task.meta}</div>
                   </div>
                 </div>
 
                 <div className={styles.assigneeCluster}>
                   <TaskAssigneeDropdown
-                    value={task.assignees}
+                    value={task.assigneeIds}
                     options={assigneeOptions}
                     busy={busyTaskId === task.id}
-                    onSelect={(nextAssignee) =>
-                      onAssigneesChange(task, nextAssignee)
+                    onSelect={(nextAssigneeId) =>
+                      onAssigneesChange(task, nextAssigneeId)
                     }
                   />
                 </div>
 
                 <div className={styles.dueDate}>{task.dueDate}</div>
-                <div>
-                  <span
-                    className={`${styles.stageBadge} ${getStageClass(
-                      task.stage
-                    )}`}
-                  >
-                    {task.stage}
-                  </span>
-                </div>
                 <div className={styles.priority}>
                   <div className={styles.priorityCell}>
-                    {task.priority === 'flag' ? (
-                      <span className={styles.priorityFlag} />
-                    ) : (
-                      <span className={styles.priorityMuted} />
-                    )}
-
                     {task.id ? (
-                      <div className={styles.taskActions}>
-                        <button
-                          className={styles.taskActionBtn}
-                          type="button"
-                          disabled={busyTaskId === task.id}
-                          onClick={() => onNextStage(task)}
-                        >
-                          Stage
-                        </button>
-                        <button
-                          className={styles.taskActionBtn}
-                          type="button"
-                          disabled={busyTaskId === task.id}
-                          onClick={() => onTogglePriority(task)}
-                        >
-                          Prio
-                        </button>
-                        <button
-                          className={`${styles.taskActionBtn} ${styles.taskActionDanger}`}
-                          type="button"
-                          disabled={busyTaskId === task.id}
-                          onClick={() => onDelete(task)}
-                        >
-                          Del
-                        </button>
-                      </div>
-                    ) : null}
+                      <button
+                        className={`${styles.priorityBadge} ${
+                          styles.priorityBadgeButton
+                        } ${
+                          task.priority === 'High'
+                            ? styles.priorityBadgeHigh
+                            : task.priority === 'Low'
+                            ? styles.priorityBadgeLow
+                            : styles.priorityBadgeNormal
+                        }`}
+                        type="button"
+                        disabled={busyTaskId === task.id}
+                        onMouseDown={(event) => event.stopPropagation()}
+                        onClick={(event) => {
+                          event.preventDefault()
+                          event.stopPropagation()
+                          onTogglePriority(task)
+                        }}
+                      >
+                        <span className={styles.priorityBadgeDot} />
+                        {task.priority === 'High'
+                          ? 'High'
+                          : task.priority === 'Low'
+                          ? 'Low'
+                          : 'Normal'}
+                      </button>
+                    ) : (
+                      <span
+                        className={`${styles.priorityBadge} ${
+                          task.priority === 'High'
+                            ? styles.priorityBadgeHigh
+                            : task.priority === 'Low'
+                            ? styles.priorityBadgeLow
+                            : styles.priorityBadgeNormal
+                        }`}
+                      >
+                        <span className={styles.priorityBadgeDot} />
+                        {task.priority === 'High'
+                          ? 'High'
+                          : task.priority === 'Low'
+                          ? 'Low'
+                          : 'Normal'}
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>

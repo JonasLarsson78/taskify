@@ -1,8 +1,9 @@
+import { useState } from 'react'
 import styles from '../page.module.css'
 import type { AssigneeOption } from '../model'
 import MarkdownLiveEditor from './markdown-live-editor'
 
-type CreateTaskModalProps = {
+type EditTaskModalProps = {
   open: boolean
   busy: boolean
   title: string
@@ -16,6 +17,7 @@ type CreateTaskModalProps = {
   color: string
   onClose: () => void
   onSubmit: () => void
+  onDelete: () => void
   onTitleChange: (value: string) => void
   onMetaChange: (value: string) => void
   onDueDateChange: (value: string) => void
@@ -25,7 +27,7 @@ type CreateTaskModalProps = {
   onColorChange: (value: string) => void
 }
 
-export default function CreateTaskModal({
+export default function EditTaskModal({
   open,
   busy,
   title,
@@ -39,6 +41,7 @@ export default function CreateTaskModal({
   color,
   onClose,
   onSubmit,
+  onDelete,
   onTitleChange,
   onMetaChange,
   onDueDateChange,
@@ -46,34 +49,41 @@ export default function CreateTaskModal({
   onSectionChange,
   onPriorityChange,
   onColorChange,
-}: CreateTaskModalProps) {
+}: EditTaskModalProps) {
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false)
+
+  function handleClose() {
+    setConfirmDeleteOpen(false)
+    onClose()
+  }
+
   if (!open) return null
 
   return (
     <section
       className={styles.modalBackdrop}
       onClick={() => {
-        if (!busy) onClose()
+        if (!busy) handleClose()
       }}
     >
       <div
         className={styles.modalCard}
-        onClick={(e) => {
-          e.stopPropagation()
+        onClick={(event) => {
+          event.stopPropagation()
         }}
       >
         <div className={styles.modalHeader}>
           <div>
-            <div className={styles.modalTitle}>Create Task</div>
+            <div className={styles.modalTitle}>Task</div>
             <div className={styles.modalSub}>
-              Fill in details and add to board
+              Update details and save changes
             </div>
           </div>
           <button
             type="button"
             className={styles.modalClose}
             disabled={busy}
-            onClick={onClose}
+            onClick={handleClose}
           >
             Close
           </button>
@@ -85,32 +95,31 @@ export default function CreateTaskModal({
             type="text"
             placeholder="Task title"
             value={title}
-            onChange={(e) => onTitleChange(e.target.value)}
+            onChange={(event) => onTitleChange(event.target.value)}
           />
-
           <div className={styles.createFieldFull}>
             <MarkdownLiveEditor
               value={meta}
               onChange={onMetaChange}
               placeholder="Task description (Markdown supported)"
               disabled={busy}
+              initialMode="preview"
             />
           </div>
-
           <input
             className={styles.createInput}
             type="date"
             value={dueDate}
-            onChange={(e) => onDueDateChange(e.target.value)}
+            onChange={(event) => onDueDateChange(event.target.value)}
           />
 
           <select
             className={styles.createSelect}
             multiple
             value={assigneeIds.map(String)}
-            onChange={(e) =>
+            onChange={(event) =>
               onAssigneeIdsChange(
-                Array.from(e.target.selectedOptions).map((option) =>
+                Array.from(event.target.selectedOptions).map((option) =>
                   Number.parseInt(option.value, 10)
                 )
               )
@@ -126,7 +135,7 @@ export default function CreateTaskModal({
           <select
             className={styles.createSelect}
             value={section}
-            onChange={(e) => onSectionChange(e.target.value)}
+            onChange={(event) => onSectionChange(event.target.value)}
           >
             {sectionOptions.map((option) => (
               <option value={option} key={option}>
@@ -138,8 +147,8 @@ export default function CreateTaskModal({
           <select
             className={styles.createSelect}
             value={priority}
-            onChange={(e) =>
-              onPriorityChange(e.target.value as 'High' | 'Normal' | 'Low')
+            onChange={(event) =>
+              onPriorityChange(event.target.value as 'High' | 'Normal' | 'Low')
             }
           >
             <option value="High">High</option>
@@ -153,17 +162,25 @@ export default function CreateTaskModal({
               className={styles.createColorInput}
               type="color"
               value={color}
-              onChange={(e) => onColorChange(e.target.value)}
+              onChange={(event) => onColorChange(event.target.value)}
             />
           </label>
         </div>
 
         <div className={styles.modalActions}>
           <button
+            className={`${styles.taskActionBtn} ${styles.taskActionDanger}`}
+            type="button"
+            disabled={busy}
+            onClick={() => setConfirmDeleteOpen(true)}
+          >
+            Delete task
+          </button>
+          <button
             className={styles.modalCancel}
             type="button"
             disabled={busy}
-            onClick={onClose}
+            onClick={handleClose}
           >
             Cancel
           </button>
@@ -173,10 +190,55 @@ export default function CreateTaskModal({
             disabled={busy}
             onClick={onSubmit}
           >
-            {busy ? 'Creating...' : 'Create Task'}
+            {busy ? 'Saving...' : 'Save changes'}
           </button>
         </div>
       </div>
+
+      {confirmDeleteOpen ? (
+        <section
+          className={styles.modalBackdrop}
+          onClick={() => {
+            if (!busy) setConfirmDeleteOpen(false)
+          }}
+        >
+          <div
+            className={styles.modalCard}
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className={styles.modalHeader}>
+              <div>
+                <div className={styles.modalTitle}>Delete task?</div>
+                <div className={styles.modalSub}>
+                  This action cannot be undone.
+                </div>
+              </div>
+            </div>
+
+            <div className={styles.modalActions}>
+              <button
+                className={styles.modalCancel}
+                type="button"
+                disabled={busy}
+                onClick={() => setConfirmDeleteOpen(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className={`${styles.taskActionBtn} ${styles.taskActionDanger}`}
+                type="button"
+                disabled={busy}
+                onClick={() => {
+                  setConfirmDeleteOpen(false)
+                  onDelete()
+                }}
+              >
+                {busy ? 'Deleting...' : 'Yes, delete'}
+              </button>
+            </div>
+          </div>
+        </section>
+      ) : null}
     </section>
   )
 }

@@ -23,3 +23,10 @@ export async function createOrganization(input: CreateOrganizationInput) {
     },
   })
 }
+
+export async function updateOrganizationName(id: number, name: string) {
+  return prisma.organization.update({
+    where: { id },
+    data: { name },
+  })
+}

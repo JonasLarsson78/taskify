@@ -3,17 +3,25 @@ export type CreateTaskInput = {
   meta: string | null
   dueDate: string | null
   stage: 'Initiation' | 'Planning' | 'Execution'
-  priority: 'flag' | 'muted'
-  section: 'Issues Found' | 'Review' | 'Ready'
+  priority: 'High' | 'Normal' | 'Low'
+  section: string
   color: string | null
-  assignees: string[]
+  assigneeIds: number[]
   organizationId: number | null
+  spaceId: number | null
 }
 
 export type UpdateTaskInput = Partial<CreateTaskInput>
 
 export async function parseJsonBody(request: Request): Promise<unknown> {
   return request.json()
+}
+
+function normalizePriorityValue(raw: string): CreateTaskInput['priority'] {
+  if (raw === 'High' || raw === 'Normal' || raw === 'Low') return raw
+  if (raw === 'flag') return 'High'
+  if (raw === 'low') return 'Low'
+  return 'Normal'
 }
 
 export function normalizeCreateTaskInput(
@@ -27,8 +35,8 @@ export function normalizeCreateTaskInput(
   }
 
   const stageRaw = typeof b.stage === 'string' ? b.stage : 'Planning'
-  const priorityRaw = typeof b.priority === 'string' ? b.priority : 'muted'
-  const sectionRaw = typeof b.section === 'string' ? b.section : 'Review'
+  const priorityRaw = typeof b.priority === 'string' ? b.priority : 'Normal'
+  const sectionRaw = typeof b.section === 'string' ? b.section.trim() : 'Review'
 
   const stage: CreateTaskInput['stage'] =
     stageRaw === 'Initiation' || stageRaw === 'Execution'
@@ -36,16 +44,11 @@ export function normalizeCreateTaskInput(
       : 'Planning'
 
   const priority: CreateTaskInput['priority'] =
-    priorityRaw === 'flag' ? 'flag' : 'muted'
+    normalizePriorityValue(priorityRaw)
 
-  const section: CreateTaskInput['section'] =
-    sectionRaw === 'Issues Found' || sectionRaw === 'Ready'
-      ? sectionRaw
-      : 'Review'
+  const section = sectionRaw || 'Review'
 
-  const assignees = Array.isArray(b.assignees)
-    ? b.assignees.filter((v): v is string => typeof v === 'string').slice(0, 6)
-    : []
+  const assigneeIds = parseAssigneeIds(b)
 
   const dueDate = typeof b.dueDate === 'string' ? b.dueDate : null
 
@@ -59,11 +62,30 @@ export function normalizeCreateTaskInput(
       priority,
       section,
       color: typeof b.color === 'string' ? b.color : null,
-      assignees,
+      assigneeIds,
       organizationId:
         typeof b.organizationId === 'number' ? b.organizationId : null,
+      spaceId: typeof b.spaceId === 'number' ? b.spaceId : null,
     },
   }
+}
+
+function parseAssigneeIds(body: Record<string, unknown>): number[] {
+  if (Array.isArray(body.assigneeIds)) {
+    return body.assigneeIds
+      .filter((value): value is number => typeof value === 'number')
+      .slice(0, 6)
+  }
+
+  // Backward compatibility for older clients that still send string assignees.
+  if (Array.isArray(body.assignees)) {
+    return body.assignees
+      .map((value) => Number.parseInt(String(value), 10))
+      .filter((value) => Number.isInteger(value))
+      .slice(0, 6)
+  }
+
+  return []
 }
 
 export function normalizeUpdateTaskInput(
@@ -100,21 +122,22 @@ export function normalizeUpdateTaskInput(
 
   if (typeof b.priority === 'string') {
     const priority = b.priority
-    if (priority !== 'flag' && priority !== 'muted') {
+    if (
+      priority !== 'High' &&
+      priority !== 'Normal' &&
+      priority !== 'Low' &&
+      priority !== 'flag' &&
+      priority !== 'muted' &&
+      priority !== 'low'
+    ) {
       return { ok: false, error: 'Invalid priority' }
     }
-    patch.priority = priority
+    patch.priority = normalizePriorityValue(priority)
   }
 
   if (typeof b.section === 'string') {
-    const section = b.section
-    if (
-      section !== 'Issues Found' &&
-      section !== 'Review' &&
-      section !== 'Ready'
-    ) {
-      return { ok: false, error: 'Invalid section' }
-    }
+    const section = b.section.trim()
+    if (!section) return { ok: false, error: 'section cannot be empty' }
     patch.section = section
   }
 
@@ -122,14 +145,23 @@ export function normalizeUpdateTaskInput(
     patch.color = (b.color as string | null) ?? null
   }
 
-  if (Array.isArray(b.assignees)) {
-    patch.assignees = b.assignees
-      .filter((v): v is string => typeof v === 'string')
+  if (Array.isArray(b.assigneeIds)) {
+    patch.assigneeIds = b.assigneeIds
+      .filter((value): value is number => typeof value === 'number')
+      .slice(0, 6)
+  } else if (Array.isArray(b.assignees)) {
+    patch.assigneeIds = b.assignees
+      .map((value) => Number.parseInt(String(value), 10))
+      .filter((value) => Number.isInteger(value))
       .slice(0, 6)
   }
 
   if (typeof b.organizationId === 'number' || b.organizationId === null) {
     patch.organizationId = (b.organizationId as number | null) ?? null
+  }
+
+  if (typeof b.spaceId === 'number' || b.spaceId === null) {
+    patch.spaceId = (b.spaceId as number | null) ?? null
   }
 
   if (Object.keys(patch).length === 0) {

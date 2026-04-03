@@ -236,6 +236,44 @@ export async function createMysqlFallback(): Promise<FallbackClient> {
           createdAt: r.createdAt,
         } as Organization
       },
+
+      async update(opts: {
+        where: { id: number }
+        data: Partial<Organization>
+      }) {
+        const id = opts.where.id
+        const data = opts.data || {}
+
+        await pool.query(
+          'UPDATE `Organization` SET name = ?, address = ?, city = ?, zip = ?, phone = ?, email = ? WHERE id = ? LIMIT 1',
+          [
+            data.name ?? null,
+            data.address ?? null,
+            data.city ?? null,
+            data.zip ?? null,
+            data.phone ?? null,
+            data.email ?? null,
+            id,
+          ]
+        )
+
+        const [rows] = await pool.query<RowDataPacket[]>(
+          'SELECT * FROM `Organization` WHERE id = ? LIMIT 1',
+          [id]
+        )
+        const r = rows[0]
+
+        return {
+          id: r.id,
+          name: r.name,
+          address: r.address,
+          city: r.city,
+          zip: r.zip,
+          phone: r.phone,
+          email: r.email,
+          createdAt: r.createdAt,
+        } as Organization
+      },
     },
   }
 }

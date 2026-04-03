@@ -1,26 +1,31 @@
 import styles from '../page.module.css'
-import type { BoardGroup, UiTask } from '../model'
+import type { AssigneeOption, BoardGroup, UiTask } from '../model'
+import TaskAssigneeDropdown from './task-assignee-dropdown'
 
 type HomeTaskBoxesProps = {
   groups: BoardGroup[]
   busyTaskId: number | null
-  assigneeOptions: string[]
-  onNextStage: (task: UiTask) => void
+  assigneeOptions: AssigneeOption[]
   onTogglePriority: (task: UiTask) => void
-  onDelete: (task: UiTask) => void
-  onMoveTask: (task: UiTask, targetSection: BoardGroup['label']) => void
-  onAssigneesChange: (task: UiTask, assignee: string | null) => void
+  onMoveTask: (task: UiTask, targetSection: string) => void
+  onAssigneesChange: (task: UiTask, assigneeId: number | null) => void
+  onOpenTask: (task: UiTask) => void
 }
 
 export default function HomeTaskBoxes({
   groups,
   busyTaskId,
-  onNextStage,
+  assigneeOptions,
   onTogglePriority,
-  onDelete,
+  onAssigneesChange,
+  onOpenTask,
 }: HomeTaskBoxesProps) {
   const tasks = groups.flatMap((group) =>
-    group.items.map((item) => ({ ...item, section: group.label }))
+    group.items.map((item) => ({
+      ...item,
+      section: group.label,
+      sectionColor: group.color,
+    }))
   )
 
   return (
@@ -30,41 +35,73 @@ export default function HomeTaskBoxes({
           <article
             className={styles.taskTile}
             key={`${task.section}-${task.id ?? task.title}`}
+            onClick={() => onOpenTask(task)}
           >
-            <div className={styles.taskTileSection}>{task.section}</div>
+            <div
+              className={styles.taskTileSection}
+              style={{ background: task.sectionColor }}
+            >
+              {task.section}
+            </div>
             <div className={styles.taskViewCardTitle}>{task.title}</div>
             <div className={styles.taskMeta}>{task.meta}</div>
-            <div className={styles.taskViewMetaRow}>Stage: {task.stage}</div>
             <div className={styles.taskViewMetaRow}>Due: {task.dueDate}</div>
+            <div className={styles.taskViewMetaRow}>
+              {task.id ? (
+                <button
+                  className={`${styles.priorityBadge} ${
+                    styles.priorityBadgeButton
+                  } ${
+                    task.priority === 'High'
+                      ? styles.priorityBadgeHigh
+                      : task.priority === 'Low'
+                      ? styles.priorityBadgeLow
+                      : styles.priorityBadgeNormal
+                  }`}
+                  type="button"
+                  disabled={busyTaskId === task.id}
+                  onMouseDown={(event) => event.stopPropagation()}
+                  onClick={(event) => {
+                    event.preventDefault()
+                    event.stopPropagation()
+                    onTogglePriority(task)
+                  }}
+                >
+                  <span className={styles.priorityBadgeDot} />
+                  {task.priority === 'High'
+                    ? 'High'
+                    : task.priority === 'Low'
+                    ? 'Low'
+                    : 'Normal'}
+                </button>
+              ) : (
+                <span
+                  className={`${styles.priorityBadge} ${
+                    task.priority === 'High'
+                      ? styles.priorityBadgeHigh
+                      : task.priority === 'Low'
+                      ? styles.priorityBadgeLow
+                      : styles.priorityBadgeNormal
+                  }`}
+                >
+                  <span className={styles.priorityBadgeDot} />
+                  {task.priority === 'High'
+                    ? 'High'
+                    : task.priority === 'Low'
+                    ? 'Low'
+                    : 'Normal'}
+                </span>
+              )}
+            </div>
 
-            {task.id ? (
-              <div className={styles.taskViewActions}>
-                <button
-                  className={styles.taskActionBtn}
-                  type="button"
-                  disabled={busyTaskId === task.id}
-                  onClick={() => onNextStage(task)}
-                >
-                  Stage
-                </button>
-                <button
-                  className={styles.taskActionBtn}
-                  type="button"
-                  disabled={busyTaskId === task.id}
-                  onClick={() => onTogglePriority(task)}
-                >
-                  Prio
-                </button>
-                <button
-                  className={`${styles.taskActionBtn} ${styles.taskActionDanger}`}
-                  type="button"
-                  disabled={busyTaskId === task.id}
-                  onClick={() => onDelete(task)}
-                >
-                  Del
-                </button>
-              </div>
-            ) : null}
+            <TaskAssigneeDropdown
+              value={task.assigneeIds}
+              options={assigneeOptions}
+              busy={busyTaskId === task.id}
+              onSelect={(nextAssigneeId) =>
+                onAssigneesChange(task, nextAssigneeId)
+              }
+            />
           </article>
         ))}
       </div>

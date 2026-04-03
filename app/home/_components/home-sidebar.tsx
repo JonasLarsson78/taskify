@@ -1,25 +1,25 @@
 import styles from '../page.module.css'
-import type { Organization } from '../model'
+import type { Space } from '../model'
 import { getInitial } from '../model'
 
 type HomeSidebarProps = {
   personInitials: string
   personName: string
   userEmail: string
-  availableSpaces: Organization[]
-  selectedOrganizationId: number | null
-  currentOrganizationId: number | undefined
-  onSelectOrganization: (organization: Organization) => void
+  spaces: Space[]
+  selectedSpaceId: number | null
+  onSelectSpace: (space: Space) => void
+  onCreateSpace: () => void
 }
 
 export default function HomeSidebar({
   personInitials,
   personName,
   userEmail,
-  availableSpaces,
-  selectedOrganizationId,
-  currentOrganizationId,
-  onSelectOrganization,
+  spaces,
+  selectedSpaceId,
+  onSelectSpace,
+  onCreateSpace,
 }: HomeSidebarProps) {
   return (
     <aside className={styles.sidebar}>
@@ -49,11 +49,9 @@ export default function HomeSidebar({
 
       <section className={styles.navSection}>
         <div className={styles.sectionLabel}>Spaces</div>
-        {availableSpaces.length > 0 ? (
-          availableSpaces.map((org) => {
-            const isActive =
-              selectedOrganizationId === org.id ||
-              (!selectedOrganizationId && currentOrganizationId === org.id)
+        {spaces.length > 0 ? (
+          spaces.map((space) => {
+            const isActive = selectedSpaceId === space.id
 
             return (
               <button
@@ -61,19 +59,28 @@ export default function HomeSidebar({
                   isActive ? styles.spaceActive : ''
                 }`}
                 type="button"
-                key={org.id}
-                onClick={() => onSelectOrganization(org)}
+                key={space.id}
+                onClick={() => onSelectSpace(space)}
               >
                 <span className={styles.spaceIcon}>
-                  {getInitial(org.name, 'O')}
+                  {getInitial(space.name, 'S')}
                 </span>
-                {org.name || `Organization ${org.id}`}
+                {space.name || `Space ${space.id}`}
               </button>
             )
           })
         ) : (
           <div className={styles.brandSub}>No spaces found</div>
         )}
+
+        <button
+          className={styles.navItem}
+          type="button"
+          onClick={onCreateSpace}
+        >
+          <span className={styles.navIcon}>+</span>
+          New Space
+        </button>
       </section>
 
       <div className={styles.sidebarFooter}>

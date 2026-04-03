@@ -6,13 +6,19 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
     const organizationIdRaw = searchParams.get('organizationId')
+    const spaceIdRaw = searchParams.get('spaceId')
     const parsedId = organizationIdRaw
       ? Number.parseInt(organizationIdRaw, 10)
       : null
+    const parsedSpaceId = spaceIdRaw ? Number.parseInt(spaceIdRaw, 10) : null
     const organizationId =
       parsedId !== null && !Number.isNaN(parsedId) ? parsedId : null
+    const spaceId =
+      parsedSpaceId !== null && !Number.isNaN(parsedSpaceId)
+        ? parsedSpaceId
+        : null
 
-    const tasks = await listTasks(organizationId)
+    const tasks = await listTasks(organizationId, spaceId)
     return NextResponse.json(tasks)
   } catch (e) {
     console.error('GET /api/task error', e)
