@@ -108,7 +108,9 @@ export default function HomeTaskBoard({
       <div className={styles.columnGroup}>
         {groups.map((group) => (
           <section
-            className={`${styles.section} ${dragOverSection === group.label ? styles.sectionDropActive : ''}`}
+            className={`${styles.section} ${
+              dragOverSection === group.label ? styles.sectionDropActive : ''
+            }`}
             key={group.label}
             onDragOver={(event) => {
               event.preventDefault()
@@ -129,7 +131,9 @@ export default function HomeTaskBoard({
 
             {group.items.map((task) => (
               <div
-                className={`${styles.row} ${draggingTaskId === task.id ? styles.rowDragging : ''}`}
+                className={`${styles.row} ${
+                  draggingTaskId === task.id ? styles.rowDragging : ''
+                }`}
                 key={`${group.label}-${task.id ?? task.title}`}
                 draggable={!!task.id && busyTaskId !== task.id}
                 onDragStart={(event) => onDragStart(task, event)}
@@ -151,7 +155,9 @@ export default function HomeTaskBoard({
                     value={task.assignees}
                     options={assigneeOptions}
                     busy={busyTaskId === task.id}
-                    onSelect={(nextAssignee) => onAssigneesChange(task, nextAssignee)}
+                    onSelect={(nextAssignee) =>
+                      onAssigneesChange(task, nextAssignee)
+                    }
                   />
                 </div>
 

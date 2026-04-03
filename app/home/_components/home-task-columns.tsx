@@ -84,7 +84,11 @@ export default function HomeTaskColumns({
       <div className={styles.taskViewColumns}>
         {groups.map((group) => (
           <section
-            className={`${styles.taskViewColumn} ${dragOverSection === group.label ? styles.taskViewColumnDropActive : ''}`}
+            className={`${styles.taskViewColumn} ${
+              dragOverSection === group.label
+                ? styles.taskViewColumnDropActive
+                : ''
+            }`}
             key={group.label}
             onDragOver={(event) => {
               event.preventDefault()
@@ -96,7 +100,9 @@ export default function HomeTaskColumns({
             onDrop={(event) => onDropSection(group.label, event)}
           >
             <div
-              className={`${styles.taskViewColumnHeader} ${getSectionToneClass(group.tone)}`}
+              className={`${styles.taskViewColumnHeader} ${getSectionToneClass(
+                group.tone
+              )}`}
             >
               {group.label}
             </div>
@@ -104,7 +110,11 @@ export default function HomeTaskColumns({
             <div className={styles.taskViewColumnList}>
               {group.items.map((task) => (
                 <article
-                  className={`${styles.taskViewCard} ${draggingTaskId === task.id ? styles.taskViewCardDragging : ''}`}
+                  className={`${styles.taskViewCard} ${
+                    draggingTaskId === task.id
+                      ? styles.taskViewCardDragging
+                      : ''
+                  }`}
                   key={`${group.label}-${task.id ?? task.title}`}
                   draggable={!!task.id && busyTaskId !== task.id}
                   onDragStart={(event) => onDragStart(task, event)}
@@ -112,7 +122,9 @@ export default function HomeTaskColumns({
                 >
                   <div className={styles.taskViewCardTitle}>{task.title}</div>
                   <div className={styles.taskMeta}>{task.meta}</div>
-                  <div className={styles.taskViewMetaRow}>Due: {task.dueDate}</div>
+                  <div className={styles.taskViewMetaRow}>
+                    Due: {task.dueDate}
+                  </div>
 
                   {task.id ? (
                     <div className={styles.taskViewActions}>

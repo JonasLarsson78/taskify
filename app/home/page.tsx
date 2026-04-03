@@ -63,7 +63,9 @@ export default function HomePage() {
 
   async function updateTaskOnServer(
     taskId: number,
-    payload: Partial<Pick<ApiTask, 'stage' | 'priority' | 'section' | 'assignees'>>
+    payload: Partial<
+      Pick<ApiTask, 'stage' | 'priority' | 'section' | 'assignees'>
+    >
   ) {
     setTaskActionBusyId(taskId)
     setIntegrationError(null)
@@ -357,7 +359,9 @@ export default function HomePage() {
 
       return `U${u.id}`
     })
-    .filter((value, index, arr) => value.length > 0 && arr.indexOf(value) === index)
+    .filter(
+      (value, index, arr) => value.length > 0 && arr.indexOf(value) === index
+    )
     .slice(0, 12)
   const boardGroups = groupedTasksFromApi(tasks)
   const dueThisWeek = countDueThisWeek(tasks)

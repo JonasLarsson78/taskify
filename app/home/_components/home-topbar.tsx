@@ -26,21 +26,27 @@ export default function HomeTopbar({
 
       <div className={styles.topbarActions}>
         <button
-          className={`${styles.actionPill} ${viewMode === 'list' ? styles.actionPillActive : ''}`}
+          className={`${styles.actionPill} ${
+            viewMode === 'list' ? styles.actionPillActive : ''
+          }`}
           type="button"
           onClick={() => onChangeView('list')}
         >
           ≡ List
         </button>
         <button
-          className={`${styles.actionPill} ${viewMode === 'board' ? styles.actionPillActive : ''}`}
+          className={`${styles.actionPill} ${
+            viewMode === 'board' ? styles.actionPillActive : ''
+          }`}
           type="button"
           onClick={() => onChangeView('board')}
         >
           ◫ Board
         </button>
         <button
-          className={`${styles.actionPill} ${viewMode === 'box' ? styles.actionPillActive : ''}`}
+          className={`${styles.actionPill} ${
+            viewMode === 'box' ? styles.actionPillActive : ''
+          }`}
           type="button"
           onClick={() => onChangeView('box')}
         >

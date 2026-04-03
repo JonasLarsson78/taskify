@@ -27,7 +27,10 @@ export default function HomeTaskBoxes({
     <section className={styles.board}>
       <div className={styles.taskTiles}>
         {tasks.map((task) => (
-          <article className={styles.taskTile} key={`${task.section}-${task.id ?? task.title}`}>
+          <article
+            className={styles.taskTile}
+            key={`${task.section}-${task.id ?? task.title}`}
+          >
             <div className={styles.taskTileSection}>{task.section}</div>
             <div className={styles.taskViewCardTitle}>{task.title}</div>
             <div className={styles.taskMeta}>{task.meta}</div>

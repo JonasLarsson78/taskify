@@ -103,7 +103,9 @@ export default function CreateTaskModal({
             value={assignees}
             onChange={(e) =>
               onAssigneesChange(
-                Array.from(e.target.selectedOptions).map((option) => option.value)
+                Array.from(e.target.selectedOptions).map(
+                  (option) => option.value
+                )
               )
             }
           >

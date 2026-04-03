@@ -45,7 +45,9 @@ export default function TaskAssigneeDropdown({
       {open ? (
         <div className={styles.assigneeDropdownMenu}>
           <button
-            className={`${styles.assigneeDropdownItem} ${!active ? styles.assigneeDropdownItemActive : ''}`}
+            className={`${styles.assigneeDropdownItem} ${
+              !active ? styles.assigneeDropdownItemActive : ''
+            }`}
             type="button"
             onClick={() => {
               onSelect(null)
@@ -61,7 +63,9 @@ export default function TaskAssigneeDropdown({
 
           {options.map((option) => (
             <button
-              className={`${styles.assigneeDropdownItem} ${option === active ? styles.assigneeDropdownItemActive : ''}`}
+              className={`${styles.assigneeDropdownItem} ${
+                option === active ? styles.assigneeDropdownItemActive : ''
+              }`}
               type="button"
               key={option}
               onClick={() => {
