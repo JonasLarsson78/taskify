@@ -19,6 +19,8 @@ export type FallbackClient = {
   }
   organization: {
     findUnique(opts: { where: { id: number } }): Promise<Organization | null>
+    findMany(): Promise<Organization[]>
+    create(opts: { data: Partial<Organization> }): Promise<Organization>
   }
 }
 

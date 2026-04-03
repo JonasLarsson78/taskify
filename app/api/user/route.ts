@@ -5,7 +5,11 @@ import { normalizeCreateUserInput, parseJsonBody } from './validator'
 export async function GET() {
   try {
     const users = await listUsers()
-    return NextResponse.json(users)
+    const safeUsers = users.map(({ password: _password, ...safe }) => {
+      void _password
+      return safe
+    })
+    return NextResponse.json(safeUsers)
   } catch (e) {
     console.error('GET /api/user error', e)
     return NextResponse.json(

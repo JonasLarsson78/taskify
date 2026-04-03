@@ -34,6 +34,17 @@ export default function LoginPage() {
         try {
           useStore.getState().setToken(data.token)
           if (data.user) useStore.getState().setUser(data.user)
+          if (data.user?.organizationId) {
+            const resOrg = await fetch(
+              `/api/organization/${data.user.organizationId}`
+            )
+            if (resOrg.ok) {
+              const orgData = await resOrg.json()
+              useStore.getState().setOrganization(orgData)
+            } else {
+              console.error('Failed to fetch organization data')
+            }
+          }
         } catch {}
       }
 
@@ -46,38 +57,79 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="center-screen">
-      <form onSubmit={handleSubmit} className={styles.form}>
-        <h2 className={styles.title}>Logga in</h2>
+    <main className={styles.shell}>
+      <section className={styles.showcase}>
+        <div className={styles.brandRow}>
+          <span className={styles.brandMark} />
+          <div>
+            <div className={styles.brandTitle}>Taskify</div>
+            <div className={styles.brandSub}>
+              Workspace for high velocity teams
+            </div>
+          </div>
+        </div>
 
-        {error && <div className={styles.error}>{error}</div>}
+        <h1 className={styles.headline}>
+          Planera smartare. Leverera snabbare.
+        </h1>
+        <p className={styles.lead}>
+          Samla goals, tasks och execution i ett tydligt flode for hela teamet.
+        </p>
 
-        <label className={styles.label}>
-          <div className={styles.labelTitle}>E-post</div>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className={styles.input}
-          />
-        </label>
+        <div className={styles.kpiGrid}>
+          <article className={styles.kpiCard}>
+            <div className={styles.kpiLabel}>Active Projects</div>
+            <div className={styles.kpiValue}>12</div>
+          </article>
+          <article className={styles.kpiCard}>
+            <div className={styles.kpiLabel}>Tasks Closed</div>
+            <div className={styles.kpiValue}>184</div>
+          </article>
+          <article className={styles.kpiCard}>
+            <div className={styles.kpiLabel}>Cycle Time</div>
+            <div className={styles.kpiValue}>-28%</div>
+          </article>
+        </div>
+      </section>
 
-        <label className={styles.label}>
-          <div className={styles.labelTitle}>Lösenord</div>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            className={styles.input}
-          />
-        </label>
+      <section className={styles.authPanel}>
+        <form onSubmit={handleSubmit} className={styles.form}>
+          <h2 className={styles.title}>Logga in</h2>
+          <p className={styles.subtitle}>
+            Fortsatt till din workspace-oversikt
+          </p>
 
-        <button type="submit" disabled={loading} className={styles.submit}>
-          {loading ? 'Loggar in…' : 'Logga in'}
-        </button>
-      </form>
+          {error && <div className={styles.error}>{error}</div>}
+
+          <label className={styles.label}>
+            <div className={styles.labelTitle}>E-post</div>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className={styles.input}
+              placeholder="name@company.com"
+            />
+          </label>
+
+          <label className={styles.label}>
+            <div className={styles.labelTitle}>Losenord</div>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className={styles.input}
+              placeholder="••••••••"
+            />
+          </label>
+
+          <button type="submit" disabled={loading} className={styles.submit}>
+            {loading ? 'Loggar in...' : 'Logga in'}
+          </button>
+        </form>
+      </section>
     </main>
   )
 }

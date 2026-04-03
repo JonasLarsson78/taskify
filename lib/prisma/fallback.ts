@@ -184,6 +184,58 @@ export async function createMysqlFallback(): Promise<FallbackClient> {
           createdAt: r.createdAt,
         } as Organization
       },
+
+      async findMany() {
+        const [rows] = await pool.query<RowDataPacket[]>(
+          'SELECT * FROM `Organization` ORDER BY id DESC'
+        )
+
+        return rows.map((r) => {
+          return {
+            id: r.id,
+            name: r.name,
+            address: r.address,
+            city: r.city,
+            zip: r.zip,
+            phone: r.phone,
+            email: r.email,
+            createdAt: r.createdAt,
+          } as Organization
+        })
+      },
+
+      async create(opts: { data: Partial<Organization> }) {
+        const data = opts.data || {}
+        const [res] = await pool.query<ResultSetHeader>(
+          'INSERT INTO `Organization` (name,address,city,zip,phone,email,createdAt) VALUES (?, ?, ?, ?, ?, ?, NOW())',
+          [
+            data.name ?? null,
+            data.address ?? null,
+            data.city ?? null,
+            data.zip ?? null,
+            data.phone ?? null,
+            data.email ?? null,
+          ]
+        )
+
+        const insertId = res.insertId
+        const [rows] = await pool.query<RowDataPacket[]>(
+          'SELECT * FROM `Organization` WHERE id = ? LIMIT 1',
+          [insertId]
+        )
+        const r = rows[0]
+
+        return {
+          id: r.id,
+          name: r.name,
+          address: r.address,
+          city: r.city,
+          zip: r.zip,
+          phone: r.phone,
+          email: r.email,
+          createdAt: r.createdAt,
+        } as Organization
+      },
     },
   }
 }

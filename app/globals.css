@@ -1,31 +1,17 @@
-@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --background: #f6f8fb; /* very light gray */
-  --surface: #ffffff; /* cards / panels */
-  --foreground: #0f1724; /* near-black text */
-  --muted: #6b7280; /* secondary text */
-  --border: #e6eef8; /* subtle borders */
-  --primary: #0078d4; /* Office-like blue */
-  --accent: #0b66ff;
-  --focus-ring: 0 0 0 4px rgba(0, 120, 212, 0.08);
+  --background: #f3f5fb;
+  --surface: #ffffff;
+  --foreground: #21253d;
+  --muted: #7d829b;
+  --border: rgba(31, 35, 78, 0.1);
+  --primary: #6f5ad6;
+  --accent: #ff5a96;
+  --focus-ring: 0 0 0 4px rgba(111, 90, 214, 0.12);
 }
-
-/* @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --surface: #0f1724;
-    --foreground: #e6eef8;
-    --muted: #9ca3af;
-    --border: #1f2937;
-    --primary: #0b66ff;
-    --accent: #0b66ff;
-  }
-} */
 
 html,
 body {
@@ -35,12 +21,30 @@ body {
 }
 
 body {
-  background-color: var(--background);
+  background: radial-gradient(
+      circle at top left,
+      rgba(255, 94, 149, 0.09),
+      transparent 24%
+    ),
+    radial-gradient(
+      circle at top right,
+      rgba(111, 90, 214, 0.08),
+      transparent 22%
+    ),
+    var(--background);
   color: var(--foreground);
-  font-family: 'Fira Code', ui-monospace, SFMono-Regular, Menlo, Monaco,
-    'Roboto Mono', 'Courier New', monospace;
+  font-family: var(--font-sans), sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-display), var(--font-sans), sans-serif;
 }
 
 /* Cards and panels */
@@ -53,11 +57,12 @@ body {
 
 /* Buttons */
 .btn-primary {
-  background-color: var(--primary);
+  background: linear-gradient(135deg, var(--primary), var(--accent));
   color: white;
   padding: 0.5rem 0.75rem;
-  border-radius: 6px;
+  border-radius: 999px;
   border: none;
+  box-shadow: 0 16px 30px rgba(111, 90, 214, 0.2);
 }
 .btn-primary:hover {
   filter: brightness(0.96);
@@ -65,10 +70,10 @@ body {
 
 /* Inputs */
 .input {
-  background: transparent;
+  background: rgba(255, 255, 255, 0.9);
   border: 1px solid var(--border);
-  padding: 0.5rem 0.6rem;
-  border-radius: 6px;
+  padding: 0.7rem 0.85rem;
+  border-radius: 14px;
   color: var(--foreground);
 }
 .input::placeholder {
