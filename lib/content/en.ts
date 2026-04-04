@@ -52,10 +52,12 @@ export const enContent = {
     },
     overview: {
       openTasks: 'Open Tasks',
-      openTasksSynced: (count: number) => `${count} tasks synced from /api/task.`,
+      openTasksSynced: (count: number) =>
+        `${count} tasks synced from /api/task.`,
       noTasksInDb: 'No tasks in DB yet.',
       users: 'Users',
-      usersConnectedEmails: (count: number) => `${count} users have connected emails.`,
+      usersConnectedEmails: (count: number) =>
+        `${count} users have connected emails.`,
       dueThisWeek: 'Due This Week',
       busiestLane: (section: string) => `${section} lane is the busiest.`,
       noTaskActivity: 'No task activity yet.',

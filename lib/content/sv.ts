@@ -52,10 +52,12 @@ export const svContent = {
     },
     overview: {
       openTasks: 'Öppna tasks',
-      openTasksSynced: (count: number) => `${count} tasks synkade från /api/task.`,
+      openTasksSynced: (count: number) =>
+        `${count} tasks synkade från /api/task.`,
       noTasksInDb: 'Inga tasks i databasen än.',
       users: 'Användare',
-      usersConnectedEmails: (count: number) => `${count} användare har kopplad e-post.`,
+      usersConnectedEmails: (count: number) =>
+        `${count} användare har kopplad e-post.`,
       dueThisWeek: 'Förfaller den här veckan',
       busiestLane: (section: string) => `${section}-kolumnen är mest belastad.`,
       noTaskActivity: 'Ingen task-aktivitet än.',
@@ -111,8 +113,7 @@ export const svContent = {
       `${city}-workspace är kopplad till live-data.`,
     workspaceSubFallback: 'Planering över review, godkännande och lansering.',
     errors: {
-      adminOnlySpaceSettings:
-        'Bara admins kan uppdatera space-inställningar.',
+      adminOnlySpaceSettings: 'Bara admins kan uppdatera space-inställningar.',
       selectSpaceFirst: 'Välj ett space innan du sparar inställningar.',
       spaceNameRequired: 'Space-namn är obligatoriskt.',
       saveSpaceSettingsFailed: 'Kunde inte spara space-inställningar.',
