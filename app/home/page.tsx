@@ -4,81 +4,31 @@ import { useEffect, useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import Loader from '../components/loader/loader'
 import useStore from '../../lib/store'
-import {
-  buildAuthHeaders,
-  buildJsonAuthHeaders,
-} from '../../lib/request-headers'
+import { buildJsonAuthHeaders } from '../../lib/request-headers'
 import CreateTaskModal from './_components/create-task-modal'
 import EditTaskModal from './_components/edit-task-modal'
 import HomeOverview from './_components/home-overview'
+import HomeQuickActions from './_components/home-quick-actions'
 import HomeSidebar from './_components/home-sidebar'
+import SpaceSettingsModal from './_components/space-settings-modal'
 import HomeTaskViews from './_components/home-task-views'
 import HomeTopbar from './_components/home-topbar'
+import useHomeTaskActions from './_hooks/use-home-task-actions'
+import useHomeWorkspaceData from './_hooks/use-home-workspace-data'
 import {
   type AssigneeOption,
   countDueThisWeek,
+  DEFAULT_SECTION_PALETTE,
+  DEFAULT_TASK_SECTIONS,
   getBusiestSection,
   groupedTasksFromApi,
+  normalizeSectionColorMap,
+  normalizeSectionList,
   type ApiTask,
-  type Organization,
   type Space,
-  type StoreUser,
-  type UiTask,
   type ViewMode,
 } from './model'
 import styles from './page.module.css'
-
-const DEFAULT_TASK_SECTIONS = ['Issues Found', 'Review', 'Ready']
-const DEFAULT_SECTION_PALETTE = [
-  '#ff5f98',
-  '#ffb000',
-  '#6259ff',
-  '#2dbdb8',
-  '#49a4ff',
-  '#a35cff',
-]
-
-function normalizeSectionList(raw: unknown): string[] {
-  if (!Array.isArray(raw)) return [...DEFAULT_TASK_SECTIONS]
-
-  const sections = raw
-    .filter((value): value is string => typeof value === 'string')
-    .map((value) => value.trim())
-    .filter(
-      (value, index, arr) => value.length > 0 && arr.indexOf(value) === index
-    )
-
-  return sections.length > 0
-    ? sections.slice(0, 32)
-    : [...DEFAULT_TASK_SECTIONS]
-}
-
-function normalizeSectionColorMap(
-  raw: unknown,
-  sections: string[]
-): Record<string, string> {
-  const defaults = sections.reduce((acc, section, index) => {
-    acc[section] =
-      DEFAULT_SECTION_PALETTE[index % DEFAULT_SECTION_PALETTE.length]
-    return acc
-  }, {} as Record<string, string>)
-
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
-    return defaults
-  }
-
-  const input = raw as Record<string, unknown>
-  return sections.reduce((acc, section) => {
-    const value = input[section]
-    if (typeof value === 'string' && /^#[0-9a-fA-F]{6}$/.test(value)) {
-      acc[section] = value.toLowerCase()
-      return acc
-    }
-
-    acc[section] = defaults[section]
-    return acc
-  }, {} as Record<string, string>)
-}
 
 export default function HomePage() {
   const router = useRouter()
@@ -89,42 +39,31 @@ export default function HomePage() {
   const organization = useStore((s) => s.organization)
   const setUser = useStore((s) => s.setUser)
   const setOrganization = useStore((s) => s.setOrganization)
-  const [checking, setChecking] = useState(true)
-  const [users, setUsers] = useState<StoreUser[]>([])
-  const [organizations, setOrganizations] = useState<Organization[]>([])
-  const [spaces, setSpaces] = useState<Space[]>([])
-  const [selectedSpaceId, setSelectedSpaceId] = useState<number | null>(null)
   const [tasks, setTasks] = useState<ApiTask[]>([])
   const [integrationError, setIntegrationError] = useState<string | null>(null)
-  const [taskActionBusyId, setTaskActionBusyId] = useState<number | null>(null)
-  const [selectedOrganizationId, setSelectedOrganizationId] = useState<
-    number | null
-  >(null)
-  const [createTaskBusy, setCreateTaskBusy] = useState(false)
-  const [createTaskModalOpen, setCreateTaskModalOpen] = useState(false)
-  const [editTaskModalOpen, setEditTaskModalOpen] = useState(false)
-  const [editTaskId, setEditTaskId] = useState<number | null>(null)
-  const [editTaskTitle, setEditTaskTitle] = useState('')
-  const [editTaskMeta, setEditTaskMeta] = useState('')
-  const [editTaskDueDate, setEditTaskDueDate] = useState('')
-  const [editTaskColor, setEditTaskColor] = useState('#716bff')
-  const [editTaskAssigneeIds, setEditTaskAssigneeIds] = useState<number[]>([])
-  const [editTaskSection, setEditTaskSection] = useState('Review')
-  const [editTaskPriority, setEditTaskPriority] = useState<
-    'High' | 'Normal' | 'Low'
-  >('Normal')
-  const [newTaskTitle, setNewTaskTitle] = useState('')
-  const [newTaskMeta, setNewTaskMeta] = useState('')
-  const [newTaskDueDate, setNewTaskDueDate] = useState('')
-  const [newTaskColor, setNewTaskColor] = useState('#716bff')
-  const [newTaskAssigneeIds, setNewTaskAssigneeIds] = useState<number[]>([])
-  const [newTaskSection, setNewTaskSection] = useState<string>('Review')
-  const [sectionOptions, setSectionOptions] = useState<string[]>([
-    ...DEFAULT_TASK_SECTIONS,
-  ])
-  const [sectionColors, setSectionColors] = useState<Record<string, string>>(
-    () => normalizeSectionColorMap(null, DEFAULT_TASK_SECTIONS)
-  )
+  const {
+    checking,
+    users,
+    organizations,
+    spaces,
+    selectedOrganizationId,
+    selectedSpaceId,
+    sectionOptions,
+    sectionColors,
+    setSpaces,
+    setSelectedSpaceId,
+    setSectionOptions,
+    setSectionColors,
+    loadTasksForSpace,
+  } = useHomeWorkspaceData({
+    token,
+    rehydrated,
+    setUser,
+    setOrganization,
+    setTasks,
+    setIntegrationError,
+    redirectToLogin: () => router.replace('/login'),
+  })
   const [spaceSettingsOpen, setSpaceSettingsOpen] = useState(false)
   const [spaceSettingsBusy, setSpaceSettingsBusy] = useState(false)
   const [spaceNameDraft, setSpaceNameDraft] = useState('')
@@ -135,11 +74,65 @@ export default function HomePage() {
   const [dragOverSectionName, setDragOverSectionName] = useState<string | null>(
     null
   )
-  const [newTaskPriority, setNewTaskPriority] = useState<
-    'High' | 'Normal' | 'Low'
-  >('Normal')
   const [viewMode, setViewMode] = useState<ViewMode>('list')
   const [searchQuery, setSearchQuery] = useState('')
+
+  const activeOrganizationId =
+    selectedOrganizationId ?? organization?.id ?? user?.organizationId ?? null
+
+  const {
+    taskActionBusyId,
+    createTaskBusy,
+    createTaskModalOpen,
+    editTaskModalOpen,
+    editTaskId,
+    editTaskTitle,
+    editTaskMeta,
+    editTaskDueDate,
+    editTaskColor,
+    editTaskAssigneeIds,
+    editTaskSection,
+    editTaskPriority,
+    newTaskTitle,
+    newTaskMeta,
+    newTaskDueDate,
+    newTaskColor,
+    newTaskAssigneeIds,
+    newTaskSection,
+    newTaskPriority,
+    setCreateTaskModalOpen,
+    setEditTaskModalOpen,
+    setEditTaskTitle,
+    setEditTaskMeta,
+    setEditTaskDueDate,
+    setEditTaskColor,
+    setEditTaskAssigneeIds,
+    setEditTaskSection,
+    setEditTaskPriority,
+    setNewTaskTitle,
+    setNewTaskMeta,
+    setNewTaskDueDate,
+    setNewTaskColor,
+    setNewTaskAssigneeIds,
+    setNewTaskSection,
+    setNewTaskPriority,
+    handleOpenTask,
+    saveEditedTask,
+    handleTogglePriority,
+    handleMoveTask,
+    handleAssigneesChange,
+    deleteTaskOnServer,
+    createTaskOnServer,
+    archiveTaskOnServer,
+  } = useHomeTaskActions({
+    token,
+    userRole: user?.role,
+    organizationId: activeOrganizationId,
+    selectedSpaceId,
+    tasks,
+    setTasks,
+    setIntegrationError,
+  })
 
   function parseViewMode(value: string | null): ViewMode {
     if (value === 'board' || value === 'box') return value
@@ -154,336 +147,6 @@ export default function HomePage() {
     )
     params.set('view', next)
     router.replace(`${pathname}?${params.toString()}`)
-  }
-
-  async function updateTaskOnServer(
-    taskId: number,
-    payload: Partial<
-      Pick<
-        ApiTask,
-        | 'title'
-        | 'meta'
-        | 'dueDate'
-        | 'archivedAt'
-        | 'priority'
-        | 'section'
-        | 'assigneeIds'
-        | 'color'
-      >
-    >,
-    options?: {
-      optimisticUpdate?: (tasks: ApiTask[]) => ApiTask[]
-    }
-  ): Promise<boolean> {
-    let rollbackTasks: ApiTask[] | null = null
-
-    if (options?.optimisticUpdate) {
-      setTasks((prev) => {
-        rollbackTasks = prev
-        return options.optimisticUpdate!(prev)
-      })
-    }
-
-    setTaskActionBusyId(taskId)
-    setIntegrationError(null)
-    try {
-      const res = await fetch(`/api/task/${taskId}`, {
-        method: 'PUT',
-        headers: buildJsonAuthHeaders(token),
-        body: JSON.stringify(payload),
-      })
-
-      if (!res.ok) {
-        const data = await res.json().catch(() => null)
-        if (rollbackTasks) {
-          setTasks(rollbackTasks)
-        }
-        setIntegrationError(data?.error || 'Kunde inte uppdatera task.')
-        return false
-      }
-
-      const updated = (await res.json()) as ApiTask
-      setTasks((prev) => prev.map((t) => (t.id === taskId ? updated : t)))
-      return true
-    } catch (e) {
-      if (rollbackTasks) {
-        setTasks(rollbackTasks)
-      }
-      console.error('update task error', e)
-      setIntegrationError('Kunde inte uppdatera task.')
-      return false
-    } finally {
-      setTaskActionBusyId(null)
-    }
-  }
-
-  function toInputDate(value: string | null): string {
-    if (!value) return ''
-    const d = new Date(value)
-    if (Number.isNaN(d.getTime())) return ''
-    return d.toISOString().slice(0, 10)
-  }
-
-  function handleOpenTask(task: UiTask) {
-    if (user?.role === 'guest') return
-    if (!task.id) return
-
-    const source = tasks.find((item) => item.id === task.id)
-    if (!source) return
-
-    setEditTaskId(source.id)
-    setEditTaskTitle(source.title)
-    setEditTaskMeta(source.meta || '')
-    setEditTaskDueDate(toInputDate(source.dueDate))
-    setEditTaskColor(source.color || '#716bff')
-    setEditTaskAssigneeIds(source.assigneeIds)
-    setEditTaskSection(source.section)
-    setEditTaskPriority(source.priority)
-    setEditTaskModalOpen(true)
-  }
-
-  async function saveEditedTask() {
-    if (!editTaskId) return
-
-    const title = editTaskTitle.trim()
-    if (!title) {
-      setIntegrationError('Task title is required.')
-      return
-    }
-
-    const ok = await updateTaskOnServer(editTaskId, {
-      title,
-      meta: editTaskMeta.trim() || null,
-      dueDate: editTaskDueDate || null,
-      color: editTaskColor,
-      section: editTaskSection,
-      priority: editTaskPriority,
-      assigneeIds: editTaskAssigneeIds,
-    })
-
-    if (ok) {
-      setEditTaskModalOpen(false)
-    }
-  }
-
-  function handleTogglePriority(task: UiTask) {
-    if (!task.id) return
-
-    const nextPriority =
-      task.priority === 'High'
-        ? 'Normal'
-        : task.priority === 'Normal'
-        ? 'Low'
-        : 'High'
-
-    void updateTaskOnServer(task.id, {
-      priority: nextPriority,
-    })
-  }
-
-  function handleMoveTask(task: UiTask, targetSection: string) {
-    if (!task.id) return
-    if (task.section === targetSection) return
-    void updateTaskOnServer(
-      task.id,
-      { section: targetSection },
-      {
-        optimisticUpdate: (prev) =>
-          prev.map((item) =>
-            item.id === task.id ? { ...item, section: targetSection } : item
-          ),
-      }
-    )
-  }
-
-  function handleAssigneesChange(task: UiTask, assigneeId: number | null) {
-    if (!task.id) return
-    const nextAssigneeIds = assigneeId !== null ? [assigneeId] : []
-    void updateTaskOnServer(
-      task.id,
-      {
-        assigneeIds: nextAssigneeIds,
-      },
-      {
-        optimisticUpdate: (prev) =>
-          prev.map((item) =>
-            item.id === task.id
-              ? { ...item, assigneeIds: nextAssigneeIds }
-              : item
-          ),
-      }
-    )
-  }
-
-  async function deleteTaskOnServer(taskId: number): Promise<boolean> {
-    if (user?.role === 'guest') {
-      setIntegrationError('Guests can only read tasks.')
-      return false
-    }
-
-    setTaskActionBusyId(taskId)
-    setIntegrationError(null)
-    try {
-      const res = await fetch(`/api/task/${taskId}`, {
-        method: 'DELETE',
-        headers: buildAuthHeaders(token),
-      })
-      if (!res.ok) {
-        const data = await res.json().catch(() => null)
-        setIntegrationError(data?.error || 'Kunde inte ta bort task.')
-        return false
-      }
-
-      setTasks((prev) => prev.filter((t) => t.id !== taskId))
-      return true
-    } catch (e) {
-      console.error('delete task error', e)
-      setIntegrationError('Kunde inte ta bort task.')
-      return false
-    } finally {
-      setTaskActionBusyId(null)
-    }
-  }
-
-  async function createTaskOnServer() {
-    if (user?.role === 'guest') {
-      setIntegrationError('Guests can only read tasks.')
-      return
-    }
-
-    const title = newTaskTitle.trim()
-    if (!title) {
-      setIntegrationError('Task title is required.')
-      return
-    }
-
-    setCreateTaskBusy(true)
-    setIntegrationError(null)
-
-    try {
-      const res = await fetch('/api/task', {
-        method: 'POST',
-        headers: buildJsonAuthHeaders(token),
-        body: JSON.stringify({
-          title,
-          meta: newTaskMeta.trim() || null,
-          dueDate: newTaskDueDate || null,
-          priority: newTaskPriority,
-          section: newTaskSection,
-          assigneeIds: newTaskAssigneeIds,
-          color: newTaskColor,
-          organizationId: user?.organizationId ?? organization?.id ?? null,
-          spaceId: selectedSpaceId,
-        }),
-      })
-
-      if (!res.ok) {
-        const data = await res.json().catch(() => null)
-        setIntegrationError(data?.error || 'Kunde inte skapa task.')
-        return
-      }
-
-      const created = (await res.json()) as ApiTask
-      setTasks((prev) => [created, ...prev])
-      setNewTaskTitle('')
-      setNewTaskMeta('')
-      setNewTaskDueDate('')
-      setNewTaskColor('#716bff')
-      setNewTaskAssigneeIds([])
-      setNewTaskSection('Review')
-      setNewTaskPriority('Normal')
-      setCreateTaskModalOpen(false)
-    } catch (e) {
-      console.error('create task error', e)
-      setIntegrationError('Kunde inte skapa task.')
-    } finally {
-      setCreateTaskBusy(false)
-    }
-  }
-
-  async function archiveTaskOnServer(taskId: number): Promise<boolean> {
-    return updateTaskOnServer(
-      taskId,
-      { archivedAt: new Date().toISOString() },
-      {
-        optimisticUpdate: (prev) => prev.filter((task) => task.id !== taskId),
-      }
-    )
-  }
-
-  async function loadTasksForSpace(
-    organizationId: number | null,
-    spaceId: number | null
-  ) {
-    try {
-      const url = organizationId
-        ? `/api/task?organizationId=${organizationId}${
-            spaceId ? `&spaceId=${spaceId}` : ''
-          }`
-        : '/api/task'
-      const res = await fetch(url, { headers: buildAuthHeaders(token) })
-
-      if (!res.ok) {
-        const data = await res.json().catch(() => null)
-        setIntegrationError(data?.error || 'Kunde inte ladda tasks for space.')
-        return
-      }
-
-      const taskData = (await res.json()) as ApiTask[]
-      setTasks(Array.isArray(taskData) ? taskData : [])
-    } catch (e) {
-      console.error('load tasks for space error', e)
-      setIntegrationError('Kunde inte ladda tasks for space.')
-    }
-  }
-
-  async function loadSpacesForOrganization(organizationId: number | null) {
-    if (!organizationId) {
-      setSpaces([])
-      setSelectedSpaceId(null)
-      setSectionOptions([...DEFAULT_TASK_SECTIONS])
-      setSectionColors(normalizeSectionColorMap(null, DEFAULT_TASK_SECTIONS))
-      return
-    }
-
-    try {
-      const res = await fetch(`/api/space?organizationId=${organizationId}`, {
-        headers: buildAuthHeaders(token),
-      })
-      if (!res.ok) {
-        setSpaces([])
-        setSelectedSpaceId(null)
-        setSectionOptions([...DEFAULT_TASK_SECTIONS])
-        setSectionColors(normalizeSectionColorMap(null, DEFAULT_TASK_SECTIONS))
-        return
-      }
-
-      const data = (await res.json()) as Space[]
-      const nextSpaces = Array.isArray(data) ? data : []
-      setSpaces(nextSpaces)
-
-      const nextSelectedSpaceId = nextSpaces[0]?.id ?? null
-      setSelectedSpaceId(nextSelectedSpaceId)
-
-      const activeSpace = nextSpaces.find(
-        (space) => space.id === nextSelectedSpaceId
-      )
-      const nextSections = normalizeSectionList(activeSpace?.taskSections)
-      const nextColors = normalizeSectionColorMap(
-        activeSpace?.taskSectionColors,
-        nextSections
-      )
-
-      setSectionOptions(nextSections)
-      setSectionColors(nextColors)
-      await loadTasksForSpace(organizationId, nextSelectedSpaceId)
-    } catch (e) {
-      console.error('load spaces for organization error', e)
-      setSpaces([])
-      setSelectedSpaceId(null)
-      setSectionOptions([...DEFAULT_TASK_SECTIONS])
-      setSectionColors(normalizeSectionColorMap(null, DEFAULT_TASK_SECTIONS))
-    }
   }
 
   async function saveSectionsForOrganization() {
@@ -611,127 +274,16 @@ export default function HomePage() {
     })
   }
 
-  /* eslint-disable react-hooks/exhaustive-deps */
-  useEffect(() => {
-    let mounted = true
-
-    async function verify() {
-      try {
-        if (!rehydrated) return
-        if (!token) {
-          router.replace('/login')
-          return
-        }
-
-        const res = await fetch('/api/verify', {
-          method: 'GET',
-          headers: { Authorization: `Bearer ${token}` },
-        })
-
-        if (!res.ok) {
-          router.replace('/login')
-          return
-        }
-
-        const verifyData = await res.json().catch(() => null)
-        const verifiedUser =
-          verifyData && typeof verifyData === 'object' && 'user' in verifyData
-            ? (verifyData.user as StoreUser)
-            : null
-
-        let activeOrganizationId: number | null = null
-
-        if (verifiedUser?.id) {
-          setUser(verifiedUser)
-
-          if (verifiedUser.organizationId) {
-            setSelectedOrganizationId(verifiedUser.organizationId)
-            activeOrganizationId = verifiedUser.organizationId
-            const orgRes = await fetch(
-              `/api/organization/${verifiedUser.organizationId}`,
-              { headers: buildAuthHeaders(token) }
-            )
-            if (orgRes.ok) {
-              const orgData = (await orgRes.json()) as Organization
-              setOrganization(orgData)
-            } else {
-              setOrganization(null)
-            }
-          } else {
-            setOrganization(null)
-          }
-        }
-
-        const [usersRes, organizationsRes, tasksRes] = await Promise.all([
-          fetch('/api/user', { headers: buildAuthHeaders(token) }),
-          fetch('/api/organization', { headers: buildAuthHeaders(token) }),
-          fetch(
-            activeOrganizationId
-              ? `/api/task?organizationId=${activeOrganizationId}`
-              : '/api/task',
-            { headers: buildAuthHeaders(token) }
-          ),
-        ])
-
-        if (usersRes.ok) {
-          const usersData = (await usersRes.json()) as StoreUser[]
-          setUsers(Array.isArray(usersData) ? usersData : [])
-        }
-
-        if (organizationsRes.ok) {
-          const organizationsData =
-            (await organizationsRes.json()) as Organization[]
-          setOrganizations(
-            Array.isArray(organizationsData) ? organizationsData : []
-          )
-        }
-
-        if (tasksRes.ok) {
-          const taskData = (await tasksRes.json()) as ApiTask[]
-          setTasks(Array.isArray(taskData) ? taskData : [])
-        }
-
-        if (verifiedUser?.organizationId) {
-          await loadSpacesForOrganization(verifiedUser.organizationId)
-        } else {
-          setSpaces([])
-          setSelectedSpaceId(null)
-          setSectionOptions([...DEFAULT_TASK_SECTIONS])
-          setSectionColors(
-            normalizeSectionColorMap(null, DEFAULT_TASK_SECTIONS)
-          )
-        }
-
-        if (!usersRes.ok || !organizationsRes.ok || !tasksRes.ok) {
-          setIntegrationError('Viss dashboard-data kunde inte laddas.')
-        }
-
-        if (mounted) setChecking(false)
-      } catch (e) {
-        console.error('verify error', e)
-        setIntegrationError('Kunde inte ladda dashboard-data.')
-        router.replace('/login')
-      }
-    }
-
-    void verify()
-
-    return () => {
-      mounted = false
-    }
-  }, [router, token, rehydrated, setUser, setOrganization])
-  /* eslint-enable react-hooks/exhaustive-deps */
-
   useEffect(() => {
     setNewTaskSection((prev) => {
       if (sectionOptions.includes(prev)) return prev
       return sectionOptions[0] || 'Review'
     })
-  }, [sectionOptions])
+  }, [sectionOptions, setNewTaskSection])
 
   useEffect(() => {
     setSectionColors((prev) => normalizeSectionColorMap(prev, sectionOptions))
-  }, [sectionOptions])
+  }, [sectionOptions, setSectionColors])
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -747,9 +299,6 @@ export default function HomePage() {
       </main>
     )
   }
-
-  const activeOrganizationId =
-    selectedOrganizationId ?? organization?.id ?? user?.organizationId ?? null
 
   const activeSpace =
     spaces.find((space) => space.id === selectedSpaceId) || spaces[0] || null
@@ -917,26 +466,15 @@ export default function HomePage() {
           }}
         />
 
-        <section className={styles.createTaskQuickAction}>
-          <button
-            className={styles.createTaskButton}
-            type="button"
-            disabled={!canWriteTaskData}
-            onClick={() => {
-              setIntegrationError(null)
-              setCreateTaskModalOpen(true)
-            }}
-          >
-            + New Task
-          </button>
-          <input
-            className={`${styles.createInput} ${styles.quickSearchInput}`}
-            type="search"
-            value={searchQuery}
-            placeholder="Search tasks, meta, section or assignee"
-            onChange={(event) => setSearchQuery(event.target.value)}
-          />
-        </section>
+        <HomeQuickActions
+          canWriteTaskData={canWriteTaskData}
+          searchQuery={searchQuery}
+          onNewTask={() => {
+            setIntegrationError(null)
+            setCreateTaskModalOpen(true)
+          }}
+          onSearchChange={setSearchQuery}
+        />
 
         <HomeOverview
           taskCount={tasks.length}
@@ -1011,158 +549,40 @@ export default function HomePage() {
           onColorChange={setEditTaskColor}
         />
 
-        {spaceSettingsOpen ? (
-          <section
-            className={styles.modalBackdrop}
-            onClick={() => {
-              if (!spaceSettingsBusy) setSpaceSettingsOpen(false)
-            }}
-          >
-            <div
-              className={styles.modalCard}
-              onClick={(event) => event.stopPropagation()}
-            >
-              <div className={styles.modalHeader}>
-                <div>
-                  <div className={styles.modalTitle}>Space Settings</div>
-                  <div className={styles.modalSub}>
-                    Manage custom task columns for this space
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  className={styles.modalClose}
-                  disabled={spaceSettingsBusy}
-                  onClick={() => setSpaceSettingsOpen(false)}
-                >
-                  Close
-                </button>
-              </div>
-
-              <div className={styles.settingsRow}>
-                <input
-                  className={styles.createInput}
-                  type="text"
-                  placeholder="Space name"
-                  value={spaceNameDraft}
-                  disabled={user?.role !== 'admin' || spaceSettingsBusy}
-                  onChange={(event) => setSpaceNameDraft(event.target.value)}
-                />
-              </div>
-
-              <div className={styles.settingsRow}>
-                <input
-                  className={styles.createInput}
-                  type="text"
-                  placeholder="Add new column (e.g. QA, Done, Blocked)"
-                  value={newSectionName}
-                  onChange={(event) => setNewSectionName(event.target.value)}
-                  onKeyDown={(event) => {
-                    if (event.key === 'Enter') {
-                      event.preventDefault()
-                      addSectionToDraft()
-                    }
-                  }}
-                />
-                <button
-                  className={styles.taskActionBtn}
-                  type="button"
-                  onClick={addSectionToDraft}
-                  disabled={spaceSettingsBusy}
-                >
-                  Add
-                </button>
-              </div>
-
-              <div className={styles.settingsChipRow}>
-                {sectionOptions.map((section) => (
-                  <div
-                    className={`${styles.settingsChip} ${
-                      draggingSectionName === section
-                        ? styles.settingsChipDragging
-                        : ''
-                    } ${
-                      dragOverSectionName === section
-                        ? styles.settingsChipDropTarget
-                        : ''
-                    }`}
-                    key={section}
-                    draggable={!spaceSettingsBusy}
-                    onDragStart={(event) => {
-                      setDraggingSectionName(section)
-                      event.dataTransfer.effectAllowed = 'move'
-                      event.dataTransfer.setData('text/plain', section)
-                    }}
-                    onDragOver={(event) => {
-                      event.preventDefault()
-                      if (!spaceSettingsBusy) {
-                        setDragOverSectionName(section)
-                      }
-                    }}
-                    onDragLeave={() => {
-                      setDragOverSectionName((prev) =>
-                        prev === section ? null : prev
-                      )
-                    }}
-                    onDrop={(event) => {
-                      event.preventDefault()
-                      const draggedSection =
-                        event.dataTransfer.getData('text/plain')
-                      reorderSectionDraft(draggedSection, section)
-                      setDraggingSectionName(null)
-                      setDragOverSectionName(null)
-                    }}
-                    onDragEnd={() => {
-                      setDraggingSectionName(null)
-                      setDragOverSectionName(null)
-                    }}
-                  >
-                    <span>{section}</span>
-                    <input
-                      type="color"
-                      className={styles.settingsColorInput}
-                      value={sectionColors[section] || '#6259ff'}
-                      onChange={(event) =>
-                        updateSectionColor(section, event.target.value)
-                      }
-                      disabled={spaceSettingsBusy}
-                      title={`Color for ${section}`}
-                    />
-                    <button
-                      type="button"
-                      className={styles.settingsChipRemove}
-                      onClick={() => removeSectionFromDraft(section)}
-                      disabled={spaceSettingsBusy}
-                    >
-                      x
-                    </button>
-                  </div>
-                ))}
-              </div>
-
-              <div className={styles.modalActions}>
-                <button
-                  className={styles.modalCancel}
-                  type="button"
-                  disabled={spaceSettingsBusy}
-                  onClick={() => setSpaceSettingsOpen(false)}
-                >
-                  Cancel
-                </button>
-                <button
-                  className={styles.createTaskButton}
-                  type="button"
-                  disabled={spaceSettingsBusy}
-                  onClick={() => {
-                    void saveSectionsForOrganization()
-                  }}
-                >
-                  {spaceSettingsBusy ? 'Saving...' : 'Save settings'}
-                </button>
-              </div>
-            </div>
-          </section>
-        ) : null}
+        <SpaceSettingsModal
+          open={spaceSettingsOpen}
+          spaceSettingsBusy={spaceSettingsBusy}
+          isAdmin={user?.role === 'admin'}
+          spaceNameDraft={spaceNameDraft}
+          newSectionName={newSectionName}
+          sectionOptions={sectionOptions}
+          sectionColors={sectionColors}
+          draggingSectionName={draggingSectionName}
+          dragOverSectionName={dragOverSectionName}
+          onClose={() => setSpaceSettingsOpen(false)}
+          onSpaceNameChange={setSpaceNameDraft}
+          onNewSectionNameChange={setNewSectionName}
+          onAddSection={addSectionToDraft}
+          onDragStart={setDraggingSectionName}
+          onDragOver={setDragOverSectionName}
+          onDragLeave={(section) => {
+            setDragOverSectionName((prev) => (prev === section ? null : prev))
+          }}
+          onDrop={(draggedSection, targetSection) => {
+            reorderSectionDraft(draggedSection, targetSection)
+            setDraggingSectionName(null)
+            setDragOverSectionName(null)
+          }}
+          onDragEnd={() => {
+            setDraggingSectionName(null)
+            setDragOverSectionName(null)
+          }}
+          onUpdateSectionColor={updateSectionColor}
+          onRemoveSection={removeSectionFromDraft}
+          onSave={() => {
+            void saveSectionsForOrganization()
+          }}
+        />
 
         {integrationError ? (
           <section className={styles.board}>

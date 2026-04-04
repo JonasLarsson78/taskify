@@ -4,6 +4,9 @@ import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import styles from './page.module.css'
 import useStore from '../../lib/store'
+import { buildAuthHeaders } from '../../lib/request-headers'
+import LoginShowcase from './_components/login-showcase'
+import LoginForm from './_components/login-form'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -36,14 +39,17 @@ export default function LoginPage() {
           if (data.user) useStore.getState().setUser(data.user)
           if (data.user?.organizationId) {
             const resOrg = await fetch(
-              `/api/organization/${data.user.organizationId}`
+              `/api/organization/${data.user.organizationId}`,
+              { headers: buildAuthHeaders(data.token) }
             )
             if (resOrg.ok) {
               const orgData = await resOrg.json()
               useStore.getState().setOrganization(orgData)
             } else {
-              console.error('Failed to fetch organization data')
+              useStore.getState().setOrganization(null)
             }
+          } else {
+            useStore.getState().setOrganization(null)
           }
         } catch {}
       }
@@ -58,78 +64,16 @@ export default function LoginPage() {
 
   return (
     <main className={styles.shell}>
-      <section className={styles.showcase}>
-        <div className={styles.brandRow}>
-          <span className={styles.brandMark} />
-          <div>
-            <div className={styles.brandTitle}>Taskify</div>
-            <div className={styles.brandSub}>
-              Workspace for high velocity teams
-            </div>
-          </div>
-        </div>
-
-        <h1 className={styles.headline}>
-          Planera smartare. Leverera snabbare.
-        </h1>
-        <p className={styles.lead}>
-          Samla goals, tasks och execution i ett tydligt flode for hela teamet.
-        </p>
-
-        <div className={styles.kpiGrid}>
-          <article className={styles.kpiCard}>
-            <div className={styles.kpiLabel}>Active Projects</div>
-            <div className={styles.kpiValue}>12</div>
-          </article>
-          <article className={styles.kpiCard}>
-            <div className={styles.kpiLabel}>Tasks Closed</div>
-            <div className={styles.kpiValue}>184</div>
-          </article>
-          <article className={styles.kpiCard}>
-            <div className={styles.kpiLabel}>Cycle Time</div>
-            <div className={styles.kpiValue}>-28%</div>
-          </article>
-        </div>
-      </section>
-
-      <section className={styles.authPanel}>
-        <form onSubmit={handleSubmit} className={styles.form}>
-          <h2 className={styles.title}>Logga in</h2>
-          <p className={styles.subtitle}>
-            Fortsatt till din workspace-oversikt
-          </p>
-
-          {error && <div className={styles.error}>{error}</div>}
-
-          <label className={styles.label}>
-            <div className={styles.labelTitle}>E-post</div>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className={styles.input}
-              placeholder="name@company.com"
-            />
-          </label>
-
-          <label className={styles.label}>
-            <div className={styles.labelTitle}>Losenord</div>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className={styles.input}
-              placeholder="••••••••"
-            />
-          </label>
-
-          <button type="submit" disabled={loading} className={styles.submit}>
-            {loading ? 'Loggar in...' : 'Logga in'}
-          </button>
-        </form>
-      </section>
+      <LoginShowcase />
+      <LoginForm
+        email={email}
+        password={password}
+        loading={loading}
+        error={error}
+        onChangeEmail={setEmail}
+        onChangePassword={setPassword}
+        onSubmit={handleSubmit}
+      />
     </main>
   )
 }

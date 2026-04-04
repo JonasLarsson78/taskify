@@ -66,6 +66,17 @@ export type AssigneeOption = {
   label: string
 }
 
+export const DEFAULT_TASK_SECTIONS = ['Issues Found', 'Review', 'Ready']
+
+export const DEFAULT_SECTION_PALETTE = [
+  '#ff5f98',
+  '#ffb000',
+  '#6259ff',
+  '#2dbdb8',
+  '#49a4ff',
+  '#a35cff',
+]
+
 const DONE_SECTIONS = new Set([
   'ready',
   'done',
@@ -84,6 +95,48 @@ export function getInitial(
 ): string {
   const v = value?.trim()
   return v && v.length > 0 ? v[0]!.toUpperCase() : fallback
+}
+
+export function normalizeSectionList(raw: unknown): string[] {
+  if (!Array.isArray(raw)) return [...DEFAULT_TASK_SECTIONS]
+
+  const sections = raw
+    .filter((value): value is string => typeof value === 'string')
+    .map((value) => value.trim())
+    .filter(
+      (value, index, arr) => value.length > 0 && arr.indexOf(value) === index
+    )
+
+  return sections.length > 0
+    ? sections.slice(0, 32)
+    : [...DEFAULT_TASK_SECTIONS]
+}
+
+export function normalizeSectionColorMap(
+  raw: unknown,
+  sections: string[]
+): Record<string, string> {
+  const defaults = sections.reduce((acc, section, index) => {
+    acc[section] =
+      DEFAULT_SECTION_PALETTE[index % DEFAULT_SECTION_PALETTE.length]
+    return acc
+  }, {} as Record<string, string>)
+
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
+    return defaults
+  }
+
+  const input = raw as Record<string, unknown>
+  return sections.reduce((acc, section) => {
+    const value = input[section]
+    if (typeof value === 'string' && /^#[0-9a-fA-F]{6}$/.test(value)) {
+      acc[section] = value.toLowerCase()
+      return acc
+    }
+
+    acc[section] = defaults[section]
+    return acc
+  }, {} as Record<string, string>)
 }
 
 export function formatDueDate(raw: string | null): string {

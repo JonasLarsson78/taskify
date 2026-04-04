@@ -1,16 +1,12 @@
 'use client'
 
-import { useEffect, useState } from 'react'
 import { marked } from 'marked'
 import { useRouter } from 'next/navigation'
 import Loader from '../components/loader/loader'
-import {
-  buildAuthHeaders,
-  buildJsonAuthHeaders,
-} from '../../lib/request-headers'
 import useStore from '../../lib/store'
-import type { ApiTask, Organization, StoreUser } from '../home/model'
 import styles from '../home/page.module.css'
+import ArchiveTaskGrid from './_components/archive-task-grid'
+import useArchivePage from './_hooks/use-archive-page'
 
 function getTagTextColor(background: string): string {
   const match = /^#?([0-9a-fA-F]{6})$/.exec(background.trim())
@@ -50,151 +46,20 @@ export default function ArchivePage() {
   const router = useRouter()
   const token = useStore((state) => state.token)
   const rehydrated = useStore((state) => state.rehydrated)
-  const [checking, setChecking] = useState(true)
-  const [organization, setOrganization] = useState<Organization | null>(null)
-  const [tasks, setTasks] = useState<ApiTask[]>([])
-  const [integrationError, setIntegrationError] = useState<string | null>(null)
-  const [busyTaskId, setBusyTaskId] = useState<number | null>(null)
-  const [currentUser, setCurrentUser] = useState<StoreUser | null>(null)
-
-  async function updateArchivedTask(taskId: number, archivedAt: string | null) {
-    setBusyTaskId(taskId)
-    setIntegrationError(null)
-
-    try {
-      if (currentUser?.role === 'guest') {
-        setIntegrationError('Guests can only read archived tasks.')
-        return false
-      }
-
-      const response = await fetch(`/api/task/${taskId}`, {
-        method: 'PUT',
-        headers: buildJsonAuthHeaders(token),
-        body: JSON.stringify({ archivedAt }),
-      })
-
-      if (!response.ok) {
-        const data = await response.json().catch(() => null)
-        setIntegrationError(data?.error || 'Failed to update archived task.')
-        return false
-      }
-
-      setTasks((prev) => prev.filter((task) => task.id !== taskId))
-      return true
-    } catch (error) {
-      console.error('archive update error', error)
-      setIntegrationError('Failed to update archived task.')
-      return false
-    } finally {
-      setBusyTaskId(null)
-    }
-  }
-
-  async function deleteArchivedTask(taskId: number) {
-    setBusyTaskId(taskId)
-    setIntegrationError(null)
-
-    try {
-      if (currentUser?.role === 'guest') {
-        setIntegrationError('Guests can only read archived tasks.')
-        return false
-      }
-
-      const response = await fetch(`/api/task/${taskId}`, {
-        method: 'DELETE',
-        headers: buildAuthHeaders(token),
-      })
-      if (!response.ok) {
-        const data = await response.json().catch(() => null)
-        setIntegrationError(data?.error || 'Failed to delete archived task.')
-        return false
-      }
-
-      setTasks((prev) => prev.filter((task) => task.id !== taskId))
-      return true
-    } catch (error) {
-      console.error('archive delete error', error)
-      setIntegrationError('Failed to delete archived task.')
-      return false
-    } finally {
-      setBusyTaskId(null)
-    }
-  }
-
-  useEffect(() => {
-    let mounted = true
-
-    async function loadPage() {
-      try {
-        if (!rehydrated) return
-        if (!token) {
-          router.replace('/login')
-          return
-        }
-
-        const verifyResponse = await fetch('/api/verify', {
-          method: 'GET',
-          headers: { Authorization: `Bearer ${token}` },
-        })
-
-        if (!verifyResponse.ok) {
-          router.replace('/login')
-          return
-        }
-
-        const verifyData = await verifyResponse.json().catch(() => null)
-        const verifiedUser =
-          verifyData && typeof verifyData === 'object' && 'user' in verifyData
-            ? (verifyData.user as StoreUser)
-            : null
-
-        if (mounted) {
-          setCurrentUser(verifiedUser)
-        }
-
-        const organizationId = verifiedUser?.organizationId ?? null
-        if (organizationId) {
-          const organizationResponse = await fetch(
-            `/api/organization/${organizationId}`,
-            { headers: buildAuthHeaders(token) }
-          )
-          if (organizationResponse.ok) {
-            const organizationData =
-              (await organizationResponse.json()) as Organization
-            if (mounted) setOrganization(organizationData)
-          }
-        }
-
-        const url = organizationId
-          ? `/api/task?organizationId=${organizationId}&archived=only`
-          : '/api/task?archived=only'
-
-        const taskResponse = await fetch(url, {
-          headers: buildAuthHeaders(token),
-        })
-        if (!taskResponse.ok) {
-          const data = await taskResponse.json().catch(() => null)
-          throw new Error(data?.error || 'Failed to load archived tasks')
-        }
-
-        const taskData = (await taskResponse.json()) as ApiTask[]
-        if (mounted) {
-          setTasks(Array.isArray(taskData) ? taskData : [])
-        }
-      } catch (error) {
-        console.error('archive page load error', error)
-        if (mounted) setIntegrationError('Failed to load archive.')
-      } finally {
-        if (mounted) setChecking(false)
-      }
-    }
-
-    void loadPage()
-
-    return () => {
-      mounted = false
-    }
-  }, [rehydrated, router, token])
+  const {
+    checking,
+    organization,
+    tasks,
+    integrationError,
+    busyTaskId,
+    currentUser,
+    updateArchivedTask,
+    deleteArchivedTask,
+  } = useArchivePage({
+    token,
+    rehydrated,
+    redirectToLogin: () => router.replace('/login'),
+  })
 
   if (checking) {
     return (
@@ -238,70 +103,20 @@ export default function ArchivePage() {
         ) : null}
 
         <section className={styles.board}>
-          {tasks.length === 0 ? (
-            <div className={styles.taskMeta}>No archived tasks found.</div>
-          ) : (
-            <div className={styles.taskTiles}>
-              {tasks.map((task) => (
-                <article className={styles.taskTile} key={task.id}>
-                  <div
-                    className={styles.taskTileSection}
-                    style={{
-                      background: task.color || '#716bff',
-                      color: getTagTextColor(task.color || '#716bff'),
-                    }}
-                  >
-                    {task.section}
-                  </div>
-                  <div className={styles.taskViewCardTitle}>{task.title}</div>
-                  {task.meta ? (
-                    <div
-                      className={`${styles.taskMeta} ${styles.archiveTaskMeta}`}
-                      dangerouslySetInnerHTML={{
-                        __html: markdownToHtml(task.meta),
-                      }}
-                    />
-                  ) : null}
-                  <div className={styles.taskViewMetaRow}>
-                    Archived: {formatDate(task.archivedAt)}
-                  </div>
-                  <div className={styles.taskViewMetaRow}>
-                    Due: {formatDate(task.dueDate)}
-                  </div>
-                  <div className={styles.taskViewMetaRow}>
-                    Priority: {task.priority}
-                  </div>
-
-                  <div className={styles.taskActions}>
-                    <button
-                      className={styles.taskActionBtn}
-                      type="button"
-                      disabled={
-                        busyTaskId === task.id || currentUser?.role === 'guest'
-                      }
-                      onClick={() => {
-                        void updateArchivedTask(task.id, null)
-                      }}
-                    >
-                      {busyTaskId === task.id ? 'Working...' : 'Restore'}
-                    </button>
-                    <button
-                      className={`${styles.taskActionBtn} ${styles.taskActionDanger}`}
-                      type="button"
-                      disabled={
-                        busyTaskId === task.id || currentUser?.role === 'guest'
-                      }
-                      onClick={() => {
-                        void deleteArchivedTask(task.id)
-                      }}
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </article>
-              ))}
-            </div>
-          )}
+          <ArchiveTaskGrid
+            tasks={tasks}
+            busyTaskId={busyTaskId}
+            currentUser={currentUser}
+            formatDate={formatDate}
+            getTagTextColor={getTagTextColor}
+            markdownToHtml={markdownToHtml}
+            onRestore={(taskId) => {
+              void updateArchivedTask(taskId, null)
+            }}
+            onDelete={(taskId) => {
+              void deleteArchivedTask(taskId)
+            }}
+          />
         </section>
       </section>
     </main>
