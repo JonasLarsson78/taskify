@@ -452,6 +452,7 @@ export default function HomePage() {
         onOpenLog={() => router.push('/log')}
         onOpenGoals={() => router.push('/goals')}
         onOpenSettings={() => router.push('/settings')}
+        onOpenLogout={() => router.push('/logout')}
         canCreateSpace={canManageWorkspaceData}
         onSelectSpace={(space) => {
           setSelectedSpaceId(space.id)
@@ -520,9 +521,6 @@ export default function HomePage() {
             setIntegrationError(null)
             setSpaceNameDraft(activeSpace?.name?.trim() || projectTitle)
             setSpaceSettingsOpen(true)
-          }}
-          onLogout={() => {
-            router.push('/logout')
           }}
         />
 

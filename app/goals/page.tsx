@@ -90,6 +90,7 @@ export default function GoalsPage() {
         onOpenLog={() => router.push('/log')}
         onOpenGoals={() => router.push('/goals')}
         onOpenSettings={() => router.push('/settings')}
+        onOpenLogout={() => router.push('/logout')}
       />
 
       <section className={styles.content}>

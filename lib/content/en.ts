@@ -38,6 +38,7 @@ export const enContent = {
       spaces: 'Spaces',
       noSpaces: 'No spaces found',
       newSpace: 'New Space',
+      logout: 'Logout',
     },
     topbar: {
       list: 'List',

@@ -16,6 +16,7 @@ type HomeSidebarProps = {
   onOpenArchive: () => void
   onOpenGoals: () => void
   onOpenSettings: () => void
+  onOpenLogout: () => void
   onSelectSpace?: (space: Space) => void
   onCreateSpace?: () => void
   canCreateSpace?: boolean
@@ -35,6 +36,7 @@ export default function HomeSidebar({
   onOpenArchive,
   onOpenGoals,
   onOpenSettings,
+  onOpenLogout,
   onSelectSpace,
   onCreateSpace,
   canCreateSpace = false,
@@ -137,21 +139,33 @@ export default function HomeSidebar({
         </section>
       ) : null}
 
-      <button
-        className={`${styles.sidebarFooterButton} ${
-          activeItem === 'settings' ? styles.sidebarFooterButtonActive : ''
-        }`}
-        type="button"
-        onClick={onOpenSettings}
-      >
-        <div className={styles.sidebarFooter}>
-          <span className={styles.avatarLarge}>{personInitials}</span>
-          <div>
-            <div className={styles.brandTitle}>{personName}</div>
-            <div className={styles.brandSub}>{userEmail}</div>
+      <div className={styles.sidebarFooterArea}>
+        <button
+          className={styles.navItem}
+          type="button"
+          onClick={onOpenLogout}
+          title={content.logout}
+        >
+          <span className={styles.navIcon}>↦</span>
+          {content.logout}
+        </button>
+
+        <button
+          className={`${styles.sidebarFooterButton} ${
+            activeItem === 'settings' ? styles.sidebarFooterButtonActive : ''
+          }`}
+          type="button"
+          onClick={onOpenSettings}
+        >
+          <div className={styles.sidebarFooter}>
+            <span className={styles.avatarLarge}>{personInitials}</span>
+            <div>
+              <div className={styles.brandTitle}>{personName}</div>
+              <div className={styles.brandSub}>{userEmail}</div>
+            </div>
           </div>
-        </div>
-      </button>
+        </button>
+      </div>
     </aside>
   )
 }

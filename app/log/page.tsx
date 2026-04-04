@@ -181,6 +181,7 @@ export default function LogPage() {
         onOpenLog={() => router.push('/log')}
         onOpenGoals={() => router.push('/goals')}
         onOpenSettings={() => router.push('/settings')}
+        onOpenLogout={() => router.push('/logout')}
       />
 
       <section className={logStyles.wrap}>

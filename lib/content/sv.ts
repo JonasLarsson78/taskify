@@ -38,6 +38,7 @@ export const svContent = {
       spaces: 'Spaces',
       noSpaces: 'Inga spaces hittades',
       newSpace: 'Nytt space',
+      logout: 'Logga ut',
     },
     topbar: {
       list: 'Lista',

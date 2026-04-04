@@ -18,7 +18,7 @@
 .wrap {
   flex: 1 1 auto;
   min-width: 0;
-  padding: 18px 42px 32px 0px;
+  padding: 24px 32px 32px 0px;
   display: flex;
   flex-direction: column;
   gap: 12px;

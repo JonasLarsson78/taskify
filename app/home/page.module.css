@@ -141,8 +141,14 @@
   font-weight: 700;
 }
 
-.sidebarFooter {
+.sidebarFooterArea {
   margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sidebarFooter {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -151,7 +157,6 @@
 }
 
 .sidebarFooterButton {
-  margin-top: auto;
   border: 0;
   background: transparent;
   padding: 0;
