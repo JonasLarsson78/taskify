@@ -120,3 +120,40 @@
   border-radius: 12px;
   padding: 10px;
 }
+
+:global(:root[data-theme='dark']) .title {
+  color: #e7ebff;
+}
+
+:global(:root[data-theme='dark']) .sub,
+:global(:root[data-theme='dark']) .meta,
+:global(:root[data-theme='dark']) .empty {
+  color: #aab3d3;
+}
+
+:global(:root[data-theme='dark']) .btn {
+  border-color: rgba(173, 184, 235, 0.24);
+  background: rgba(26, 33, 56, 0.9);
+  color: #d7def8;
+}
+
+:global(:root[data-theme='dark']) .card {
+  background: rgba(19, 24, 41, 0.84);
+  border-color: rgba(173, 184, 235, 0.22);
+  box-shadow: 0 12px 30px rgba(6, 8, 18, 0.48);
+}
+
+:global(:root[data-theme='dark']) .item {
+  border-color: rgba(173, 184, 235, 0.22);
+  background: rgba(20, 26, 44, 0.9);
+}
+
+:global(:root[data-theme='dark']) .message {
+  color: #e7ebff;
+}
+
+:global(:root[data-theme='dark']) .error {
+  color: #ffb7cf;
+  background: rgba(206, 70, 129, 0.2);
+  border-color: rgba(255, 156, 198, 0.3);
+}

@@ -138,3 +138,36 @@
   list-style: decimal;
   padding-left: 1.4rem;
 }
+
+:global(:root[data-theme='dark']) .createTextarea,
+:global(:root[data-theme='dark']) .markdownPreview,
+:global(:root[data-theme='dark']) .markdownEditorContainer {
+  border-color: rgba(173, 184, 235, 0.24);
+  background: linear-gradient(180deg, #1a2138 0%, #141a2f 100%);
+  color: #e7ebff;
+}
+
+:global(:root[data-theme='dark']) .createTextarea::placeholder {
+  color: #9ea8ca;
+}
+
+:global(:root[data-theme='dark']) .markdownToolbarBtn {
+  border-color: rgba(173, 184, 235, 0.24);
+  background: linear-gradient(180deg, #1a2138 0%, #141a2f 100%);
+  color: #d7def8;
+}
+
+:global(:root[data-theme='dark']) .markdownToolbarBtnActive {
+  border-color: rgba(159, 149, 255, 0.5);
+  background: linear-gradient(180deg, #2a2f52 0%, #232846 100%);
+  color: #d0c9ff;
+}
+
+:global(:root[data-theme='dark']) .markdownEditorShell :global(.rsw-toolbar) {
+  border-bottom-color: rgba(173, 184, 235, 0.2);
+  background: linear-gradient(180deg, #1f2640 0%, #19203a 100%);
+}
+
+:global(:root[data-theme='dark']) .markdownEditorShell :global(.rsw-ce) {
+  color: #e7ebff;
+}

@@ -38,6 +38,8 @@ export const svContent = {
       spaces: 'Spaces',
       noSpaces: 'Inga spaces hittades',
       newSpace: 'Nytt space',
+      darkMode: 'Morkt lage',
+      lightMode: 'Ljust lage',
       logout: 'Logga ut',
     },
     topbar: {

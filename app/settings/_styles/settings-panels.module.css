@@ -208,6 +208,37 @@
   margin-bottom: 6px;
 }
 
+:global(:root[data-theme='dark']) .settingsPanel {
+  background: rgba(19, 24, 41, 0.84);
+  border-color: rgba(173, 184, 235, 0.22);
+  box-shadow: 0 12px 30px rgba(6, 8, 18, 0.48);
+}
+
+:global(:root[data-theme='dark']) .settingsPanelTitle {
+  color: #e7ebff;
+}
+
+:global(:root[data-theme='dark']) .settingsHelp,
+:global(:root[data-theme='dark']) .sectionLabel {
+  color: #aab3d3;
+}
+
+:global(:root[data-theme='dark']) .settingsMembershipRow,
+:global(:root[data-theme='dark']) .settingsRoleRow {
+  border-color: rgba(173, 184, 235, 0.24);
+  background: linear-gradient(180deg, #1a2138 0%, #141a2f 100%);
+}
+
+:global(:root[data-theme='dark']) .settingsRoleIdentity {
+  color: #d4dcfa;
+}
+
+:global(:root[data-theme='dark']) .settingsMembershipTag {
+  border-color: rgba(159, 149, 255, 0.34);
+  background: rgba(159, 149, 255, 0.16);
+  color: #d0c9ff;
+}
+
 @media (max-width: 820px) {
   .settingsGrid {
     grid-template-columns: 1fr;

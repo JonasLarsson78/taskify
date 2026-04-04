@@ -291,6 +291,71 @@
   cursor: not-allowed;
 }
 
+:global(:root[data-theme='dark']) .shell {
+  background: radial-gradient(
+      circle at top left,
+      rgba(255, 115, 175, 0.14),
+      transparent 26%
+    ),
+    radial-gradient(
+      circle at top right,
+      rgba(159, 149, 255, 0.2),
+      transparent 24%
+    ),
+    linear-gradient(180deg, #121629 0%, #0c1020 100%);
+}
+
+:global(:root[data-theme='dark']) .workspaceBadge {
+  background: rgba(255, 116, 174, 0.2);
+  color: #ff9bc1;
+}
+
+:global(:root[data-theme='dark']) .board {
+  background: rgba(19, 24, 41, 0.84);
+  border-color: rgba(173, 184, 235, 0.22);
+  box-shadow: 0 12px 30px rgba(6, 8, 18, 0.48);
+}
+
+:global(:root[data-theme='dark']) .taskMeta,
+:global(:root[data-theme='dark']) .unassignedText {
+  color: #aab3d3;
+}
+
+:global(:root[data-theme='dark']) .taskActionBtn {
+  border-color: rgba(173, 184, 235, 0.24);
+  background: rgba(27, 33, 56, 0.94);
+  color: #d4dcfa;
+}
+
+:global(:root[data-theme='dark']) .workspaceTitle {
+  color: #e7ebff;
+}
+
+:global(:root[data-theme='dark']) .workspaceSub {
+  color: #aab3d3;
+}
+
+:global(:root[data-theme='dark']) .assigneeAvatar {
+  border-color: #1a2138;
+}
+
+:global(:root[data-theme='dark']) .createInput,
+:global(:root[data-theme='dark']) .createSelect {
+  border-color: rgba(173, 184, 235, 0.24);
+  background: linear-gradient(180deg, #1a2138 0%, #141a2f 100%);
+  color: #e7ebff;
+}
+
+:global(:root[data-theme='dark']) .createInput::placeholder {
+  color: #9ea8ca;
+}
+
+:global(:root[data-theme='dark']) .modalCancel {
+  border-color: rgba(173, 184, 235, 0.24);
+  background: linear-gradient(180deg, #1a2138 0%, #141a2f 100%);
+  color: #d4dcfa;
+}
+
 @media (max-width: 1100px) {
   .shell {
     flex-direction: column;

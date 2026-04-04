@@ -36,6 +36,20 @@
   font-size: 0.8rem;
 }
 
+:global(:root[data-theme='dark']) .statCard {
+  background: rgba(19, 24, 41, 0.84);
+  border-color: rgba(173, 184, 235, 0.22);
+  box-shadow: 0 12px 30px rgba(6, 8, 18, 0.48);
+}
+
+:global(:root[data-theme='dark']) .statLabel {
+  color: #aab3d3;
+}
+
+:global(:root[data-theme='dark']) .statValue {
+  color: #e7ebff;
+}
+
 @media (max-width: 820px) {
   .overview {
     flex-direction: column;

@@ -2,6 +2,22 @@ import type { Metadata } from 'next'
 import { Manrope, Space_Grotesk } from 'next/font/google'
 import './globals.css'
 
+const themeInitScript = `
+(() => {
+  try {
+    const key = 'taskify-theme'
+    const saved = window.localStorage.getItem(key)
+    const hasExplicitTheme = saved === 'light' || saved === 'dark'
+    const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches
+      ? 'dark'
+      : 'light'
+    const theme = hasExplicitTheme ? saved : systemTheme
+    document.documentElement.setAttribute('data-theme', theme)
+    document.documentElement.style.colorScheme = theme
+  } catch {}
+})()
+`
+
 const manrope = Manrope({
   variable: '--font-sans',
   subsets: ['latin'],
@@ -29,8 +45,12 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={`${manrope.variable} ${spaceGrotesk.variable} h-full antialiased`}
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   )

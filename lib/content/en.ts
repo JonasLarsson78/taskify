@@ -38,6 +38,8 @@ export const enContent = {
       spaces: 'Spaces',
       noSpaces: 'No spaces found',
       newSpace: 'New Space',
+      darkMode: 'Dark mode',
+      lightMode: 'Light mode',
       logout: 'Logout',
     },
     topbar: {

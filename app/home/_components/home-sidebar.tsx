@@ -1,7 +1,10 @@
+'use client'
+
 import styles from '../_styles/home-sidebar.module.css'
 import type { Space } from '../model'
 import { getInitial } from '../model'
 import type { AppContent } from '../../../lib/content'
+import useTheme from '../../_hooks/use-theme'
 
 type HomeSidebarProps = {
   personInitials: string
@@ -42,6 +45,9 @@ export default function HomeSidebar({
   canCreateSpace = false,
   content,
 }: HomeSidebarProps) {
+  const { resolvedTheme, toggleTheme } = useTheme()
+  const isDark = resolvedTheme === 'dark'
+
   return (
     <aside className={styles.sidebar}>
       <div className={styles.brandRow}>
@@ -140,6 +146,16 @@ export default function HomeSidebar({
       ) : null}
 
       <div className={styles.sidebarFooterArea}>
+        <button
+          className={`${styles.navItem} ${styles.themeToggle}`}
+          type="button"
+          onClick={toggleTheme}
+          title={isDark ? content.lightMode : content.darkMode}
+        >
+          <span className={styles.navIcon}>{isDark ? '☀' : '☾'}</span>
+          {isDark ? content.lightMode : content.darkMode}
+        </button>
+
         <button
           className={styles.navItem}
           type="button"

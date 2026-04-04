@@ -13,6 +13,17 @@
   --focus-ring: 0 0 0 4px rgba(111, 90, 214, 0.12);
 }
 
+:root[data-theme='dark'] {
+  --background: #0f1220;
+  --surface: #161a2c;
+  --foreground: #e7ebff;
+  --muted: #a2abc9;
+  --border: rgba(173, 184, 235, 0.18);
+  --primary: #9f95ff;
+  --accent: #ff7dac;
+  --focus-ring: 0 0 0 4px rgba(159, 149, 255, 0.28);
+}
+
 html,
 body {
   height: 100%;
@@ -36,6 +47,20 @@ body {
   font-family: var(--font-sans), sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+:root[data-theme='dark'] body {
+  background: radial-gradient(
+      circle at top left,
+      rgba(255, 104, 167, 0.16),
+      transparent 24%
+    ),
+    radial-gradient(
+      circle at top right,
+      rgba(159, 149, 255, 0.18),
+      transparent 22%
+    ),
+    linear-gradient(180deg, #121629 0%, #0c1020 100%);
 }
 
 h1,

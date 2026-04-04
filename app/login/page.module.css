@@ -200,6 +200,48 @@
   opacity: 0.75;
 }
 
+:global(:root[data-theme='dark']) .shell {
+  background: radial-gradient(
+      circle at 8% 10%,
+      rgba(255, 101, 158, 0.22),
+      transparent 26%
+    ),
+    radial-gradient(
+      circle at 92% 6%,
+      rgba(159, 149, 255, 0.24),
+      transparent 24%
+    ),
+    linear-gradient(180deg, #121629 0%, #0c1020 100%);
+}
+
+:global(:root[data-theme='dark']) .brandTitle,
+:global(:root[data-theme='dark']) .headline,
+:global(:root[data-theme='dark']) .kpiValue,
+:global(:root[data-theme='dark']) .title {
+  color: #e7ebff;
+}
+
+:global(:root[data-theme='dark']) .brandSub,
+:global(:root[data-theme='dark']) .lead,
+:global(:root[data-theme='dark']) .subtitle,
+:global(:root[data-theme='dark']) .labelTitle,
+:global(:root[data-theme='dark']) .kpiLabel {
+  color: #aab3d3;
+}
+
+:global(:root[data-theme='dark']) .kpiCard,
+:global(:root[data-theme='dark']) .form {
+  border-color: rgba(173, 184, 235, 0.24);
+  background: rgba(19, 24, 41, 0.9);
+  box-shadow: 0 20px 40px rgba(6, 8, 18, 0.48);
+}
+
+:global(:root[data-theme='dark']) .input {
+  border-color: rgba(173, 184, 235, 0.24);
+  background: rgba(26, 33, 56, 0.95);
+  color: #e7ebff;
+}
+
 @media (max-width: 980px) {
   .shell {
     grid-template-columns: 1fr;

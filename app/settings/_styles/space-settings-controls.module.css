@@ -61,3 +61,14 @@
   padding: 0;
   cursor: pointer;
 }
+
+:global(:root[data-theme='dark']) .settingsChip {
+  border-color: rgba(159, 149, 255, 0.34);
+  background: rgba(159, 149, 255, 0.16);
+  color: #d0c9ff;
+}
+
+:global(:root[data-theme='dark']) .settingsChipRemove {
+  background: rgba(26, 33, 56, 0.95);
+  color: #c6beff;
+}

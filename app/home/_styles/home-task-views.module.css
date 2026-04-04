@@ -321,6 +321,32 @@
   box-shadow: 0 0 0 3px rgba(67, 187, 132, 0.16);
 }
 
+:global(:root[data-theme='dark']) .tableHead,
+:global(:root[data-theme='dark']) .taskViewMetaRow,
+:global(:root[data-theme='dark']) .dueDate,
+:global(:root[data-theme='dark']) .priority {
+  color: #aab3d3;
+}
+
+:global(:root[data-theme='dark']) .taskViewColumn,
+:global(:root[data-theme='dark']) .taskViewCard,
+:global(:root[data-theme='dark']) .taskTile,
+:global(:root[data-theme='dark']) .row {
+  background: rgba(20, 26, 44, 0.9);
+  border-color: rgba(173, 184, 235, 0.22);
+  box-shadow: 0 10px 24px rgba(6, 8, 18, 0.42);
+}
+
+:global(:root[data-theme='dark']) .taskTitle,
+:global(:root[data-theme='dark']) .taskViewCardTitle {
+  color: #e7ebff;
+}
+
+:global(:root[data-theme='dark']) .taskDoneBadge {
+  background: rgba(67, 187, 132, 0.2);
+  border-color: rgba(67, 187, 132, 0.38);
+}
+
 @media (max-width: 820px) {
   .tableHead {
     display: none;

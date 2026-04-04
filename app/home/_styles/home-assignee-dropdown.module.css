@@ -79,3 +79,32 @@
   background: rgba(111, 90, 214, 0.12);
   color: #4f46b8;
 }
+
+:global(:root[data-theme='dark']) .assigneeDropdownTrigger {
+  border-color: rgba(173, 184, 235, 0.24);
+  background: linear-gradient(180deg, #1a2138 0%, #141a2f 100%);
+  color: #d7def8;
+}
+
+:global(:root[data-theme='dark']) .assigneeChevron {
+  color: #aab3d3;
+}
+
+:global(:root[data-theme='dark']) .assigneeDropdownMenu {
+  background: #141a2f;
+  border-color: rgba(173, 184, 235, 0.22);
+  box-shadow: 0 12px 28px rgba(6, 8, 18, 0.55);
+}
+
+:global(:root[data-theme='dark']) .assigneeDropdownItem {
+  color: #d7def8;
+}
+
+:global(:root[data-theme='dark']) .assigneeDropdownItem:hover {
+  background: rgba(159, 149, 255, 0.18);
+}
+
+:global(:root[data-theme='dark']) .assigneeDropdownItemActive {
+  background: rgba(159, 149, 255, 0.26);
+  color: #d0c9ff;
+}
