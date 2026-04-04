@@ -107,17 +107,18 @@ export default function GoalsPage() {
 
         const orgId = verifiedUser.organizationId
 
-        const [goalsResponse, tasksResponse, spacesResponse] = await Promise.all([
-          fetch(`/api/goal?organizationId=${orgId}`, {
-            headers: buildAuthHeaders(token),
-          }),
-          fetch(`/api/task?organizationId=${orgId}&archived=include`, {
-            headers: buildAuthHeaders(token),
-          }),
-          fetch(`/api/space?organizationId=${orgId}`, {
-            headers: buildAuthHeaders(token),
-          }),
-        ])
+        const [goalsResponse, tasksResponse, spacesResponse] =
+          await Promise.all([
+            fetch(`/api/goal?organizationId=${orgId}`, {
+              headers: buildAuthHeaders(token),
+            }),
+            fetch(`/api/task?organizationId=${orgId}&archived=include`, {
+              headers: buildAuthHeaders(token),
+            }),
+            fetch(`/api/space?organizationId=${orgId}`, {
+              headers: buildAuthHeaders(token),
+            }),
+          ])
 
         const goalsData = goalsResponse.ok
           ? ((await goalsResponse.json()) as Goal[])
@@ -199,7 +200,11 @@ export default function GoalsPage() {
     setEditingGoalId(goal.id)
     setTitle(goal.title)
     setDescription(goal.description || '')
-    setTargetDate(goal.targetDate ? new Date(goal.targetDate).toISOString().slice(0, 10) : '')
+    setTargetDate(
+      goal.targetDate
+        ? new Date(goal.targetDate).toISOString().slice(0, 10)
+        : ''
+    )
     setSpaceId(goal.spaceId ? String(goal.spaceId) : '')
     setTaskIds(goal.taskIds || [])
     setUseManualProgress(goal.manualProgress !== null)
@@ -363,7 +368,9 @@ export default function GoalsPage() {
         </div>
 
         <div className={styles.settingsStack}>
-          <section className={`${styles.settingsPanel} ${styles.settingsPanelCompact}`}>
+          <section
+            className={`${styles.settingsPanel} ${styles.settingsPanelCompact}`}
+          >
             <div className={styles.settingsPanelHeader}>
               <div className={styles.settingsPanelTitle}>
                 {editingGoalId ? 'Edit Goal' : 'Create Goal'}
@@ -373,7 +380,9 @@ export default function GoalsPage() {
               </div>
             </div>
 
-            <div className={`${styles.settingsGrid} ${styles.settingsGridWide}`}>
+            <div
+              className={`${styles.settingsGrid} ${styles.settingsGridWide}`}
+            >
               <label className={styles.settingsField}>
                 <span className={styles.sectionLabel}>Title</span>
                 <input
@@ -414,7 +423,9 @@ export default function GoalsPage() {
                 </select>
               </label>
 
-              <label className={`${styles.settingsField} ${styles.settingsFieldFull}`}>
+              <label
+                className={`${styles.settingsField} ${styles.settingsFieldFull}`}
+              >
                 <span className={styles.sectionLabel}>Description</span>
                 <input
                   className={styles.createInput}
@@ -434,7 +445,9 @@ export default function GoalsPage() {
                   type="checkbox"
                   checked={useManualProgress}
                   disabled={busy || !canWrite}
-                  onChange={(event) => setUseManualProgress(event.target.checked)}
+                  onChange={(event) =>
+                    setUseManualProgress(event.target.checked)
+                  }
                 />
                 <span className={styles.settingsRoleIdentity}>
                   Use manual progress
@@ -450,7 +463,9 @@ export default function GoalsPage() {
                   value={manualProgress}
                   disabled={busy || !canWrite || !useManualProgress}
                   onChange={(event) =>
-                    setManualProgress(Number.parseInt(event.target.value, 10) || 0)
+                    setManualProgress(
+                      Number.parseInt(event.target.value, 10) || 0
+                    )
                   }
                 />
                 <span className={styles.settingsHelp}>{manualProgress}%</span>
@@ -465,7 +480,9 @@ export default function GoalsPage() {
             <div className={styles.settingsMembershipList}>
               <div className={styles.sectionLabel}>Linked Tasks</div>
               {visibleTasks.length === 0 ? (
-                <div className={styles.settingsHelp}>No tasks available for this filter.</div>
+                <div className={styles.settingsHelp}>
+                  No tasks available for this filter.
+                </div>
               ) : (
                 <div>
                   <div className={styles.settingsRow}>
@@ -473,8 +490,12 @@ export default function GoalsPage() {
                       className={styles.createInput}
                       type="text"
                       value={taskSearchQuery}
-                      disabled={busy || !canWrite || availableTasks.length === 0}
-                      onChange={(event) => setTaskSearchQuery(event.target.value)}
+                      disabled={
+                        busy || !canWrite || availableTasks.length === 0
+                      }
+                      onChange={(event) =>
+                        setTaskSearchQuery(event.target.value)
+                      }
                       placeholder="Search task by title or section"
                     />
                   </div>
@@ -482,7 +503,9 @@ export default function GoalsPage() {
                     <select
                       className={styles.createSelect}
                       value={taskPickerId}
-                      disabled={busy || !canWrite || availableTasks.length === 0}
+                      disabled={
+                        busy || !canWrite || availableTasks.length === 0
+                      }
                       onChange={(event) => setTaskPickerId(event.target.value)}
                     >
                       <option value="">
@@ -553,15 +576,23 @@ export default function GoalsPage() {
                   void handleSaveGoal()
                 }}
               >
-                {busy ? 'Saving...' : editingGoalId ? 'Save Goal' : 'Create Goal'}
+                {busy
+                  ? 'Saving...'
+                  : editingGoalId
+                  ? 'Save Goal'
+                  : 'Create Goal'}
               </button>
             </div>
           </section>
 
-          <section className={`${styles.settingsPanel} ${styles.settingsPanelCompact}`}>
+          <section
+            className={`${styles.settingsPanel} ${styles.settingsPanelCompact}`}
+          >
             <div className={styles.settingsPanelHeader}>
               <div className={styles.settingsPanelTitle}>Goal List</div>
-              <div className={styles.settingsHelp}>Progress and risk overview</div>
+              <div className={styles.settingsHelp}>
+                Progress and risk overview
+              </div>
             </div>
 
             <div className={styles.settingsMembershipList}>
@@ -571,16 +602,22 @@ export default function GoalsPage() {
                 goals.map((goal) => (
                   <div key={goal.id} className={styles.settingsMembershipRow}>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div className={styles.settingsRoleIdentity}>{goal.title}</div>
+                      <div className={styles.settingsRoleIdentity}>
+                        {goal.title}
+                      </div>
                       {goal.description ? (
-                        <div className={styles.settingsHelp}>{goal.description}</div>
+                        <div className={styles.settingsHelp}>
+                          {goal.description}
+                        </div>
                       ) : null}
                       <div className={styles.settingsHelp}>
                         Progress: {goal.progress}%
-                        {goal.manualProgress !== null ? ' (manual)' : ' (auto)'} ·
-                        {' '}Linked tasks: {goal.linkedTaskCount}
+                        {goal.manualProgress !== null ? ' (manual)' : ' (auto)'}{' '}
+                        · Linked tasks: {goal.linkedTaskCount}
                         {goal.targetDate
-                          ? ` · Target: ${new Date(goal.targetDate).toLocaleDateString('en-GB')}`
+                          ? ` · Target: ${new Date(
+                              goal.targetDate
+                            ).toLocaleDateString('en-GB')}`
                           : ''}
                       </div>
                       <div
@@ -594,9 +631,13 @@ export default function GoalsPage() {
                       >
                         <div
                           style={{
-                            width: `${Math.max(0, Math.min(100, goal.progress))}%`,
+                            width: `${Math.max(
+                              0,
+                              Math.min(100, goal.progress)
+                            )}%`,
                             height: '100%',
-                            background: 'linear-gradient(135deg, #7e78ff, #6259ff)',
+                            background:
+                              'linear-gradient(135deg, #7e78ff, #6259ff)',
                           }}
                         />
                       </div>
@@ -604,7 +645,9 @@ export default function GoalsPage() {
 
                     <div className={styles.settingsMembershipTags}>
                       {goal.atRisk ? (
-                        <span className={styles.settingsMembershipTag}>At risk</span>
+                        <span className={styles.settingsMembershipTag}>
+                          At risk
+                        </span>
                       ) : null}
                       {canWrite ? (
                         <button

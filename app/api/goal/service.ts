@@ -95,7 +95,10 @@ function mapGoalRow(row: Record<string, unknown>): GoalRow {
   }
 }
 
-function isTaskCompleted(task: { section: string | null; archivedAt: Date | null }) {
+function isTaskCompleted(task: {
+  section: string | null
+  archivedAt: Date | null
+}) {
   if (task.archivedAt) return true
 
   const section = task.section?.trim().toLowerCase() || ''
@@ -158,7 +161,9 @@ async function loadTaskCompletionByTaskIds(taskIds: number[]) {
     for (const row of rows as Record<string, unknown>[]) {
       const id = Number(row.id)
       const section = typeof row.section === 'string' ? row.section : null
-      const archivedAt = row.archivedAt ? new Date(String(row.archivedAt)) : null
+      const archivedAt = row.archivedAt
+        ? new Date(String(row.archivedAt))
+        : null
       map.set(id, isTaskCompleted({ section, archivedAt }))
     }
 
@@ -176,15 +181,15 @@ async function attachStats(goals: GoalRow[]): Promise<GoalWithStats[]> {
   const taskIdsByGoalId = await loadTaskIdsByGoalId(goalIds)
 
   const uniqueTaskIds = Array.from(
-    new Set(
-      Array.from(taskIdsByGoalId.values()).flatMap((taskIds) => taskIds)
-    )
+    new Set(Array.from(taskIdsByGoalId.values()).flatMap((taskIds) => taskIds))
   )
   const completionByTaskId = await loadTaskCompletionByTaskIds(uniqueTaskIds)
 
   return goals.map((goal) => {
     const taskIds = taskIdsByGoalId.get(goal.id) || []
-    const completed = taskIds.filter((taskId) => completionByTaskId.get(taskId)).length
+    const completed = taskIds.filter((taskId) =>
+      completionByTaskId.get(taskId)
+    ).length
     const autoProgress =
       taskIds.length === 0 ? 0 : Math.round((completed / taskIds.length) * 100)
     const progress = goal.manualProgress ?? autoProgress
@@ -200,7 +205,10 @@ async function attachStats(goals: GoalRow[]): Promise<GoalWithStats[]> {
   })
 }
 
-export async function listGoals(organizationId?: number | null, spaceId?: number | null) {
+export async function listGoals(
+  organizationId?: number | null,
+  spaceId?: number | null
+) {
   await ensureGoalTables()
 
   let sql = 'SELECT * FROM `Goal`'
@@ -231,7 +239,9 @@ export async function listGoals(organizationId?: number | null, spaceId?: number
 export async function getGoalById(id: number) {
   await ensureGoalTables()
 
-  const [rows] = await pool.query('SELECT * FROM `Goal` WHERE id = ? LIMIT 1', [id])
+  const [rows] = await pool.query('SELECT * FROM `Goal` WHERE id = ? LIMIT 1', [
+    id,
+  ])
   const row = (rows as Record<string, unknown>[])[0]
   if (!row) return null
 
@@ -312,7 +322,10 @@ export async function updateGoal(id: number, patch: UpdateGoalInput) {
 
   if (fields.length > 0) {
     values.push(id)
-    await pool.query(`UPDATE \`Goal\` SET ${fields.join(', ')} WHERE id = ?`, values)
+    await pool.query(
+      `UPDATE \`Goal\` SET ${fields.join(', ')} WHERE id = ?`,
+      values
+    )
   }
 
   if (patch.taskIds !== undefined) {
@@ -326,6 +339,9 @@ export async function deleteGoal(id: number) {
   await ensureGoalTables()
 
   await pool.query('DELETE FROM `GoalTask` WHERE goal_id = ?', [id])
-  const [res] = await pool.query<ResultSetHeader>('DELETE FROM `Goal` WHERE id = ? LIMIT 1', [id])
+  const [res] = await pool.query<ResultSetHeader>(
+    'DELETE FROM `Goal` WHERE id = ? LIMIT 1',
+    [id]
+  )
   return res.affectedRows > 0
 }

@@ -8,10 +8,7 @@ import {
 } from '../space/service'
 import { listTasks } from '../task/service'
 import { createGoal, listGoals } from './service'
-import {
-  normalizeCreateGoalInput,
-  parseJsonBody,
-} from './validator'
+import { normalizeCreateGoalInput, parseJsonBody } from './validator'
 
 function parseQueryNumber(value: string | null): number | null {
   if (!value) return null
@@ -25,7 +22,9 @@ export async function GET(request: Request) {
     if (!auth.ok) return auth.response
 
     const { searchParams } = new URL(request.url)
-    const organizationIdRaw = parseQueryNumber(searchParams.get('organizationId'))
+    const organizationIdRaw = parseQueryNumber(
+      searchParams.get('organizationId')
+    )
     const spaceId = parseQueryNumber(searchParams.get('spaceId'))
 
     const organizationId =

@@ -58,7 +58,8 @@ export function normalizeCreateGoalInput(
     ok: true,
     data: {
       title,
-      description: typeof b.description === 'string' ? b.description.trim() : null,
+      description:
+        typeof b.description === 'string' ? b.description.trim() : null,
       targetDate: typeof b.targetDate === 'string' ? b.targetDate : null,
       organizationId:
         typeof b.organizationId === 'number' ? b.organizationId : null,
