@@ -6,6 +6,7 @@ import {
   isSpaceMember,
   listSpacesForUser,
 } from '../space/service'
+import { publishWorkspaceEvent } from '../../../lib/realtime/workspace-events'
 import { listTasks } from '../task/service'
 import { createGoal, listGoals } from './service'
 import { normalizeCreateGoalInput, parseJsonBody } from './validator'
@@ -151,6 +152,14 @@ export async function POST(request: Request) {
     }
 
     const created = await createGoal(input)
+    if (!created) {
+      return NextResponse.json(
+        { error: 'Failed to create goal' },
+        { status: 500 }
+      )
+    }
+
+    publishWorkspaceEvent(created.organizationId, 'goal.changed')
     return NextResponse.json(created)
   } catch (e) {
     console.error('POST /api/goal error', e)

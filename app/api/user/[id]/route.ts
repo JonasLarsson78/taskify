@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { canManageWorkspace, canWriteTasks } from '../../../../lib/user-role'
+import { publishWorkspaceEvent } from '../../../../lib/realtime/workspace-events'
 import { forbidden, requireApiUser } from '../../_lib/authorization'
 import { getUserById, updateUser } from '../service'
 import { normalizeUpdateUserInput, parseJsonBody } from '../validator'
@@ -108,6 +109,7 @@ export async function PUT(
     }
 
     const updated = await updateUser(userId, patch)
+    publishWorkspaceEvent(updated.organizationId, 'user.changed')
     return NextResponse.json(updated)
   } catch (error) {
     console.error('PUT /api/user/[id] error', error)

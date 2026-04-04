@@ -104,13 +104,6 @@ export default function HomePage() {
     newTaskPriority,
     setCreateTaskModalOpen,
     setEditTaskModalOpen,
-    setEditTaskTitle,
-    setEditTaskMeta,
-    setEditTaskDueDate,
-    setEditTaskColor,
-    setEditTaskAssigneeIds,
-    setEditTaskSection,
-    setEditTaskPriority,
     setNewTaskTitle,
     setNewTaskMeta,
     setNewTaskDueDate,
@@ -119,6 +112,13 @@ export default function HomePage() {
     setNewTaskSection,
     setNewTaskPriority,
     handleOpenTask,
+    handleEditTaskTitleChange,
+    handleEditTaskMetaChange,
+    handleEditTaskDueDateChange,
+    handleEditTaskAssigneeIdsChange,
+    handleEditTaskSectionChange,
+    handleEditTaskPriorityChange,
+    handleEditTaskColorChange,
     saveEditedTask,
     handleTogglePriority,
     handleMoveTask,
@@ -554,13 +554,13 @@ export default function HomePage() {
               if (ok) setEditTaskModalOpen(false)
             })()
           }}
-          onTitleChange={setEditTaskTitle}
-          onMetaChange={setEditTaskMeta}
-          onDueDateChange={setEditTaskDueDate}
-          onAssigneeIdsChange={setEditTaskAssigneeIds}
-          onSectionChange={setEditTaskSection}
-          onPriorityChange={setEditTaskPriority}
-          onColorChange={setEditTaskColor}
+          onTitleChange={handleEditTaskTitleChange}
+          onMetaChange={handleEditTaskMetaChange}
+          onDueDateChange={handleEditTaskDueDateChange}
+          onAssigneeIdsChange={handleEditTaskAssigneeIdsChange}
+          onSectionChange={handleEditTaskSectionChange}
+          onPriorityChange={handleEditTaskPriorityChange}
+          onColorChange={handleEditTaskColorChange}
         />
 
         <SpaceSettingsModal

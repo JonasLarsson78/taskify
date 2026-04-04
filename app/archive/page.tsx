@@ -1,5 +1,6 @@
 'use client'
 
+import { useCallback } from 'react'
 import { marked } from 'marked'
 import { useRouter } from 'next/navigation'
 import Loader from '../components/loader/loader'
@@ -45,6 +46,7 @@ function markdownToHtml(value: string): string {
 
 export default function ArchivePage() {
   const router = useRouter()
+  const redirectToLogin = useCallback(() => router.replace('/login'), [router])
   const token = useStore((state) => state.token)
   const rehydrated = useStore((state) => state.rehydrated)
   const user = useStore((state) => state.user)
@@ -61,7 +63,7 @@ export default function ArchivePage() {
   } = useArchivePage({
     token,
     rehydrated,
-    redirectToLogin: () => router.replace('/login'),
+    redirectToLogin,
   })
 
   if (checking) {

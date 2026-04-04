@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { canManageWorkspace } from '../../../lib/user-role'
+import { publishWorkspaceEvent } from '../../../lib/realtime/workspace-events'
 import { forbidden, requireApiUser } from '../_lib/authorization'
 import { addSpaceMember, createSpace, listSpacesForUser } from './service'
 
@@ -100,6 +101,8 @@ export async function POST(request: Request) {
           addSpaceMember(created.id, memberId)
         )
       )
+
+      publishWorkspaceEvent(created.organizationId, 'space.changed')
     }
 
     return NextResponse.json(created)

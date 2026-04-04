@@ -6,6 +6,7 @@ import {
   isSpaceMember,
   listSpacesForUser,
 } from '../space/service'
+import { publishWorkspaceEvent } from '../../../lib/realtime/workspace-events'
 import { createTask, listTasks } from './service'
 import { normalizeCreateTaskInput, parseJsonBody } from './validator'
 
@@ -154,6 +155,14 @@ export async function POST(request: Request) {
     }
 
     const created = await createTask(input)
+    if (!created) {
+      return NextResponse.json(
+        { error: 'Failed to create task' },
+        { status: 500 }
+      )
+    }
+
+    publishWorkspaceEvent(created.organizationId, 'task.changed')
     return NextResponse.json(created)
   } catch (e) {
     console.error('POST /api/task error', e)

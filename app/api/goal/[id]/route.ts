@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { canWriteTasks } from '../../../../lib/user-role'
+import { publishWorkspaceEvent } from '../../../../lib/realtime/workspace-events'
 import { forbidden, requireApiUser } from '../../_lib/authorization'
 import { getSpaceById, isSpaceMember } from '../../space/service'
 import { deleteGoal, getGoalById, updateGoal } from '../service'
@@ -100,6 +101,8 @@ export async function PUT(
       return NextResponse.json({ error: 'Goal not found' }, { status: 404 })
     }
 
+    publishWorkspaceEvent(updated.organizationId, 'goal.changed')
+
     return NextResponse.json(updated)
   } catch (e) {
     console.error('PUT /api/goal/[id] error', e)
@@ -151,6 +154,8 @@ export async function DELETE(
     if (!deleted) {
       return NextResponse.json({ error: 'Goal not found' }, { status: 404 })
     }
+
+    publishWorkspaceEvent(existingGoal.organizationId, 'goal.changed')
 
     return NextResponse.json({ ok: true })
   } catch (e) {

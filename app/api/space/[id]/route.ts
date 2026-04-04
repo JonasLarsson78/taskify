@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { canManageWorkspace } from '../../../../lib/user-role'
+import { publishWorkspaceEvent } from '../../../../lib/realtime/workspace-events'
 import { forbidden, requireApiUser } from '../../_lib/authorization'
 import {
   getSpaceById,
@@ -146,6 +147,8 @@ export async function PUT(
       await setSpaceMembers(spaceId, memberIds)
       updated.memberIds = memberIds
     }
+
+    publishWorkspaceEvent(existingSpace.organizationId, 'space.changed')
 
     return NextResponse.json(updated)
   } catch (e) {

@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { buildAuthHeaders } from '../../../lib/request-headers'
+import { subscribeToWorkspaceEvents } from '../../../lib/realtime/client'
 import {
   DEFAULT_TASK_SECTIONS,
   normalizeSectionColorMap,
@@ -44,46 +45,37 @@ export default function useHomeWorkspaceData({
     () => normalizeSectionColorMap(null, DEFAULT_TASK_SECTIONS)
   )
 
-  async function loadTasksForSpace(
-    organizationId: number | null,
-    spaceId: number | null
-  ) {
-    try {
-      const url = organizationId
-        ? `/api/task?organizationId=${organizationId}${
-            spaceId ? `&spaceId=${spaceId}` : ''
-          }`
-        : '/api/task'
-      const res = await fetch(url, { headers: buildAuthHeaders(token) })
+  const loadTasksForSpace = useCallback(
+    async (organizationId: number | null, spaceId: number | null) => {
+      try {
+        const url = organizationId
+          ? `/api/task?organizationId=${organizationId}${
+              spaceId ? `&spaceId=${spaceId}` : ''
+            }`
+          : '/api/task'
+        const res = await fetch(url, { headers: buildAuthHeaders(token) })
 
-      if (!res.ok) {
-        const data = await res.json().catch(() => null)
-        setIntegrationError(data?.error || 'Kunde inte ladda tasks for space.')
-        return
+        if (!res.ok) {
+          const data = await res.json().catch(() => null)
+          setIntegrationError(
+            data?.error || 'Kunde inte ladda tasks for space.'
+          )
+          return
+        }
+
+        const taskData = (await res.json()) as ApiTask[]
+        setTasks(Array.isArray(taskData) ? taskData : [])
+      } catch (error) {
+        console.error('load tasks for space error', error)
+        setIntegrationError('Kunde inte ladda tasks for space.')
       }
+    },
+    [token, setIntegrationError, setTasks]
+  )
 
-      const taskData = (await res.json()) as ApiTask[]
-      setTasks(Array.isArray(taskData) ? taskData : [])
-    } catch (error) {
-      console.error('load tasks for space error', error)
-      setIntegrationError('Kunde inte ladda tasks for space.')
-    }
-  }
-
-  async function loadSpacesForOrganization(organizationId: number | null) {
-    if (!organizationId) {
-      setSpaces([])
-      setSelectedSpaceId(null)
-      setSectionOptions([...DEFAULT_TASK_SECTIONS])
-      setSectionColors(normalizeSectionColorMap(null, DEFAULT_TASK_SECTIONS))
-      return
-    }
-
-    try {
-      const res = await fetch(`/api/space?organizationId=${organizationId}`, {
-        headers: buildAuthHeaders(token),
-      })
-      if (!res.ok) {
+  const loadSpacesForOrganization = useCallback(
+    async (organizationId: number | null) => {
+      if (!organizationId) {
         setSpaces([])
         setSelectedSpaceId(null)
         setSectionOptions([...DEFAULT_TASK_SECTIONS])
@@ -91,33 +83,49 @@ export default function useHomeWorkspaceData({
         return
       }
 
-      const data = (await res.json()) as Space[]
-      const nextSpaces = Array.isArray(data) ? data : []
-      setSpaces(nextSpaces)
+      try {
+        const res = await fetch(`/api/space?organizationId=${organizationId}`, {
+          headers: buildAuthHeaders(token),
+        })
+        if (!res.ok) {
+          setSpaces([])
+          setSelectedSpaceId(null)
+          setSectionOptions([...DEFAULT_TASK_SECTIONS])
+          setSectionColors(
+            normalizeSectionColorMap(null, DEFAULT_TASK_SECTIONS)
+          )
+          return
+        }
 
-      const nextSelectedSpaceId = nextSpaces[0]?.id ?? null
-      setSelectedSpaceId(nextSelectedSpaceId)
+        const data = (await res.json()) as Space[]
+        const nextSpaces = Array.isArray(data) ? data : []
+        setSpaces(nextSpaces)
 
-      const activeSpace = nextSpaces.find(
-        (space) => space.id === nextSelectedSpaceId
-      )
-      const nextSections = normalizeSectionList(activeSpace?.taskSections)
-      const nextColors = normalizeSectionColorMap(
-        activeSpace?.taskSectionColors,
-        nextSections
-      )
+        const nextSelectedSpaceId = nextSpaces[0]?.id ?? null
+        setSelectedSpaceId(nextSelectedSpaceId)
 
-      setSectionOptions(nextSections)
-      setSectionColors(nextColors)
-      await loadTasksForSpace(organizationId, nextSelectedSpaceId)
-    } catch (error) {
-      console.error('load spaces for organization error', error)
-      setSpaces([])
-      setSelectedSpaceId(null)
-      setSectionOptions([...DEFAULT_TASK_SECTIONS])
-      setSectionColors(normalizeSectionColorMap(null, DEFAULT_TASK_SECTIONS))
-    }
-  }
+        const activeSpace = nextSpaces.find(
+          (space) => space.id === nextSelectedSpaceId
+        )
+        const nextSections = normalizeSectionList(activeSpace?.taskSections)
+        const nextColors = normalizeSectionColorMap(
+          activeSpace?.taskSectionColors,
+          nextSections
+        )
+
+        setSectionOptions(nextSections)
+        setSectionColors(nextColors)
+        await loadTasksForSpace(organizationId, nextSelectedSpaceId)
+      } catch (error) {
+        console.error('load spaces for organization error', error)
+        setSpaces([])
+        setSelectedSpaceId(null)
+        setSectionOptions([...DEFAULT_TASK_SECTIONS])
+        setSectionColors(normalizeSectionColorMap(null, DEFAULT_TASK_SECTIONS))
+      }
+    },
+    [token, loadTasksForSpace]
+  )
 
   /* eslint-disable react-hooks/exhaustive-deps */
   useEffect(() => {
@@ -229,6 +237,49 @@ export default function useHomeWorkspaceData({
     }
   }, [token, rehydrated, setUser, setOrganization])
   /* eslint-enable react-hooks/exhaustive-deps */
+
+  useEffect(() => {
+    if (!token || !selectedOrganizationId) return
+
+    return subscribeToWorkspaceEvents({
+      token,
+      organizationId: selectedOrganizationId,
+      onEvent: (event) => {
+        if (event.type === 'connected') return
+
+        void (async () => {
+          if (
+            event.type === 'space.changed' ||
+            event.type === 'organization.changed'
+          ) {
+            await loadSpacesForOrganization(selectedOrganizationId)
+            return
+          }
+
+          if (event.type === 'user.changed') {
+            const usersRes = await fetch('/api/user', {
+              headers: buildAuthHeaders(token),
+            })
+            if (usersRes.ok) {
+              const usersData = (await usersRes.json()) as StoreUser[]
+              setUsers(Array.isArray(usersData) ? usersData : [])
+            }
+          }
+
+          await loadTasksForSpace(selectedOrganizationId, selectedSpaceId)
+        })()
+      },
+      onError: () => {
+        // Ignore transient stream reconnect errors in the UI.
+      },
+    })
+  }, [
+    token,
+    selectedOrganizationId,
+    selectedSpaceId,
+    loadTasksForSpace,
+    loadSpacesForOrganization,
+  ])
 
   return {
     checking,

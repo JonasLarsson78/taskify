@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { canManageWorkspace } from '../../../lib/user-role'
+import { publishWorkspaceEvent } from '../../../lib/realtime/workspace-events'
 import { forbidden, requireApiUser } from '../_lib/authorization'
 import {
   createUser,
@@ -66,6 +67,7 @@ export async function POST(request: Request) {
 
     await ensureOrganizationExists(input.organizationId)
     const safe = await createUser(input)
+    publishWorkspaceEvent(safe.organizationId, 'user.changed')
 
     return NextResponse.json(safe)
   } catch (e) {

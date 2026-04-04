@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   buildAuthHeaders,
   buildJsonAuthHeaders,
 } from '../../../lib/request-headers'
+import { subscribeToWorkspaceEvents } from '../../../lib/realtime/client'
 import { canWriteTasks } from '../../../lib/user-role'
 import type { Goal, SpaceItem, TaskItem, VerifiedUser } from '../model'
 
@@ -41,6 +42,37 @@ export default function useGoalsPage({
 
   const canWrite = canWriteTasks(user?.role || 'guest')
 
+  const reloadGoalsData = useCallback(
+    async (organizationId: number) => {
+      const [goalsResponse, tasksResponse, spacesResponse] = await Promise.all([
+        fetch(`/api/goal?organizationId=${organizationId}`, {
+          headers: buildAuthHeaders(token),
+        }),
+        fetch(`/api/task?organizationId=${organizationId}&archived=include`, {
+          headers: buildAuthHeaders(token),
+        }),
+        fetch(`/api/space?organizationId=${organizationId}`, {
+          headers: buildAuthHeaders(token),
+        }),
+      ])
+
+      const goalsData = goalsResponse.ok
+        ? ((await goalsResponse.json()) as Goal[])
+        : []
+      const tasksData = tasksResponse.ok
+        ? ((await tasksResponse.json()) as TaskItem[])
+        : []
+      const spacesData = spacesResponse.ok
+        ? ((await spacesResponse.json()) as SpaceItem[])
+        : []
+
+      setGoals(Array.isArray(goalsData) ? goalsData : [])
+      setTasks(Array.isArray(tasksData) ? tasksData : [])
+      setSpaces(Array.isArray(spacesData) ? spacesData : [])
+    },
+    [token]
+  )
+
   useEffect(() => {
     let mounted = true
 
@@ -75,39 +107,10 @@ export default function useGoalsPage({
 
         const orgId = verifiedUser.organizationId
 
-        const [goalsResponse, tasksResponse, spacesResponse] =
-          await Promise.all([
-            fetch(`/api/goal?organizationId=${orgId}`, {
-              headers: buildAuthHeaders(token),
-            }),
-            fetch(`/api/task?organizationId=${orgId}&archived=include`, {
-              headers: buildAuthHeaders(token),
-            }),
-            fetch(`/api/space?organizationId=${orgId}`, {
-              headers: buildAuthHeaders(token),
-            }),
-          ])
-
-        const goalsData = goalsResponse.ok
-          ? ((await goalsResponse.json()) as Goal[])
-          : []
-        const tasksData = tasksResponse.ok
-          ? ((await tasksResponse.json()) as TaskItem[])
-          : []
-        const spacesData = spacesResponse.ok
-          ? ((await spacesResponse.json()) as SpaceItem[])
-          : []
-
         if (!mounted) return
 
         setUser(verifiedUser)
-        setGoals(Array.isArray(goalsData) ? goalsData : [])
-        setTasks(Array.isArray(tasksData) ? tasksData : [])
-        setSpaces(Array.isArray(spacesData) ? spacesData : [])
-
-        if (!goalsResponse.ok || !tasksResponse.ok || !spacesResponse.ok) {
-          setError('Some goal data could not be loaded.')
-        }
+        await reloadGoalsData(orgId)
       } catch (loadError) {
         console.error('goals load error', loadError)
         if (mounted) {
@@ -123,7 +126,24 @@ export default function useGoalsPage({
     return () => {
       mounted = false
     }
-  }, [rehydrated, token, redirectToLogin, redirectToHome])
+  }, [rehydrated, token, redirectToLogin, redirectToHome, reloadGoalsData])
+
+  useEffect(() => {
+    const organizationId = user?.organizationId
+    if (!token || !organizationId) return
+
+    return subscribeToWorkspaceEvents({
+      token,
+      organizationId,
+      onEvent: (event) => {
+        if (event.type === 'connected') return
+        void reloadGoalsData(organizationId)
+      },
+      onError: () => {
+        // Ignore transient stream reconnect errors in the UI.
+      },
+    })
+  }, [token, user?.organizationId, reloadGoalsData])
 
   const visibleTasks = useMemo(() => {
     const selectedSpace = Number.parseInt(spaceId, 10)

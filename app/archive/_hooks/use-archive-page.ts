@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import {
   buildAuthHeaders,
   buildJsonAuthHeaders,
 } from '../../../lib/request-headers'
+import { subscribeToWorkspaceEvents } from '../../../lib/realtime/client'
 import type { ApiTask, Organization, StoreUser } from '../../home/model'
 
 type UseArchivePageParams = {
@@ -22,6 +23,23 @@ export default function useArchivePage({
   const [integrationError, setIntegrationError] = useState<string | null>(null)
   const [busyTaskId, setBusyTaskId] = useState<number | null>(null)
   const [currentUser, setCurrentUser] = useState<StoreUser | null>(null)
+
+  const reloadArchivedTasks = useCallback(
+    async (organizationId: number | null) => {
+      const url = organizationId
+        ? `/api/task?organizationId=${organizationId}&archived=only`
+        : '/api/task?archived=only'
+
+      const taskResponse = await fetch(url, {
+        headers: buildAuthHeaders(token),
+      })
+      if (!taskResponse.ok) return
+
+      const taskData = (await taskResponse.json()) as ApiTask[]
+      setTasks(Array.isArray(taskData) ? taskData : [])
+    },
+    [token]
+  )
 
   async function updateArchivedTask(taskId: number, archivedAt: string | null) {
     setBusyTaskId(taskId)
@@ -131,22 +149,7 @@ export default function useArchivePage({
           }
         }
 
-        const url = organizationId
-          ? `/api/task?organizationId=${organizationId}&archived=only`
-          : '/api/task?archived=only'
-
-        const taskResponse = await fetch(url, {
-          headers: buildAuthHeaders(token),
-        })
-        if (!taskResponse.ok) {
-          const data = await taskResponse.json().catch(() => null)
-          throw new Error(data?.error || 'Failed to load archived tasks')
-        }
-
-        const taskData = (await taskResponse.json()) as ApiTask[]
-        if (mounted) {
-          setTasks(Array.isArray(taskData) ? taskData : [])
-        }
+        await reloadArchivedTasks(organizationId)
       } catch (error) {
         console.error('archive page load error', error)
         if (mounted) setIntegrationError('Failed to load archive.')
@@ -160,7 +163,24 @@ export default function useArchivePage({
     return () => {
       mounted = false
     }
-  }, [rehydrated, token, redirectToLogin])
+  }, [rehydrated, token, redirectToLogin, reloadArchivedTasks])
+
+  useEffect(() => {
+    const organizationId = currentUser?.organizationId
+    if (!token || !organizationId) return
+
+    return subscribeToWorkspaceEvents({
+      token,
+      organizationId,
+      onEvent: (event) => {
+        if (event.type === 'connected') return
+        void reloadArchivedTasks(organizationId)
+      },
+      onError: () => {
+        // Ignore transient stream reconnect errors in the UI.
+      },
+    })
+  }, [token, currentUser?.organizationId, reloadArchivedTasks])
 
   return {
     checking,

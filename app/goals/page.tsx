@@ -1,5 +1,6 @@
 'use client'
 
+import { useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Loader from '../components/loader/loader'
 import useStore from '../../lib/store'
@@ -11,6 +12,8 @@ import useGoalsPage from './_hooks/use-goals-page'
 
 export default function GoalsPage() {
   const router = useRouter()
+  const redirectToLogin = useCallback(() => router.replace('/login'), [router])
+  const redirectToHome = useCallback(() => router.replace('/home'), [router])
   const token = useStore((s) => s.token)
   const rehydrated = useStore((s) => s.rehydrated)
   const user = useStore((s) => s.user)
@@ -53,8 +56,8 @@ export default function GoalsPage() {
   } = useGoalsPage({
     token,
     rehydrated,
-    redirectToLogin: () => router.replace('/login'),
-    redirectToHome: () => router.replace('/home'),
+    redirectToLogin,
+    redirectToHome,
   })
 
   if (checking) {

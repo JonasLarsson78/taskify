@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { canManageWorkspace } from '../../../../lib/user-role'
+import { publishWorkspaceEvent } from '../../../../lib/realtime/workspace-events'
 import {
   forbidden,
   isSameOrganization,
@@ -96,6 +97,7 @@ export async function PUT(
     }
 
     const updated = await updateOrganizationName(organizationId, name)
+    publishWorkspaceEvent(organizationId, 'organization.changed')
     return NextResponse.json(updated)
   } catch (e) {
     console.error('PUT /api/organization/[id] error', e)

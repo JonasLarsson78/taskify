@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   buildAuthHeaders,
   buildJsonAuthHeaders,
@@ -39,6 +39,7 @@ export default function useHomeTaskActions({
   const [editTaskPriority, setEditTaskPriority] = useState<
     'High' | 'Normal' | 'Low'
   >('Normal')
+  const [editTaskDirty, setEditTaskDirty] = useState(false)
 
   const [newTaskTitle, setNewTaskTitle] = useState('')
   const [newTaskMeta, setNewTaskMeta] = useState('')
@@ -133,8 +134,65 @@ export default function useHomeTaskActions({
     setEditTaskAssigneeIds(source.assigneeIds)
     setEditTaskSection(source.section)
     setEditTaskPriority(source.priority)
+    setEditTaskDirty(false)
     setEditTaskModalOpen(true)
   }
+
+  function handleEditTaskTitleChange(value: string) {
+    setEditTaskDirty(true)
+    setEditTaskTitle(value)
+  }
+
+  function handleEditTaskMetaChange(value: string) {
+    setEditTaskDirty(true)
+    setEditTaskMeta(value)
+  }
+
+  function handleEditTaskDueDateChange(value: string) {
+    setEditTaskDirty(true)
+    setEditTaskDueDate(value)
+  }
+
+  function handleEditTaskAssigneeIdsChange(value: number[]) {
+    setEditTaskDirty(true)
+    setEditTaskAssigneeIds(value)
+  }
+
+  function handleEditTaskSectionChange(value: string) {
+    setEditTaskDirty(true)
+    setEditTaskSection(value)
+  }
+
+  function handleEditTaskPriorityChange(value: 'High' | 'Normal' | 'Low') {
+    setEditTaskDirty(true)
+    setEditTaskPriority(value)
+  }
+
+  function handleEditTaskColorChange(value: string) {
+    setEditTaskDirty(true)
+    setEditTaskColor(value)
+  }
+
+  useEffect(() => {
+    if (!editTaskModalOpen || !editTaskId) return
+
+    const source = tasks.find((item) => item.id === editTaskId)
+    if (!source) {
+      setEditTaskModalOpen(false)
+      setEditTaskId(null)
+      return
+    }
+
+    if (editTaskDirty) return
+
+    setEditTaskTitle(source.title)
+    setEditTaskMeta(source.meta || '')
+    setEditTaskDueDate(toInputDate(source.dueDate))
+    setEditTaskColor(source.color || '#716bff')
+    setEditTaskAssigneeIds(source.assigneeIds)
+    setEditTaskSection(source.section)
+    setEditTaskPriority(source.priority)
+  }, [editTaskModalOpen, editTaskId, editTaskDirty, tasks])
 
   async function saveEditedTask() {
     if (!editTaskId) return
@@ -156,6 +214,7 @@ export default function useHomeTaskActions({
     })
 
     if (ok) {
+      setEditTaskDirty(false)
       setEditTaskModalOpen(false)
     }
   }
@@ -345,6 +404,13 @@ export default function useHomeTaskActions({
     setNewTaskSection,
     setNewTaskPriority,
     handleOpenTask,
+    handleEditTaskTitleChange,
+    handleEditTaskMetaChange,
+    handleEditTaskDueDateChange,
+    handleEditTaskAssigneeIdsChange,
+    handleEditTaskSectionChange,
+    handleEditTaskPriorityChange,
+    handleEditTaskColorChange,
     saveEditedTask,
     handleTogglePriority,
     handleMoveTask,

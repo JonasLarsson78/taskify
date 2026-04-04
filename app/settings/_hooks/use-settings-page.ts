@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import {
   buildAuthHeaders,
   buildJsonAuthHeaders,
 } from '../../../lib/request-headers'
+import { subscribeToWorkspaceEvents } from '../../../lib/realtime/client'
 import { canWriteTasks } from '../../../lib/user-role'
 import useStore from '../../../lib/store'
 import type { Organization, Space, StoreUser } from '../../home/model'
@@ -53,6 +54,55 @@ export default function useSettingsPage({
   const [newAdminUserRole, setNewAdminUserRole] = useState<
     'admin' | 'user' | 'guest'
   >('user')
+
+  const reloadAdminData = useCallback(
+    async (organizationId: number) => {
+      if (!currentUser || currentUser.role !== 'admin') return
+
+      const [usersResponse, spacesResponse, organizationResponse] =
+        await Promise.all([
+          fetch('/api/user', { headers: buildAuthHeaders(token) }),
+          fetch(`/api/space?organizationId=${organizationId}`, {
+            headers: buildAuthHeaders(token),
+          }),
+          fetch(`/api/organization/${organizationId}`, {
+            headers: buildAuthHeaders(token),
+          }),
+        ])
+
+      if (usersResponse.ok) {
+        const users = (await usersResponse.json()) as StoreUser[]
+        const safeUsers = Array.isArray(users) ? users : []
+        setAdminUsers(safeUsers)
+
+        if (selectedMemberUserId === null && safeUsers[0]?.id) {
+          setSelectedMemberUserId(safeUsers[0].id)
+        }
+      }
+
+      if (spacesResponse.ok) {
+        const spaces = (await spacesResponse.json()) as Space[]
+        const safeSpaces = Array.isArray(spaces) ? spaces : []
+        setAdminSpaces(safeSpaces)
+
+        if (selectedMemberUserId !== null) {
+          const selectedUserSpaceIds = safeSpaces
+            .filter((space) =>
+              (space.memberIds || []).includes(selectedMemberUserId)
+            )
+            .map((space) => space.id)
+          setMemberSpaceDraftIds(selectedUserSpaceIds)
+        }
+      }
+
+      if (organizationResponse.ok) {
+        const orgData = (await organizationResponse.json()) as Organization
+        setOrganization(orgData)
+        setAdminOrgName(orgData.name || '')
+      }
+    },
+    [token, currentUser, selectedMemberUserId, setOrganization]
+  )
 
   useEffect(() => {
     let mounted = true
@@ -153,6 +203,36 @@ export default function useSettingsPage({
       mounted = false
     }
   }, [rehydrated, token, redirectToLogin, redirectToHome])
+
+  useEffect(() => {
+    const organizationId = currentUser?.organizationId
+    if (!token || !organizationId) return
+
+    return subscribeToWorkspaceEvents({
+      token,
+      organizationId,
+      onEvent: (event) => {
+        if (event.type === 'connected') return
+
+        if (
+          event.type === 'space.changed' ||
+          event.type === 'user.changed' ||
+          event.type === 'organization.changed'
+        ) {
+          void reloadAdminData(organizationId)
+        }
+      },
+      onError: () => {
+        // Ignore transient stream reconnect errors in the UI.
+      },
+    })
+  }, [
+    token,
+    currentUser?.organizationId,
+    currentUser?.role,
+    selectedMemberUserId,
+    reloadAdminData,
+  ])
 
   useEffect(() => {
     if (!organization?.name) return
