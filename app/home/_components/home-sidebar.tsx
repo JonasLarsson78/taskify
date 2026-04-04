@@ -1,6 +1,7 @@
 import styles from '../page.module.css'
 import type { Space, ViewMode } from '../model'
 import { getInitial } from '../model'
+import type { AppContent } from '../../../lib/content'
 
 type HomeSidebarProps = {
   personInitials: string
@@ -16,6 +17,7 @@ type HomeSidebarProps = {
   onSelectSpace: (space: Space) => void
   onCreateSpace: () => void
   canCreateSpace: boolean
+  content: AppContent['home']['sidebar']
 }
 
 export default function HomeSidebar({
@@ -32,6 +34,7 @@ export default function HomeSidebar({
   onSelectSpace,
   onCreateSpace,
   canCreateSpace,
+  content,
 }: HomeSidebarProps) {
   return (
     <aside className={styles.sidebar}>
@@ -39,12 +42,12 @@ export default function HomeSidebar({
         <span className={styles.brandMark} />
         <div className={styles.brandText}>
           <div className={styles.brandTitle}>Taskify</div>
-          <div className={styles.brandSub}>Work faster, stay aligned</div>
+          <div className={styles.brandSub}>{content.brandSub}</div>
         </div>
       </div>
 
       <section className={styles.navSection}>
-        <div className={styles.sectionLabel}>Workspace</div>
+        <div className={styles.sectionLabel}>{content.workspace}</div>
         <button
           className={`${styles.navItem} ${
             viewMode === 'list' ? styles.navItemActive : ''
@@ -54,7 +57,7 @@ export default function HomeSidebar({
           title="Open home view"
         >
           <span className={styles.navIcon}>⌂</span>
-          Home
+          {content.home}
         </button>
         <button
           className={`${styles.navItem} ${
@@ -65,7 +68,7 @@ export default function HomeSidebar({
           title="Open notifications view"
         >
           <span className={styles.navIcon}>◌</span>
-          Notifications
+          {content.notifications}
         </button>
         <button
           className={styles.navItem}
@@ -74,7 +77,7 @@ export default function HomeSidebar({
           title="Open goals view"
         >
           <span className={styles.navIcon}>◎</span>
-          Goals
+          {content.goals}
         </button>
         <button
           className={styles.navItem}
@@ -82,12 +85,12 @@ export default function HomeSidebar({
           onClick={onOpenArchive}
         >
           <span className={styles.navIcon}>▣</span>
-          Archive
+          {content.archive}
         </button>
       </section>
 
       <section className={styles.navSection}>
-        <div className={styles.sectionLabel}>Spaces</div>
+        <div className={styles.sectionLabel}>{content.spaces}</div>
         {spaces.length > 0 ? (
           spaces.map((space) => {
             const isActive = selectedSpaceId === space.id
@@ -109,7 +112,7 @@ export default function HomeSidebar({
             )
           })
         ) : (
-          <div className={styles.brandSub}>No spaces found</div>
+          <div className={styles.brandSub}>{content.noSpaces}</div>
         )}
 
         {canCreateSpace ? (
@@ -119,7 +122,7 @@ export default function HomeSidebar({
             onClick={onCreateSpace}
           >
             <span className={styles.navIcon}>+</span>
-            New Space
+            {content.newSpace}
           </button>
         ) : null}
       </section>

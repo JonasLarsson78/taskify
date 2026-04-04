@@ -1,4 +1,5 @@
 import styles from '../page.module.css'
+import type { AppContent } from '../../../lib/content'
 
 type HomeOverviewProps = {
   taskCount: number
@@ -7,6 +8,7 @@ type HomeOverviewProps = {
   dueThisWeek: number
   hasTasks: boolean
   busiestSection: string
+  content: AppContent['home']['overview']
 }
 
 export default function HomeOverview({
@@ -16,32 +18,33 @@ export default function HomeOverview({
   dueThisWeek,
   hasTasks,
   busiestSection,
+  content,
 }: HomeOverviewProps) {
   return (
     <section className={styles.overview}>
       <article className={styles.statCard}>
-        <div className={styles.statLabel}>Open Tasks</div>
+        <div className={styles.statLabel}>{content.openTasks}</div>
         <div className={styles.statValue}>{taskCount}</div>
         <div className={styles.statHint}>
           {taskCount > 0
-            ? `${taskCount} tasks synced from /api/task.`
-            : 'No tasks in DB yet.'}
+            ? content.openTasksSynced(taskCount)
+            : content.noTasksInDb}
         </div>
       </article>
       <article className={styles.statCard}>
-        <div className={styles.statLabel}>Users</div>
+        <div className={styles.statLabel}>{content.users}</div>
         <div className={styles.statValue}>{userCount}</div>
         <div className={styles.statHint}>
-          {usersWithEmail} users have connected emails.
+          {content.usersConnectedEmails(usersWithEmail)}
         </div>
       </article>
       <article className={styles.statCard}>
-        <div className={styles.statLabel}>Due This Week</div>
+        <div className={styles.statLabel}>{content.dueThisWeek}</div>
         <div className={styles.statValue}>{Math.max(dueThisWeek, 0)}</div>
         <div className={styles.statHint}>
           {hasTasks
-            ? `${busiestSection} lane is the busiest.`
-            : 'No task activity yet.'}
+            ? content.busiestLane(busiestSection)
+            : content.noTaskActivity}
         </div>
       </article>
     </section>

@@ -44,6 +44,7 @@ export async function createUser(input: CreateUserInput) {
       password: hashedPassword,
       role: input.role,
       organizationId: input.organizationId,
+      preferredLanguage: input.preferredLanguage,
     },
     include: { organization: true },
   })
@@ -67,6 +68,7 @@ export async function updateUser(userId: number, input: UpdateUserInput) {
     password?: string | null
     role?: UpdateUserInput['role']
     organizationId?: number | null
+    preferredLanguage?: UpdateUserInput['preferredLanguage']
   } = {}
 
   if (input.name !== undefined) {
@@ -89,6 +91,10 @@ export async function updateUser(userId: number, input: UpdateUserInput) {
 
   if (input.organizationId !== undefined) {
     data.organizationId = input.organizationId
+  }
+
+  if (input.preferredLanguage !== undefined) {
+    data.preferredLanguage = input.preferredLanguage
   }
 
   const updated = await prisma.user.update({

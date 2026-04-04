@@ -3,11 +3,13 @@ import { useState, type DragEvent } from 'react'
 import type { AssigneeOption, BoardGroup, UiTask } from '../model'
 import { isCompletedSection } from '../model'
 import TaskAssigneeDropdown from './task-assignee-dropdown'
+import type { AppContent } from '../../../lib/content'
 
 type HomeTaskBoardProps = {
   groups: BoardGroup[]
   busyTaskId: number | null
   assigneeOptions: AssigneeOption[]
+  taskContent: AppContent['home']['task']
   onTogglePriority: (task: UiTask) => void
   onMoveTask: (task: UiTask, targetSection: string) => void
   onAssigneesChange: (task: UiTask, assigneeId: number | null) => void
@@ -18,6 +20,7 @@ export default function HomeTaskBoard({
   groups,
   busyTaskId,
   assigneeOptions,
+  taskContent,
   onTogglePriority,
   onMoveTask,
   onAssigneesChange,
@@ -67,10 +70,10 @@ export default function HomeTaskBoard({
   return (
     <section className={styles.board}>
       <div className={styles.tableHead}>
-        <div>Task</div>
-        <div>Assignee</div>
-        <div>Due Date</div>
-        <div>Priority</div>
+        <div>{taskContent.taskLabel}</div>
+        <div>{taskContent.assigneeLabel}</div>
+        <div>{taskContent.duePrefix}</div>
+        <div>{taskContent.priorityPrefix}</div>
       </div>
 
       <div className={styles.columnGroup}>
@@ -116,7 +119,9 @@ export default function HomeTaskBoard({
                     <div className={styles.taskTitleRow}>
                       <div className={styles.taskTitle}>{task.title}</div>
                       {isCompletedSection(task.section) ? (
-                        <span className={styles.taskDoneBadge}>Klar</span>
+                        <span className={styles.taskDoneBadge}>
+                          {taskContent.done}
+                        </span>
                       ) : null}
                     </div>
                   </div>
@@ -127,6 +132,7 @@ export default function HomeTaskBoard({
                     value={task.assigneeIds}
                     options={assigneeOptions}
                     busy={busyTaskId === task.id}
+                    unassignedLabel={taskContent.unassigned}
                     onSelect={(nextAssigneeId) =>
                       onAssigneesChange(task, nextAssigneeId)
                     }
@@ -158,10 +164,10 @@ export default function HomeTaskBoard({
                       >
                         <span className={styles.priorityBadgeDot} />
                         {task.priority === 'High'
-                          ? 'High'
+                          ? taskContent.high
                           : task.priority === 'Low'
-                          ? 'Low'
-                          : 'Normal'}
+                          ? taskContent.low
+                          : taskContent.normal}
                       </button>
                     ) : (
                       <span
@@ -175,10 +181,10 @@ export default function HomeTaskBoard({
                       >
                         <span className={styles.priorityBadgeDot} />
                         {task.priority === 'High'
-                          ? 'High'
+                          ? taskContent.high
                           : task.priority === 'Low'
-                          ? 'Low'
-                          : 'Normal'}
+                          ? taskContent.low
+                          : taskContent.normal}
                       </span>
                     )}
                   </div>

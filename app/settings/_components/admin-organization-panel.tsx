@@ -1,8 +1,10 @@
 import styles from '../../home/page.module.css'
+import type { AppContent } from '../../../lib/content'
 
 type AdminOrganizationPanelProps = {
   adminOrgName: string
   adminBusy: boolean
+  content: AppContent['settings']['adminOrganization']
   onChangeName: (value: string) => void
   onSave: () => void
 }
@@ -10,6 +12,7 @@ type AdminOrganizationPanelProps = {
 export default function AdminOrganizationPanel({
   adminOrgName,
   adminBusy,
+  content,
   onChangeName,
   onSave,
 }: AdminOrganizationPanelProps) {
@@ -18,22 +21,24 @@ export default function AdminOrganizationPanel({
       className={`${styles.settingsPanel} ${styles.settingsPanelCompact}`}
     >
       <div className={styles.settingsPanelHeader}>
-        <div className={styles.settingsPanelTitle}>Admin: Organization</div>
-        <div className={styles.settingsHelp}>Manage organization name</div>
+        <div className={styles.settingsPanelTitle}>{content.title}</div>
+        <div className={styles.settingsHelp}>{content.subtitle}</div>
       </div>
 
       <div className={`${styles.settingsGrid} ${styles.settingsGridWide}`}>
         <label
           className={`${styles.settingsField} ${styles.settingsFieldFull}`}
         >
-          <span className={styles.sectionLabel}>Organization Name</span>
+          <span className={styles.sectionLabel}>
+            {content.organizationName}
+          </span>
           <input
             className={styles.createInput}
             type="text"
             value={adminOrgName}
             disabled={adminBusy}
             onChange={(event) => onChangeName(event.target.value)}
-            placeholder="Organization name"
+            placeholder={content.organizationNamePlaceholder}
           />
         </label>
       </div>
@@ -45,7 +50,7 @@ export default function AdminOrganizationPanel({
           disabled={adminBusy}
           onClick={onSave}
         >
-          {adminBusy ? 'Saving...' : 'Save Organization'}
+          {adminBusy ? content.savingOrganization : content.saveOrganization}
         </button>
       </div>
     </section>

@@ -1,6 +1,7 @@
 import styles from '../page.module.css'
 import type { AssigneeOption } from '../model'
 import MarkdownLiveEditor from './markdown-live-editor'
+import type { AppContent } from '../../../lib/content'
 
 type CreateTaskModalProps = {
   open: boolean
@@ -14,6 +15,9 @@ type CreateTaskModalProps = {
   sectionOptions: string[]
   priority: 'High' | 'Normal' | 'Low'
   color: string
+  content: AppContent['home']['createModal']
+  commonContent: AppContent['common']
+  taskContent: AppContent['home']['task']
   onClose: () => void
   onSubmit: () => void
   onTitleChange: (value: string) => void
@@ -37,6 +41,9 @@ export default function CreateTaskModal({
   sectionOptions,
   priority,
   color,
+  content,
+  commonContent,
+  taskContent,
   onClose,
   onSubmit,
   onTitleChange,
@@ -64,10 +71,8 @@ export default function CreateTaskModal({
       >
         <div className={styles.modalHeader}>
           <div>
-            <div className={styles.modalTitle}>Create Task</div>
-            <div className={styles.modalSub}>
-              Fill in details and add to board
-            </div>
+            <div className={styles.modalTitle}>{content.title}</div>
+            <div className={styles.modalSub}>{content.subtitle}</div>
           </div>
           <button
             type="button"
@@ -75,7 +80,7 @@ export default function CreateTaskModal({
             disabled={busy}
             onClick={onClose}
           >
-            Close
+            {commonContent.close}
           </button>
         </div>
 
@@ -83,7 +88,7 @@ export default function CreateTaskModal({
           <input
             className={styles.createInput}
             type="text"
-            placeholder="Task title"
+            placeholder={content.taskTitlePlaceholder}
             value={title}
             onChange={(e) => onTitleChange(e.target.value)}
           />
@@ -92,7 +97,7 @@ export default function CreateTaskModal({
             <MarkdownLiveEditor
               value={meta}
               onChange={onMetaChange}
-              placeholder="Task description (Markdown supported)"
+              placeholder={content.descriptionPlaceholder}
               disabled={busy}
             />
           </div>
@@ -142,13 +147,15 @@ export default function CreateTaskModal({
               onPriorityChange(e.target.value as 'High' | 'Normal' | 'Low')
             }
           >
-            <option value="High">High</option>
-            <option value="Normal">Normal</option>
-            <option value="Low">Low</option>
+            <option value="High">{taskContent.high}</option>
+            <option value="Normal">{taskContent.normal}</option>
+            <option value="Low">{taskContent.low}</option>
           </select>
 
           <label className={styles.createColorField}>
-            <span className={styles.createColorLabel}>Task color</span>
+            <span className={styles.createColorLabel}>
+              {content.colorLabel}
+            </span>
             <input
               className={styles.createColorInput}
               type="color"
@@ -165,7 +172,7 @@ export default function CreateTaskModal({
             disabled={busy}
             onClick={onClose}
           >
-            Cancel
+            {commonContent.cancel}
           </button>
           <button
             className={styles.createTaskButton}
@@ -173,7 +180,7 @@ export default function CreateTaskModal({
             disabled={busy}
             onClick={onSubmit}
           >
-            {busy ? 'Creating...' : 'Create Task'}
+            {busy ? content.creating : content.create}
           </button>
         </div>
       </div>

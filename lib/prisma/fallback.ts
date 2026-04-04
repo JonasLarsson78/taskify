@@ -16,10 +16,10 @@ export async function createMysqlFallback(): Promise<FallbackClient> {
     database: u.pathname.replace(/^\//, ''),
   })
 
-  let userRoleColumnEnsured = false
+  let userColumnsEnsured = false
 
-  async function ensureUserRoleColumn() {
-    if (userRoleColumnEnsured) return
+  async function ensureUserColumns() {
+    if (userColumnsEnsured) return
 
     try {
       await pool.query(
@@ -29,7 +29,15 @@ export async function createMysqlFallback(): Promise<FallbackClient> {
       // Ignore if the column already exists.
     }
 
-    userRoleColumnEnsured = true
+    try {
+      await pool.query(
+        "ALTER TABLE `User` ADD COLUMN `preferredLanguage` VARCHAR(16) NOT NULL DEFAULT 'sv'"
+      )
+    } catch {
+      // Ignore if the column already exists.
+    }
+
+    userColumnsEnsured = true
   }
 
   return {
@@ -39,7 +47,7 @@ export async function createMysqlFallback(): Promise<FallbackClient> {
     },
     user: {
       async findUnique(opts: { where: { id?: number; email?: string } }) {
-        await ensureUserRoleColumn()
+        await ensureUserColumns()
         const where = opts?.where ?? {}
 
         if (typeof where.id === 'number') {
@@ -55,6 +63,7 @@ export async function createMysqlFallback(): Promise<FallbackClient> {
             email: r.email,
             password: r.password,
             role: r.role,
+            preferredLanguage: r.preferredLanguage || 'sv',
             createdAt: r.createdAt,
             organizationId: r.organization_id,
           } as User
@@ -73,6 +82,7 @@ export async function createMysqlFallback(): Promise<FallbackClient> {
             email: r.email,
             password: r.password,
             role: r.role,
+            preferredLanguage: r.preferredLanguage || 'sv',
             createdAt: r.createdAt,
             organizationId: r.organization_id,
           } as User
@@ -82,7 +92,7 @@ export async function createMysqlFallback(): Promise<FallbackClient> {
       },
 
       async findMany(opts: { include?: { organization?: boolean } } = {}) {
-        await ensureUserRoleColumn()
+        await ensureUserColumns()
         const includeOrg = !!opts.include?.organization
         const sql = includeOrg
           ? 'SELECT u.*, o.id as o_id, o.name as o_name, o.address as o_address, o.city as o_city, o.zip as o_zip, o.phone as o_phone, o.email as o_email, o.createdAt as o_createdAt FROM `User` u LEFT JOIN `Organization` o ON u.organization_id = o.id'
@@ -97,6 +107,7 @@ export async function createMysqlFallback(): Promise<FallbackClient> {
             email: r.email,
             password: r.password,
             role: r.role,
+            preferredLanguage: r.preferredLanguage || 'sv',
             createdAt: r.createdAt,
             organizationId: r.organization_id,
           }
@@ -124,15 +135,16 @@ export async function createMysqlFallback(): Promise<FallbackClient> {
         data: Partial<User> & { organizationId?: number | null }
         include?: { organization?: boolean }
       }) {
-        await ensureUserRoleColumn()
+        await ensureUserColumns()
         const data = opts.data || {}
         const [res] = await pool.query<ResultSetHeader>(
-          'INSERT INTO `User` (name,email,password,role,organization_id,createdAt) VALUES (?, ?, ?, ?, ?, NOW())',
+          'INSERT INTO `User` (name,email,password,role,preferredLanguage,organization_id,createdAt) VALUES (?, ?, ?, ?, ?, ?, NOW())',
           [
             data.name ?? null,
             data.email ?? null,
             data.password ?? null,
             data.role ?? 'user',
+            data.preferredLanguage ?? 'sv',
             data.organizationId ?? null,
           ]
         )
@@ -152,6 +164,7 @@ export async function createMysqlFallback(): Promise<FallbackClient> {
             email: r.email,
             password: r.password,
             role: r.role,
+            preferredLanguage: r.preferredLanguage || 'sv',
             createdAt: r.createdAt,
             organizationId: r.organization_id,
             organization: r.o_id
@@ -182,6 +195,7 @@ export async function createMysqlFallback(): Promise<FallbackClient> {
           email: r.email,
           password: r.password,
           role: r.role,
+          preferredLanguage: r.preferredLanguage || 'sv',
           createdAt: r.createdAt,
           organizationId: r.organization_id,
         } as User
@@ -192,7 +206,7 @@ export async function createMysqlFallback(): Promise<FallbackClient> {
         data: Partial<User> & { organizationId?: number | null }
         include?: { organization?: boolean }
       }) {
-        await ensureUserRoleColumn()
+        await ensureUserColumns()
         const id = opts.where.id
         const data = opts.data || {}
         const existing = await this.findUnique({ where: { id } })
@@ -202,12 +216,13 @@ export async function createMysqlFallback(): Promise<FallbackClient> {
         }
 
         await pool.query(
-          'UPDATE `User` SET name = ?, email = ?, password = ?, role = ?, organization_id = ? WHERE id = ? LIMIT 1',
+          'UPDATE `User` SET name = ?, email = ?, password = ?, role = ?, preferredLanguage = ?, organization_id = ? WHERE id = ? LIMIT 1',
           [
             data.name ?? existing.name ?? null,
             data.email ?? existing.email ?? null,
             data.password ?? existing.password ?? null,
             data.role ?? existing.role ?? 'user',
+            data.preferredLanguage ?? existing.preferredLanguage ?? 'sv',
             data.organizationId ?? existing.organizationId ?? null,
             id,
           ]
@@ -227,6 +242,7 @@ export async function createMysqlFallback(): Promise<FallbackClient> {
             email: r.email,
             password: r.password,
             role: r.role,
+            preferredLanguage: r.preferredLanguage || 'sv',
             createdAt: r.createdAt,
             organizationId: r.organization_id,
             organization: r.o_id
@@ -257,6 +273,7 @@ export async function createMysqlFallback(): Promise<FallbackClient> {
           email: r.email,
           password: r.password,
           role: r.role,
+          preferredLanguage: r.preferredLanguage || 'sv',
           createdAt: r.createdAt,
           organizationId: r.organization_id,
         } as User

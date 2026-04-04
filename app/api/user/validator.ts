@@ -1,11 +1,14 @@
 import { normalizeUserRole, type UserRole } from '../../../lib/user-role'
 
+export type PreferredLanguage = 'sv' | 'en'
+
 export type CreateUserInput = {
   name: string | null
   email: string | null
   password: string | null
   role: UserRole
   organizationId: number | null
+  preferredLanguage: PreferredLanguage
 }
 
 export type UpdateUserInput = {
@@ -14,6 +17,7 @@ export type UpdateUserInput = {
   password?: string | null
   role?: UserRole
   organizationId?: number | null
+  preferredLanguage?: PreferredLanguage
 }
 
 export async function parseJsonBody(request: Request): Promise<unknown> {
@@ -22,6 +26,7 @@ export async function parseJsonBody(request: Request): Promise<unknown> {
 
 export function normalizeCreateUserInput(body: unknown): CreateUserInput {
   const b = (body ?? {}) as Record<string, unknown>
+  const preferredLanguage = b.preferredLanguage === 'en' ? 'en' : 'sv'
 
   return {
     name: typeof b.name === 'string' ? b.name : null,
@@ -30,6 +35,7 @@ export function normalizeCreateUserInput(body: unknown): CreateUserInput {
     role: normalizeUserRole(b.role),
     organizationId:
       typeof b.organizationId === 'number' ? b.organizationId : null,
+    preferredLanguage,
   }
 }
 
@@ -66,6 +72,13 @@ export function normalizeUpdateUserInput(
   if (typeof b.organizationId === 'number' || b.organizationId === null) {
     patch.organizationId =
       typeof b.organizationId === 'number' ? b.organizationId : null
+  }
+
+  if (typeof b.preferredLanguage === 'string') {
+    if (b.preferredLanguage !== 'sv' && b.preferredLanguage !== 'en') {
+      return { ok: false, error: 'preferredLanguage must be sv or en' }
+    }
+    patch.preferredLanguage = b.preferredLanguage
   }
 
   if (Object.keys(patch).length === 0) {

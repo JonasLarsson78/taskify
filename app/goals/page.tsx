@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation'
 import Loader from '../components/loader/loader'
 import useStore from '../../lib/store'
+import { getContent } from '../../lib/content'
 import styles from '../home/page.module.css'
 import GoalFormPanel from './_components/goal-form-panel'
 import GoalListPanel from './_components/goal-list-panel'
@@ -12,6 +13,8 @@ export default function GoalsPage() {
   const router = useRouter()
   const token = useStore((s) => s.token)
   const rehydrated = useStore((s) => s.rehydrated)
+  const user = useStore((s) => s.user)
+  const ui = getContent(user?.preferredLanguage)
   const {
     checking,
     busy,
@@ -57,7 +60,7 @@ export default function GoalsPage() {
   if (checking) {
     return (
       <main className="center-screen">
-        <Loader message="Loading goals..." />
+        <Loader message={ui.goals.loading} />
       </main>
     )
   }
@@ -69,10 +72,8 @@ export default function GoalsPage() {
           <div className={styles.workspaceMeta}>
             <span className={styles.workspaceBadge}>◎</span>
             <div>
-              <div className={styles.workspaceTitle}>Goals</div>
-              <div className={styles.workspaceSub}>
-                Track outcomes with automatic progress from linked tasks.
-              </div>
+              <div className={styles.workspaceTitle}>{ui.goals.title}</div>
+              <div className={styles.workspaceSub}>{ui.goals.subtitle}</div>
             </div>
           </div>
 
@@ -82,7 +83,7 @@ export default function GoalsPage() {
               type="button"
               onClick={() => router.push('/home')}
             >
-              Back to Home
+              {ui.common.backToHome}
             </button>
           </div>
         </div>
@@ -118,6 +119,8 @@ export default function GoalsPage() {
             onAddTask={addTaskFromPicker}
             onRemoveTask={removeLinkedTask}
             onCancelEdit={resetForm}
+            content={ui.goals.form}
+            common={ui.common}
             onSave={() => {
               void handleSaveGoal()
             }}
@@ -127,6 +130,7 @@ export default function GoalsPage() {
             goals={goals}
             busy={busy}
             canWrite={canWrite}
+            content={ui.goals.list}
             onEdit={startEdit}
             onDelete={(goalId) => {
               void handleDeleteGoal(goalId)

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import styles from '../page.module.css'
 import type { AssigneeOption } from '../model'
 import MarkdownLiveEditor from './markdown-live-editor'
+import type { AppContent } from '../../../lib/content'
 
 type EditTaskModalProps = {
   open: boolean
@@ -15,6 +16,9 @@ type EditTaskModalProps = {
   sectionOptions: string[]
   priority: 'High' | 'Normal' | 'Low'
   color: string
+  content: AppContent['home']['editModal']
+  commonContent: AppContent['common']
+  taskContent: AppContent['home']['task']
   onClose: () => void
   onSubmit: () => void
   onArchive: () => void
@@ -40,6 +44,9 @@ export default function EditTaskModal({
   sectionOptions,
   priority,
   color,
+  content,
+  commonContent,
+  taskContent,
   onClose,
   onSubmit,
   onArchive,
@@ -76,10 +83,8 @@ export default function EditTaskModal({
       >
         <div className={styles.modalHeader}>
           <div>
-            <div className={styles.modalTitle}>Task</div>
-            <div className={styles.modalSub}>
-              Update details and save changes
-            </div>
+            <div className={styles.modalTitle}>{content.title}</div>
+            <div className={styles.modalSub}>{content.subtitle}</div>
           </div>
           <button
             type="button"
@@ -87,7 +92,7 @@ export default function EditTaskModal({
             disabled={busy}
             onClick={handleClose}
           >
-            Close
+            {commonContent.close}
           </button>
         </div>
 
@@ -95,7 +100,7 @@ export default function EditTaskModal({
           <input
             className={styles.createInput}
             type="text"
-            placeholder="Task title"
+            placeholder={content.taskTitlePlaceholder}
             value={title}
             onChange={(event) => onTitleChange(event.target.value)}
           />
@@ -103,7 +108,7 @@ export default function EditTaskModal({
             <MarkdownLiveEditor
               value={meta}
               onChange={onMetaChange}
-              placeholder="Task description (Markdown supported)"
+              placeholder={content.descriptionPlaceholder}
               disabled={busy}
               initialMode="preview"
             />
@@ -153,13 +158,15 @@ export default function EditTaskModal({
               onPriorityChange(event.target.value as 'High' | 'Normal' | 'Low')
             }
           >
-            <option value="High">High</option>
-            <option value="Normal">Normal</option>
-            <option value="Low">Low</option>
+            <option value="High">{taskContent.high}</option>
+            <option value="Normal">{taskContent.normal}</option>
+            <option value="Low">{taskContent.low}</option>
           </select>
 
           <label className={styles.createColorField}>
-            <span className={styles.createColorLabel}>Task color</span>
+            <span className={styles.createColorLabel}>
+              {content.colorLabel}
+            </span>
             <input
               className={styles.createColorInput}
               type="color"
@@ -176,7 +183,7 @@ export default function EditTaskModal({
             disabled={busy}
             onClick={onArchive}
           >
-            Archive task
+            {content.archiveTask}
           </button>
           <button
             className={`${styles.taskActionBtn} ${styles.taskActionDanger}`}
@@ -184,7 +191,7 @@ export default function EditTaskModal({
             disabled={busy}
             onClick={() => setConfirmDeleteOpen(true)}
           >
-            Delete task
+            {content.deleteTask}
           </button>
           <button
             className={styles.modalCancel}
@@ -192,7 +199,7 @@ export default function EditTaskModal({
             disabled={busy}
             onClick={handleClose}
           >
-            Cancel
+            {commonContent.cancel}
           </button>
           <button
             className={styles.createTaskButton}
@@ -200,7 +207,7 @@ export default function EditTaskModal({
             disabled={busy}
             onClick={onSubmit}
           >
-            {busy ? 'Saving...' : 'Save changes'}
+            {busy ? content.saving : content.saveChanges}
           </button>
         </div>
       </div>
@@ -218,9 +225,11 @@ export default function EditTaskModal({
           >
             <div className={styles.modalHeader}>
               <div>
-                <div className={styles.modalTitle}>Delete task?</div>
+                <div className={styles.modalTitle}>
+                  {content.deleteConfirmTitle}
+                </div>
                 <div className={styles.modalSub}>
-                  This action cannot be undone.
+                  {content.deleteConfirmSubtitle}
                 </div>
               </div>
             </div>
@@ -232,7 +241,7 @@ export default function EditTaskModal({
                 disabled={busy}
                 onClick={() => setConfirmDeleteOpen(false)}
               >
-                Cancel
+                {commonContent.cancel}
               </button>
               <button
                 className={`${styles.taskActionBtn} ${styles.taskActionDanger}`}
@@ -243,7 +252,7 @@ export default function EditTaskModal({
                   onDelete()
                 }}
               >
-                {busy ? 'Deleting...' : 'Yes, delete'}
+                {busy ? content.deleting : content.confirmDelete}
               </button>
             </div>
           </div>

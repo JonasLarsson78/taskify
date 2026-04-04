@@ -1,4 +1,5 @@
 import type { AssigneeOption, BoardGroup, UiTask, ViewMode } from '../model'
+import type { AppContent } from '../../../lib/content'
 import HomeTaskBoard from './home-task-board'
 import HomeTaskBoxes from './home-task-boxes'
 import HomeTaskColumns from './home-task-columns'
@@ -8,6 +9,7 @@ type HomeTaskViewsProps = {
   groups: BoardGroup[]
   busyTaskId: number | null
   assigneeOptions: AssigneeOption[]
+  taskContent: AppContent['home']['task']
   onTogglePriority: (task: UiTask) => void
   onMoveTask: (task: UiTask, targetSection: string) => void
   onAssigneesChange: (task: UiTask, assigneeId: number | null) => void
@@ -19,6 +21,7 @@ export default function HomeTaskViews({
   groups,
   busyTaskId,
   assigneeOptions,
+  taskContent,
   onTogglePriority,
   onMoveTask,
   onAssigneesChange,
@@ -30,6 +33,7 @@ export default function HomeTaskViews({
         groups={groups}
         busyTaskId={busyTaskId}
         assigneeOptions={assigneeOptions}
+        taskContent={taskContent}
         onTogglePriority={onTogglePriority}
         onMoveTask={onMoveTask}
         onAssigneesChange={onAssigneesChange}
@@ -44,6 +48,7 @@ export default function HomeTaskViews({
         groups={groups}
         busyTaskId={busyTaskId}
         assigneeOptions={assigneeOptions}
+        taskContent={taskContent}
         onTogglePriority={onTogglePriority}
         onMoveTask={onMoveTask}
         onAssigneesChange={onAssigneesChange}
@@ -57,6 +62,7 @@ export default function HomeTaskViews({
       groups={groups}
       busyTaskId={busyTaskId}
       assigneeOptions={assigneeOptions}
+      taskContent={taskContent}
       onTogglePriority={onTogglePriority}
       onMoveTask={onMoveTask}
       onAssigneesChange={onAssigneesChange}

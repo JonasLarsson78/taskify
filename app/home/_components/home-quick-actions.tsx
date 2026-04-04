@@ -1,10 +1,12 @@
 import styles from '../page.module.css'
+import type { AppContent } from '../../../lib/content'
 
 type HomeQuickActionsProps = {
   canWriteTaskData: boolean
   searchQuery: string
   onNewTask: () => void
   onSearchChange: (value: string) => void
+  content: AppContent['home']['quickActions']
 }
 
 export default function HomeQuickActions({
@@ -12,6 +14,7 @@ export default function HomeQuickActions({
   searchQuery,
   onNewTask,
   onSearchChange,
+  content,
 }: HomeQuickActionsProps) {
   return (
     <section className={styles.createTaskQuickAction}>
@@ -21,13 +24,13 @@ export default function HomeQuickActions({
         disabled={!canWriteTaskData}
         onClick={onNewTask}
       >
-        + New Task
+        + {content.newTask}
       </button>
       <input
         className={`${styles.createInput} ${styles.quickSearchInput}`}
         type="search"
         value={searchQuery}
-        placeholder="Search tasks, meta, section or assignee"
+        placeholder={content.searchPlaceholder}
         onChange={(event) => onSearchChange(event.target.value)}
       />
     </section>

@@ -1,5 +1,6 @@
 import type { Space, StoreUser } from '../../home/model'
 import styles from '../../home/page.module.css'
+import type { AppContent } from '@/lib/content'
 
 type AdminSpaceMembersPanelProps = {
   adminUsers: StoreUser[]
@@ -7,6 +8,7 @@ type AdminSpaceMembersPanelProps = {
   selectedMemberUserId: number | null
   memberSpaceDraftIds: number[]
   adminBusy: boolean
+  content: AppContent['settings']['adminSpaceMembers']
   onSelectUser: (userId: number) => void
   onChangeDraftSpaceIds: (spaceIds: number[]) => void
   onSaveUserSpaces: () => void
@@ -19,6 +21,7 @@ export default function AdminSpaceMembersPanel({
   selectedMemberUserId,
   memberSpaceDraftIds,
   adminBusy,
+  content,
   onSelectUser,
   onChangeDraftSpaceIds,
   onSaveUserSpaces,
@@ -29,15 +32,13 @@ export default function AdminSpaceMembersPanel({
       className={`${styles.settingsPanel} ${styles.settingsPanelCompact}`}
     >
       <div className={styles.settingsPanelHeader}>
-        <div className={styles.settingsPanelTitle}>Admin: Space Members</div>
-        <div className={styles.settingsHelp}>
-          Manage memberships both by space and by user
-        </div>
+        <div className={styles.settingsPanelTitle}>{content.title}</div>
+        <div className={styles.settingsHelp}>{content.subtitle}</div>
       </div>
 
       <div className={`${styles.settingsGrid} ${styles.settingsGridWide}`}>
         <label className={styles.settingsField}>
-          <span className={styles.sectionLabel}>User</span>
+          <span className={styles.sectionLabel}>{content.user}</span>
           <select
             className={styles.createSelect}
             value={selectedMemberUserId ?? ''}
@@ -54,7 +55,7 @@ export default function AdminSpaceMembersPanel({
         </label>
 
         <label className={styles.settingsField}>
-          <span className={styles.sectionLabel}>Spaces for user</span>
+          <span className={styles.sectionLabel}>{content.spacesForUser}</span>
           <select
             className={styles.createSelect}
             multiple
@@ -82,7 +83,7 @@ export default function AdminSpaceMembersPanel({
           disabled={adminBusy || !selectedMemberUserId}
           onClick={onSaveUserSpaces}
         >
-          {adminBusy ? 'Saving...' : 'Save User Spaces'}
+          {adminBusy ? content.savingUserSpaces : content.saveUserSpaces}
         </button>
       </div>
 
@@ -100,7 +101,9 @@ export default function AdminSpaceMembersPanel({
 
               <div className={styles.settingsMembershipTags}>
                 {userSpaces.length === 0 ? (
-                  <span className={styles.settingsHelp}>No spaces</span>
+                  <span className={styles.settingsHelp}>
+                    {content.noSpaces}
+                  </span>
                 ) : (
                   userSpaces.map((space) => (
                     <button

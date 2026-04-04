@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import Loader from '../components/loader/loader'
 import useStore from '../../lib/store'
 import { buildJsonAuthHeaders } from '../../lib/request-headers'
+import { getContent } from '../../lib/content'
 import CreateTaskModal from './_components/create-task-modal'
 import EditTaskModal from './_components/edit-task-modal'
 import HomeOverview from './_components/home-overview'
@@ -36,6 +37,7 @@ export default function HomePage() {
   const token = useStore((s) => s.token)
   const rehydrated = useStore((s) => s.rehydrated)
   const user = useStore((s) => s.user)
+  const ui = getContent(user?.preferredLanguage)
   const organization = useStore((s) => s.organization)
   const setUser = useStore((s) => s.setUser)
   const setOrganization = useStore((s) => s.setOrganization)
@@ -151,12 +153,12 @@ export default function HomePage() {
 
   async function saveSectionsForOrganization() {
     if (user?.role !== 'admin') {
-      setIntegrationError('Only admins can update space settings.')
+      setIntegrationError(ui.home.errors.adminOnlySpaceSettings)
       return
     }
 
     if (!selectedSpaceId) {
-      setIntegrationError('Välj ett space först innan du sparar settings.')
+      setIntegrationError(ui.home.errors.selectSpaceFirst)
       return
     }
 
@@ -166,7 +168,7 @@ export default function HomePage() {
     try {
       const nextSpaceName = spaceNameDraft.trim()
       if (!nextSpaceName) {
-        setIntegrationError('Space name is required.')
+        setIntegrationError(ui.home.errors.spaceNameRequired)
         return
       }
 
@@ -182,7 +184,9 @@ export default function HomePage() {
 
       if (!res.ok) {
         const data = await res.json().catch(() => null)
-        setIntegrationError(data?.error || 'Kunde inte spara space settings.')
+        setIntegrationError(
+          data?.error || ui.home.errors.saveSpaceSettingsFailed
+        )
         return
       }
 
@@ -216,7 +220,7 @@ export default function HomePage() {
       setSpaceSettingsOpen(false)
     } catch (e) {
       console.error('save sections for organization error', e)
-      setIntegrationError('Kunde inte spara space settings.')
+      setIntegrationError(ui.home.errors.saveSpaceSettingsFailed)
     } finally {
       setSpaceSettingsBusy(false)
     }
@@ -295,7 +299,7 @@ export default function HomePage() {
   if (checking) {
     return (
       <main className="center-screen">
-        <Loader message="Building your workspace..." />
+        <Loader message={ui.home.loading} />
       </main>
     )
   }
@@ -307,8 +311,8 @@ export default function HomePage() {
     activeSpace?.name ||
     organization?.name ||
     organizations[0]?.name ||
-    'Company Event'
-  const personName = user?.name || 'Guest'
+    ui.home.projectFallback
+  const personName = user?.name || ui.home.guest
   const userRole = user?.role || 'guest'
   const canWriteTaskData = userRole !== 'guest'
   const canManageWorkspaceData = userRole === 'admin'
@@ -378,18 +382,19 @@ export default function HomePage() {
   const busiestSection = getBusiestSection(tasks)
 
   const workspaceSub = organization?.city
-    ? `${organization.city} workspace connected to live data.`
-    : 'Campaign planning across review, approval and launch.'
+    ? ui.home.workspaceSubConnected(organization.city)
+    : ui.home.workspaceSubFallback
 
   return (
     <main className={styles.shell}>
       <HomeSidebar
         personInitials={personInitials}
         personName={personName}
-        userEmail={user?.email || 'Signed in'}
+        userEmail={user?.email || ui.home.signedIn}
         viewMode={viewMode}
         spaces={spaces}
         selectedSpaceId={selectedSpaceId}
+        content={ui.home.sidebar}
         onChangeView={handleChangeView}
         onOpenArchive={() => router.push('/archive')}
         onOpenGoals={() => router.push('/goals')}
@@ -409,7 +414,7 @@ export default function HomePage() {
         onCreateSpace={() => {
           void (async () => {
             if (!activeOrganizationId) {
-              setIntegrationError('Välj en organization först.')
+              setIntegrationError(ui.home.errors.selectOrganizationFirst)
               return
             }
 
@@ -424,7 +429,7 @@ export default function HomePage() {
             })
 
             if (!res.ok) {
-              setIntegrationError('Kunde inte skapa nytt space.')
+              setIntegrationError(ui.home.errors.createSpaceFailed)
               return
             }
 
@@ -451,10 +456,11 @@ export default function HomePage() {
           workspaceSub={workspaceSub}
           viewMode={viewMode}
           onChangeView={handleChangeView}
+          content={ui.home.topbar}
           canOpenSpaceSettings={canManageWorkspaceData}
           onOpenSpaceSettings={() => {
             if (!canManageWorkspaceData) {
-              setIntegrationError('Only admins can change space settings.')
+              setIntegrationError(ui.home.errors.adminOnlySpaceSettings)
               return
             }
             setIntegrationError(null)
@@ -469,6 +475,7 @@ export default function HomePage() {
         <HomeQuickActions
           canWriteTaskData={canWriteTaskData}
           searchQuery={searchQuery}
+          content={ui.home.quickActions}
           onNewTask={() => {
             setIntegrationError(null)
             setCreateTaskModalOpen(true)
@@ -483,6 +490,7 @@ export default function HomePage() {
           dueThisWeek={dueThisWeek}
           hasTasks={tasks.length > 0}
           busiestSection={busiestSection}
+          content={ui.home.overview}
         />
 
         <CreateTaskModal
@@ -497,6 +505,9 @@ export default function HomePage() {
           sectionOptions={sectionOptions}
           priority={newTaskPriority}
           color={newTaskColor}
+          content={ui.home.createModal}
+          commonContent={ui.common}
+          taskContent={ui.home.task}
           onClose={() => setCreateTaskModalOpen(false)}
           onSubmit={() => {
             void createTaskOnServer()
@@ -522,6 +533,9 @@ export default function HomePage() {
           sectionOptions={sectionOptions}
           priority={editTaskPriority}
           color={editTaskColor}
+          content={ui.home.editModal}
+          commonContent={ui.common}
+          taskContent={ui.home.task}
           onClose={() => setEditTaskModalOpen(false)}
           onSubmit={() => {
             void saveEditedTask()
@@ -559,6 +573,8 @@ export default function HomePage() {
           sectionColors={sectionColors}
           draggingSectionName={draggingSectionName}
           dragOverSectionName={dragOverSectionName}
+          content={ui.home.spaceSettings}
+          commonContent={ui.common}
           onClose={() => setSpaceSettingsOpen(false)}
           onSpaceNameChange={setSpaceNameDraft}
           onNewSectionNameChange={setNewSectionName}
@@ -593,8 +609,11 @@ export default function HomePage() {
         {searchQuery.trim() ? (
           <section className={styles.board}>
             <div className={styles.taskMeta}>
-              Showing {filteredTasks.length} of {tasks.length} tasks for &quot;
-              {searchQuery.trim()}&quot;
+              {ui.home.searchResult(
+                filteredTasks.length,
+                tasks.length,
+                searchQuery.trim()
+              )}
             </div>
           </section>
         ) : null}
@@ -604,6 +623,7 @@ export default function HomePage() {
           groups={boardGroups}
           busyTaskId={taskActionBusyId}
           assigneeOptions={assigneeOptions}
+          taskContent={ui.home.task}
           onTogglePriority={handleTogglePriority}
           onMoveTask={handleMoveTask}
           onAssigneesChange={handleAssigneesChange}

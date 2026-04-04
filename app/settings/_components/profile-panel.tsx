@@ -1,9 +1,12 @@
 import styles from '../../home/page.module.css'
+import type { SettingsProfileContent } from '../../../lib/content'
 
 type ProfilePanelProps = {
   name: string
   email: string
   password: string
+  preferredLanguage: 'sv' | 'en'
+  content: SettingsProfileContent
   role: string
   organizationName: string
   canEdit: boolean
@@ -13,6 +16,7 @@ type ProfilePanelProps = {
   onChangeName: (value: string) => void
   onChangeEmail: (value: string) => void
   onChangePassword: (value: string) => void
+  onChangePreferredLanguage: (value: 'sv' | 'en') => void
   onCancel: () => void
   onSubmit: (event: React.FormEvent) => void
 }
@@ -21,6 +25,8 @@ export default function ProfilePanel({
   name,
   email,
   password,
+  preferredLanguage,
+  content,
   role,
   organizationName,
   canEdit,
@@ -30,6 +36,7 @@ export default function ProfilePanel({
   onChangeName,
   onChangeEmail,
   onChangePassword,
+  onChangePreferredLanguage,
   onCancel,
   onSubmit,
 }: ProfilePanelProps) {
@@ -39,37 +46,37 @@ export default function ProfilePanel({
       onSubmit={onSubmit}
     >
       <div className={styles.settingsPanelHeader}>
-        <div className={styles.settingsPanelTitle}>Profile</div>
-        <div className={styles.settingsHelp}>Personal and sign-in details</div>
+        <div className={styles.settingsPanelTitle}>{content.title}</div>
+        <div className={styles.settingsHelp}>{content.subtitle}</div>
       </div>
 
       <div className={`${styles.settingsGrid} ${styles.settingsGridWide}`}>
         <label className={styles.settingsField}>
-          <span className={styles.sectionLabel}>Name</span>
+          <span className={styles.sectionLabel}>{content.labels.name}</span>
           <input
             className={styles.createInput}
             type="text"
             value={name}
             disabled={!canEdit}
             onChange={(event) => onChangeName(event.target.value)}
-            placeholder="Your name"
+            placeholder={content.placeholders.name}
           />
         </label>
 
         <label className={styles.settingsField}>
-          <span className={styles.sectionLabel}>Email</span>
+          <span className={styles.sectionLabel}>{content.labels.email}</span>
           <input
             className={styles.createInput}
             type="email"
             value={email}
             disabled={!canEdit}
             onChange={(event) => onChangeEmail(event.target.value)}
-            placeholder="name@company.com"
+            placeholder={content.placeholders.email}
           />
         </label>
 
         <label className={styles.settingsField}>
-          <span className={styles.sectionLabel}>Role</span>
+          <span className={styles.sectionLabel}>{content.labels.role}</span>
           <input
             className={styles.createInput}
             type="text"
@@ -79,22 +86,39 @@ export default function ProfilePanel({
         </label>
 
         <label className={styles.settingsField}>
-          <span className={styles.sectionLabel}>New Password</span>
+          <span className={styles.sectionLabel}>{content.labels.language}</span>
+          <select
+            className={styles.createSelect}
+            value={preferredLanguage}
+            disabled={!canEdit}
+            onChange={(event) =>
+              onChangePreferredLanguage(event.target.value as 'sv' | 'en')
+            }
+          >
+            <option value="sv">{content.languageOptions.sv}</option>
+            <option value="en">{content.languageOptions.en}</option>
+          </select>
+        </label>
+
+        <label className={styles.settingsField}>
+          <span className={styles.sectionLabel}>
+            {content.labels.newPassword}
+          </span>
           <input
             className={styles.createInput}
             type="password"
             value={password}
             disabled={!canEdit}
             onChange={(event) => onChangePassword(event.target.value)}
-            placeholder="Leave empty to keep current password"
+            placeholder={content.placeholders.newPassword}
           />
-          <span className={styles.settingsHelp}>
-            Minimum 6 characters. Leave blank if you do not want to change it.
-          </span>
+          <span className={styles.settingsHelp}>{content.passwordHelp}</span>
         </label>
 
         <div className={`${styles.settingsField} ${styles.settingsFieldFull}`}>
-          <span className={styles.sectionLabel}>Organization</span>
+          <span className={styles.sectionLabel}>
+            {content.labels.organization}
+          </span>
           <input
             className={styles.createInput}
             type="text"
@@ -114,14 +138,14 @@ export default function ProfilePanel({
           disabled={busy}
           onClick={onCancel}
         >
-          Cancel
+          {content.actions.cancel}
         </button>
         <button
           className={styles.createTaskButton}
           type="submit"
           disabled={busy}
         >
-          {busy ? 'Saving...' : 'Save Settings'}
+          {busy ? content.actions.saving : content.actions.save}
         </button>
       </div>
     </form>

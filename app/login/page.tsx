@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import styles from './page.module.css'
 import useStore from '../../lib/store'
 import { buildAuthHeaders } from '../../lib/request-headers'
+import { getContent } from '../../lib/content'
 import LoginShowcase from './_components/login-showcase'
 import LoginForm from './_components/login-form'
 
@@ -14,6 +15,8 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const user = useStore((state) => state.user)
+  const ui = getContent(user?.preferredLanguage)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -28,7 +31,7 @@ export default function LoginPage() {
 
       const data = await res.json()
       if (!res.ok) {
-        setError(data?.error || 'Login failed')
+        setError(data?.error || ui.login.loginFailed)
         setLoading(false)
         return
       }
@@ -56,7 +59,7 @@ export default function LoginPage() {
 
       router.push('/home')
     } catch {
-      setError('Network error')
+      setError(ui.login.networkError)
     } finally {
       setLoading(false)
     }
@@ -64,12 +67,13 @@ export default function LoginPage() {
 
   return (
     <main className={styles.shell}>
-      <LoginShowcase />
+      <LoginShowcase content={ui.login} />
       <LoginForm
         email={email}
         password={password}
         loading={loading}
         error={error}
+        content={ui.login}
         onChangeEmail={setEmail}
         onChangePassword={setPassword}
         onSubmit={handleSubmit}

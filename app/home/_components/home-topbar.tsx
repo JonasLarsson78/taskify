@@ -1,5 +1,6 @@
 import styles from '../page.module.css'
 import type { ViewMode } from '../model'
+import type { AppContent } from '../../../lib/content'
 
 type HomeTopbarProps = {
   projectTitle: string
@@ -9,6 +10,7 @@ type HomeTopbarProps = {
   onOpenSpaceSettings: () => void
   canOpenSpaceSettings: boolean
   onLogout: () => void
+  content: AppContent['home']['topbar']
 }
 
 export default function HomeTopbar({
@@ -19,6 +21,7 @@ export default function HomeTopbar({
   onOpenSpaceSettings,
   canOpenSpaceSettings,
   onLogout,
+  content,
 }: HomeTopbarProps) {
   return (
     <div className={styles.topbar}>
@@ -38,7 +41,7 @@ export default function HomeTopbar({
           type="button"
           onClick={() => onChangeView('list')}
         >
-          ≡ List
+          ≡ {content.list}
         </button>
         <button
           className={`${styles.actionPill} ${
@@ -47,7 +50,7 @@ export default function HomeTopbar({
           type="button"
           onClick={() => onChangeView('board')}
         >
-          ◫ Board
+          ◫ {content.board}
         </button>
         <button
           className={`${styles.actionPill} ${
@@ -56,7 +59,7 @@ export default function HomeTopbar({
           type="button"
           onClick={() => onChangeView('box')}
         >
-          □ Box
+          □ {content.box}
         </button>
         {canOpenSpaceSettings ? (
           <button
@@ -64,7 +67,7 @@ export default function HomeTopbar({
             type="button"
             onClick={onOpenSpaceSettings}
           >
-            Space settings
+            {content.spaceSettings}
           </button>
         ) : null}
         <button
@@ -72,7 +75,7 @@ export default function HomeTopbar({
           type="button"
           onClick={onLogout}
         >
-          Logout
+          {content.logout}
         </button>
       </div>
     </div>

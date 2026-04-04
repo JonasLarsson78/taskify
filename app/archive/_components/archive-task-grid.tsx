@@ -1,10 +1,14 @@
 import styles from '../../home/page.module.css'
 import type { ApiTask, StoreUser } from '../../home/model'
+import type { AppContent } from '../../../lib/content'
 
 type ArchiveTaskGridProps = {
   tasks: ApiTask[]
   busyTaskId: number | null
   currentUser: StoreUser | null
+  archiveContent: AppContent['archive']
+  taskContent: AppContent['home']['task']
+  commonContent: AppContent['common']
   formatDate: (value: string | null) => string
   getTagTextColor: (background: string) => string
   markdownToHtml: (value: string) => string
@@ -16,6 +20,9 @@ export default function ArchiveTaskGrid({
   tasks,
   busyTaskId,
   currentUser,
+  archiveContent,
+  taskContent,
+  commonContent,
   formatDate,
   getTagTextColor,
   markdownToHtml,
@@ -23,7 +30,7 @@ export default function ArchiveTaskGrid({
   onDelete,
 }: ArchiveTaskGridProps) {
   if (tasks.length === 0) {
-    return <div className={styles.taskMeta}>No archived tasks found.</div>
+    return <div className={styles.taskMeta}>{archiveContent.noTasks}</div>
   }
 
   return (
@@ -49,13 +56,13 @@ export default function ArchiveTaskGrid({
             />
           ) : null}
           <div className={styles.taskViewMetaRow}>
-            Archived: {formatDate(task.archivedAt)}
+            {taskContent.archivedPrefix}: {formatDate(task.archivedAt)}
           </div>
           <div className={styles.taskViewMetaRow}>
-            Due: {formatDate(task.dueDate)}
+            {taskContent.duePrefix}: {formatDate(task.dueDate)}
           </div>
           <div className={styles.taskViewMetaRow}>
-            Priority: {task.priority}
+            {taskContent.priorityPrefix}: {task.priority}
           </div>
 
           <div className={styles.taskActions}>
@@ -65,7 +72,9 @@ export default function ArchiveTaskGrid({
               disabled={busyTaskId === task.id || currentUser?.role === 'guest'}
               onClick={() => onRestore(task.id)}
             >
-              {busyTaskId === task.id ? 'Working...' : 'Restore'}
+              {busyTaskId === task.id
+                ? archiveContent.working
+                : archiveContent.restore}
             </button>
             <button
               className={`${styles.taskActionBtn} ${styles.taskActionDanger}`}
@@ -73,7 +82,7 @@ export default function ArchiveTaskGrid({
               disabled={busyTaskId === task.id || currentUser?.role === 'guest'}
               onClick={() => onDelete(task.id)}
             >
-              Delete
+              {commonContent.delete}
             </button>
           </div>
         </article>

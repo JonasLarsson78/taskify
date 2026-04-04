@@ -1,4 +1,5 @@
 import styles from '../page.module.css'
+import type { AppContent } from '../../../lib/content'
 
 type SpaceSettingsModalProps = {
   open: boolean
@@ -10,6 +11,8 @@ type SpaceSettingsModalProps = {
   sectionColors: Record<string, string>
   draggingSectionName: string | null
   dragOverSectionName: string | null
+  content: AppContent['home']['spaceSettings']
+  commonContent: AppContent['common']
   onClose: () => void
   onSpaceNameChange: (value: string) => void
   onNewSectionNameChange: (value: string) => void
@@ -34,6 +37,8 @@ export default function SpaceSettingsModal({
   sectionColors,
   draggingSectionName,
   dragOverSectionName,
+  content,
+  commonContent,
   onClose,
   onSpaceNameChange,
   onNewSectionNameChange,
@@ -62,10 +67,8 @@ export default function SpaceSettingsModal({
       >
         <div className={styles.modalHeader}>
           <div>
-            <div className={styles.modalTitle}>Space Settings</div>
-            <div className={styles.modalSub}>
-              Manage custom task columns for this space
-            </div>
+            <div className={styles.modalTitle}>{content.title}</div>
+            <div className={styles.modalSub}>{content.subtitle}</div>
           </div>
           <button
             type="button"
@@ -73,7 +76,7 @@ export default function SpaceSettingsModal({
             disabled={spaceSettingsBusy}
             onClick={onClose}
           >
-            Close
+            {commonContent.close}
           </button>
         </div>
 
@@ -81,7 +84,7 @@ export default function SpaceSettingsModal({
           <input
             className={styles.createInput}
             type="text"
-            placeholder="Space name"
+            placeholder={content.spaceNamePlaceholder}
             value={spaceNameDraft}
             disabled={!isAdmin || spaceSettingsBusy}
             onChange={(event) => onSpaceNameChange(event.target.value)}
@@ -92,7 +95,7 @@ export default function SpaceSettingsModal({
           <input
             className={styles.createInput}
             type="text"
-            placeholder="Add new column (e.g. QA, Done, Blocked)"
+            placeholder={content.addColumnPlaceholder}
             value={newSectionName}
             onChange={(event) => onNewSectionNameChange(event.target.value)}
             onKeyDown={(event) => {
@@ -108,7 +111,7 @@ export default function SpaceSettingsModal({
             onClick={onAddSection}
             disabled={spaceSettingsBusy}
           >
-            Add
+            {content.add}
           </button>
         </div>
 
@@ -154,7 +157,7 @@ export default function SpaceSettingsModal({
                   onUpdateSectionColor(section, event.target.value)
                 }
                 disabled={spaceSettingsBusy}
-                title={`Color for ${section}`}
+                title={content.colorForSection(section)}
               />
               <button
                 type="button"
@@ -175,7 +178,7 @@ export default function SpaceSettingsModal({
             disabled={spaceSettingsBusy}
             onClick={onClose}
           >
-            Cancel
+            {commonContent.cancel}
           </button>
           <button
             className={styles.createTaskButton}
@@ -183,7 +186,7 @@ export default function SpaceSettingsModal({
             disabled={spaceSettingsBusy}
             onClick={onSave}
           >
-            {spaceSettingsBusy ? 'Saving...' : 'Save settings'}
+            {spaceSettingsBusy ? commonContent.saving : content.saveSettings}
           </button>
         </div>
       </div>

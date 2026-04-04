@@ -1,5 +1,6 @@
 import type { StoreUser } from '../../home/model'
 import styles from '../../home/page.module.css'
+import type { AppContent } from '../../../lib/content'
 
 type AdminUsersPanelProps = {
   adminUsers: StoreUser[]
@@ -8,6 +9,7 @@ type AdminUsersPanelProps = {
   newAdminUserEmail: string
   newAdminUserPassword: string
   newAdminUserRole: 'admin' | 'user' | 'guest'
+  content: AppContent['settings']['adminUsers']
   onChangeName: (value: string) => void
   onChangeEmail: (value: string) => void
   onChangePassword: (value: string) => void
@@ -23,6 +25,7 @@ export default function AdminUsersPanel({
   newAdminUserEmail,
   newAdminUserPassword,
   newAdminUserRole,
+  content,
   onChangeName,
   onChangeEmail,
   onChangePassword,
@@ -35,25 +38,25 @@ export default function AdminUsersPanel({
       className={`${styles.settingsPanel} ${styles.settingsPanelCompact}`}
     >
       <div className={styles.settingsPanelHeader}>
-        <div className={styles.settingsPanelTitle}>Admin: Users</div>
-        <div className={styles.settingsHelp}>Create users and adjust roles</div>
+        <div className={styles.settingsPanelTitle}>{content.title}</div>
+        <div className={styles.settingsHelp}>{content.subtitle}</div>
       </div>
 
       <div className={`${styles.settingsGrid} ${styles.settingsGridWide}`}>
         <label className={styles.settingsField}>
-          <span className={styles.sectionLabel}>New user name</span>
+          <span className={styles.sectionLabel}>{content.newUserName}</span>
           <input
             className={styles.createInput}
             type="text"
             value={newAdminUserName}
             disabled={adminBusy}
-            placeholder="Optional"
+            placeholder={content.optional}
             onChange={(event) => onChangeName(event.target.value)}
           />
         </label>
 
         <label className={styles.settingsField}>
-          <span className={styles.sectionLabel}>New user email</span>
+          <span className={styles.sectionLabel}>{content.newUserEmail}</span>
           <input
             className={styles.createInput}
             type="email"
@@ -65,19 +68,19 @@ export default function AdminUsersPanel({
         </label>
 
         <label className={styles.settingsField}>
-          <span className={styles.sectionLabel}>Temporary password</span>
+          <span className={styles.sectionLabel}>{content.tempPassword}</span>
           <input
             className={styles.createInput}
             type="password"
             value={newAdminUserPassword}
             disabled={adminBusy}
-            placeholder="At least 6 characters"
+            placeholder={content.passwordHint}
             onChange={(event) => onChangePassword(event.target.value)}
           />
         </label>
 
         <label className={styles.settingsField}>
-          <span className={styles.sectionLabel}>Role</span>
+          <span className={styles.sectionLabel}>{content.role}</span>
           <select
             className={styles.createSelect}
             value={newAdminUserRole}
@@ -100,7 +103,7 @@ export default function AdminUsersPanel({
           disabled={adminBusy}
           onClick={onCreateUser}
         >
-          {adminBusy ? 'Creating...' : 'Create User'}
+          {adminBusy ? content.creating : content.create}
         </button>
       </div>
 

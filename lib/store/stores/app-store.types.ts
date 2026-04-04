@@ -4,6 +4,7 @@ export type User = {
   email?: string
   role?: 'admin' | 'user' | 'guest'
   organizationId?: number | null
+  preferredLanguage?: 'sv' | 'en'
 } | null
 
 export type Organization = {

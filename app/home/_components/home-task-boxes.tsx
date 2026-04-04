@@ -2,6 +2,7 @@ import styles from '../page.module.css'
 import type { AssigneeOption, BoardGroup, UiTask } from '../model'
 import { isCompletedSection } from '../model'
 import TaskAssigneeDropdown from './task-assignee-dropdown'
+import type { AppContent } from '../../../lib/content'
 
 function getTagTextColor(background: string): string {
   const match = /^#?([0-9a-fA-F]{6})$/.exec(background.trim())
@@ -20,6 +21,7 @@ type HomeTaskBoxesProps = {
   groups: BoardGroup[]
   busyTaskId: number | null
   assigneeOptions: AssigneeOption[]
+  taskContent: AppContent['home']['task']
   onTogglePriority: (task: UiTask) => void
   onMoveTask: (task: UiTask, targetSection: string) => void
   onAssigneesChange: (task: UiTask, assigneeId: number | null) => void
@@ -30,6 +32,7 @@ export default function HomeTaskBoxes({
   groups,
   busyTaskId,
   assigneeOptions,
+  taskContent,
   onTogglePriority,
   onAssigneesChange,
   onOpenTask,
@@ -63,10 +66,12 @@ export default function HomeTaskBoxes({
             <div className={styles.taskTitleRow}>
               <div className={styles.taskViewCardTitle}>{task.title}</div>
               {isCompletedSection(task.section) ? (
-                <span className={styles.taskDoneBadge}>Klar</span>
+                <span className={styles.taskDoneBadge}>{taskContent.done}</span>
               ) : null}
             </div>
-            <div className={styles.taskViewMetaRow}>Due: {task.dueDate}</div>
+            <div className={styles.taskViewMetaRow}>
+              {taskContent.duePrefix}: {task.dueDate}
+            </div>
             <div className={styles.taskViewMetaRow}>
               {task.id ? (
                 <button
@@ -90,10 +95,10 @@ export default function HomeTaskBoxes({
                 >
                   <span className={styles.priorityBadgeDot} />
                   {task.priority === 'High'
-                    ? 'High'
+                    ? taskContent.high
                     : task.priority === 'Low'
-                    ? 'Low'
-                    : 'Normal'}
+                    ? taskContent.low
+                    : taskContent.normal}
                 </button>
               ) : (
                 <span
@@ -107,10 +112,10 @@ export default function HomeTaskBoxes({
                 >
                   <span className={styles.priorityBadgeDot} />
                   {task.priority === 'High'
-                    ? 'High'
+                    ? taskContent.high
                     : task.priority === 'Low'
-                    ? 'Low'
-                    : 'Normal'}
+                    ? taskContent.low
+                    : taskContent.normal}
                 </span>
               )}
             </div>
@@ -119,6 +124,7 @@ export default function HomeTaskBoxes({
               value={task.assigneeIds}
               options={assigneeOptions}
               busy={busyTaskId === task.id}
+              unassignedLabel={taskContent.unassigned}
               onSelect={(nextAssigneeId) =>
                 onAssigneesChange(task, nextAssigneeId)
               }

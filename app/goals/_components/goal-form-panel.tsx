@@ -1,5 +1,6 @@
 import styles from '../../home/page.module.css'
 import type { SpaceItem, TaskItem } from '../model'
+import type { AppContent } from '../../../lib/content'
 
 type GoalFormPanelProps = {
   editingGoalId: number | null
@@ -20,6 +21,8 @@ type GoalFormPanelProps = {
   selectedTasks: TaskItem[]
   error: string | null
   message: string | null
+  content: AppContent['goals']['form']
+  common: AppContent['common']
   onChangeTitle: (value: string) => void
   onChangeDescription: (value: string) => void
   onChangeTargetDate: (value: string) => void
@@ -53,6 +56,8 @@ export default function GoalFormPanel({
   selectedTasks,
   error,
   message,
+  content,
+  common,
   onChangeTitle,
   onChangeDescription,
   onChangeTargetDate,
@@ -72,28 +77,26 @@ export default function GoalFormPanel({
     >
       <div className={styles.settingsPanelHeader}>
         <div className={styles.settingsPanelTitle}>
-          {editingGoalId ? 'Edit Goal' : 'Create Goal'}
+          {editingGoalId ? content.editTitle : content.createTitle}
         </div>
-        <div className={styles.settingsHelp}>
-          Link tasks to calculate progress automatically
-        </div>
+        <div className={styles.settingsHelp}>{content.help}</div>
       </div>
 
       <div className={`${styles.settingsGrid} ${styles.settingsGridWide}`}>
         <label className={styles.settingsField}>
-          <span className={styles.sectionLabel}>Title</span>
+          <span className={styles.sectionLabel}>{content.titleLabel}</span>
           <input
             className={styles.createInput}
             type="text"
             value={title}
             disabled={busy || !canWrite}
             onChange={(event) => onChangeTitle(event.target.value)}
-            placeholder="Launch Q2 onboarding"
+            placeholder={content.titlePlaceholder}
           />
         </label>
 
         <label className={styles.settingsField}>
-          <span className={styles.sectionLabel}>Target Date</span>
+          <span className={styles.sectionLabel}>{content.targetDateLabel}</span>
           <input
             className={styles.createInput}
             type="date"
@@ -104,14 +107,14 @@ export default function GoalFormPanel({
         </label>
 
         <label className={styles.settingsField}>
-          <span className={styles.sectionLabel}>Space</span>
+          <span className={styles.sectionLabel}>{content.spaceLabel}</span>
           <select
             className={styles.createSelect}
             value={spaceId}
             disabled={busy || !canWrite}
             onChange={(event) => onChangeSpaceId(event.target.value)}
           >
-            <option value="">No specific space</option>
+            <option value="">{content.noSpace}</option>
             {spaces.map((space) => (
               <option key={space.id} value={space.id}>
                 {space.name || `Space ${space.id}`}
@@ -123,20 +126,22 @@ export default function GoalFormPanel({
         <label
           className={`${styles.settingsField} ${styles.settingsFieldFull}`}
         >
-          <span className={styles.sectionLabel}>Description</span>
+          <span className={styles.sectionLabel}>
+            {content.descriptionLabel}
+          </span>
           <input
             className={styles.createInput}
             type="text"
             value={description}
             disabled={busy || !canWrite}
             onChange={(event) => onChangeDescription(event.target.value)}
-            placeholder="Reduce cycle time and improve quality"
+            placeholder={content.descriptionPlaceholder}
           />
         </label>
       </div>
 
       <div className={styles.settingsMembershipList}>
-        <div className={styles.sectionLabel}>Progress Override</div>
+        <div className={styles.sectionLabel}>{content.progressOverride}</div>
         <label className={styles.settingsMembershipRow}>
           <input
             type="checkbox"
@@ -145,7 +150,7 @@ export default function GoalFormPanel({
             onChange={(event) => onToggleManualProgress(event.target.checked)}
           />
           <span className={styles.settingsRoleIdentity}>
-            Use manual progress
+            {content.useManualProgress}
           </span>
         </label>
         <div className={styles.settingsRow}>
@@ -167,17 +172,15 @@ export default function GoalFormPanel({
         </div>
         {!useManualProgress ? (
           <div className={styles.settingsHelp}>
-            Auto progress from linked tasks is active.
+            {content.autoProgressActive}
           </div>
         ) : null}
       </div>
 
       <div className={styles.settingsMembershipList}>
-        <div className={styles.sectionLabel}>Linked Tasks</div>
+        <div className={styles.sectionLabel}>{content.linkedTasks}</div>
         {visibleTasks.length === 0 ? (
-          <div className={styles.settingsHelp}>
-            No tasks available for this filter.
-          </div>
+          <div className={styles.settingsHelp}>{content.noTasksForFilter}</div>
         ) : (
           <div>
             <div className={styles.settingsRow}>
@@ -189,7 +192,7 @@ export default function GoalFormPanel({
                 onChange={(event) =>
                   onChangeTaskSearchQuery(event.target.value)
                 }
-                placeholder="Search task by title or section"
+                placeholder={content.searchTaskPlaceholder}
               />
             </div>
             <div className={styles.settingsRow}>
@@ -201,10 +204,10 @@ export default function GoalFormPanel({
               >
                 <option value="">
                   {availableTasks.length === 0
-                    ? 'All visible tasks are linked'
+                    ? content.allVisibleTasksLinked
                     : filteredAvailableTasks.length === 0
-                    ? 'No tasks match search'
-                    : 'Choose task to link'}
+                    ? content.noTasksMatchSearch
+                    : content.chooseTaskToLink}
                 </option>
                 {filteredAvailableTasks.map((task) => (
                   <option key={task.id} value={task.id}>
@@ -218,7 +221,7 @@ export default function GoalFormPanel({
                 disabled={busy || !canWrite || !taskPickerId}
                 onClick={onAddTask}
               >
-                Link
+                {content.link}
               </button>
             </div>
           </div>
@@ -239,7 +242,7 @@ export default function GoalFormPanel({
             ))}
           </div>
         ) : (
-          <div className={styles.settingsHelp}>No linked tasks yet.</div>
+          <div className={styles.settingsHelp}>{content.noLinkedTasks}</div>
         )}
       </div>
 
@@ -254,7 +257,7 @@ export default function GoalFormPanel({
             disabled={busy}
             onClick={onCancelEdit}
           >
-            Cancel Edit
+            {content.cancelEdit}
           </button>
         ) : (
           <span />
@@ -265,7 +268,11 @@ export default function GoalFormPanel({
           disabled={busy || !canWrite}
           onClick={onSave}
         >
-          {busy ? 'Saving...' : editingGoalId ? 'Save Goal' : 'Create Goal'}
+          {busy
+            ? common.saving
+            : editingGoalId
+            ? content.saveGoal
+            : content.createGoal}
         </button>
       </div>
     </section>

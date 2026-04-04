@@ -1,10 +1,12 @@
 import styles from '../../home/page.module.css'
 import type { Goal } from '../model'
+import type { AppContent } from '../../../lib/content'
 
 type GoalListPanelProps = {
   goals: Goal[]
   busy: boolean
   canWrite: boolean
+  content: AppContent['goals']['list']
   onEdit: (goal: Goal) => void
   onDelete: (goalId: number) => void
 }
@@ -13,6 +15,7 @@ export default function GoalListPanel({
   goals,
   busy,
   canWrite,
+  content,
   onEdit,
   onDelete,
 }: GoalListPanelProps) {
@@ -21,13 +24,13 @@ export default function GoalListPanel({
       className={`${styles.settingsPanel} ${styles.settingsPanelCompact}`}
     >
       <div className={styles.settingsPanelHeader}>
-        <div className={styles.settingsPanelTitle}>Goal List</div>
-        <div className={styles.settingsHelp}>Progress and risk overview</div>
+        <div className={styles.settingsPanelTitle}>{content.title}</div>
+        <div className={styles.settingsHelp}>{content.subtitle}</div>
       </div>
 
       <div className={styles.settingsMembershipList}>
         {goals.length === 0 ? (
-          <div className={styles.settingsHelp}>No goals yet.</div>
+          <div className={styles.settingsHelp}>{content.noGoals}</div>
         ) : (
           goals.map((goal) => (
             <div key={goal.id} className={styles.settingsMembershipRow}>
@@ -37,11 +40,13 @@ export default function GoalListPanel({
                   <div className={styles.settingsHelp}>{goal.description}</div>
                 ) : null}
                 <div className={styles.settingsHelp}>
-                  Progress: {goal.progress}%
-                  {goal.manualProgress !== null ? ' (manual)' : ' (auto)'} ·
-                  Linked tasks: {goal.linkedTaskCount}
+                  {content.progressLabel}: {goal.progress}%
+                  {goal.manualProgress !== null
+                    ? ` (${content.manual})`
+                    : ` (${content.auto})`}{' '}
+                  · {content.linkedTasks}: {goal.linkedTaskCount}
                   {goal.targetDate
-                    ? ` · Target: ${new Date(
+                    ? ` · ${content.target}: ${new Date(
                         goal.targetDate
                       ).toLocaleDateString('en-GB')}`
                     : ''}
@@ -67,7 +72,9 @@ export default function GoalListPanel({
 
               <div className={styles.settingsMembershipTags}>
                 {goal.atRisk ? (
-                  <span className={styles.settingsMembershipTag}>At risk</span>
+                  <span className={styles.settingsMembershipTag}>
+                    {content.atRisk}
+                  </span>
                 ) : null}
                 {canWrite ? (
                   <button
@@ -76,7 +83,7 @@ export default function GoalListPanel({
                     disabled={busy}
                     onClick={() => onEdit(goal)}
                   >
-                    Edit
+                    {content.edit}
                   </button>
                 ) : null}
                 {canWrite ? (
@@ -86,7 +93,7 @@ export default function GoalListPanel({
                     disabled={busy}
                     onClick={() => onDelete(goal.id)}
                   >
-                    Delete
+                    {content.delete}
                   </button>
                 ) : null}
               </div>

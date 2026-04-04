@@ -13,6 +13,7 @@ type TaskAssigneeDropdownProps = {
   value: number[]
   options: AssigneeOption[]
   busy: boolean
+  unassignedLabel: string
   onSelect: (nextAssigneeId: number | null) => void
 }
 
@@ -28,6 +29,7 @@ export default function TaskAssigneeDropdown({
   value,
   options,
   busy,
+  unassignedLabel,
   onSelect,
 }: TaskAssigneeDropdownProps) {
   const [open, setOpen] = useState(false)
@@ -40,7 +42,7 @@ export default function TaskAssigneeDropdown({
     activeAssigneeId === null
       ? null
       : options.find((option) => option.id === activeAssigneeId) ?? null
-  const activeLabel = activeOption?.label || 'Unassigned'
+  const activeLabel = activeOption?.label || unassignedLabel
 
   function updateMenuPosition() {
     const button = buttonRef.current
@@ -151,7 +153,7 @@ export default function TaskAssigneeDropdown({
                   className={styles.assigneeSwatch}
                   style={{ background: getAssigneeColor(0) }}
                 />
-                Unassigned
+                {unassignedLabel}
               </button>
 
               {options.map((option) => (

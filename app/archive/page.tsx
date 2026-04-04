@@ -4,6 +4,7 @@ import { marked } from 'marked'
 import { useRouter } from 'next/navigation'
 import Loader from '../components/loader/loader'
 import useStore from '../../lib/store'
+import { getContent } from '../../lib/content'
 import styles from '../home/page.module.css'
 import ArchiveTaskGrid from './_components/archive-task-grid'
 import useArchivePage from './_hooks/use-archive-page'
@@ -22,9 +23,9 @@ function getTagTextColor(background: string): string {
 }
 
 function formatDate(value: string | null): string {
-  if (!value) return 'No date'
+  if (!value) return '-'
   const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return 'No date'
+  if (Number.isNaN(date.getTime())) return '-'
   return date.toLocaleDateString('en-GB', {
     day: '2-digit',
     month: 'short',
@@ -46,6 +47,8 @@ export default function ArchivePage() {
   const router = useRouter()
   const token = useStore((state) => state.token)
   const rehydrated = useStore((state) => state.rehydrated)
+  const user = useStore((state) => state.user)
+  const ui = getContent(user?.preferredLanguage)
   const {
     checking,
     organization,
@@ -64,7 +67,7 @@ export default function ArchivePage() {
   if (checking) {
     return (
       <main className="center-screen">
-        <Loader message="Loading archive..." />
+        <Loader message={ui.archive.loading} />
       </main>
     )
   }
@@ -76,11 +79,11 @@ export default function ArchivePage() {
           <div className={styles.workspaceMeta}>
             <span className={styles.workspaceBadge}>▣</span>
             <div>
-              <div className={styles.workspaceTitle}>Archive</div>
+              <div className={styles.workspaceTitle}>{ui.archive.title}</div>
               <div className={styles.workspaceSub}>
                 {organization?.name
-                  ? `Archived tasks for ${organization.name}`
-                  : 'Archived tasks across your workspace'}
+                  ? ui.archive.subtitleWithOrg(organization.name)
+                  : ui.archive.subtitleFallback}
               </div>
             </div>
           </div>
@@ -91,7 +94,7 @@ export default function ArchivePage() {
               type="button"
               onClick={() => router.push('/home')}
             >
-              Back to Home
+              {ui.common.backToHome}
             </button>
           </div>
         </div>
@@ -110,6 +113,9 @@ export default function ArchivePage() {
             formatDate={formatDate}
             getTagTextColor={getTagTextColor}
             markdownToHtml={markdownToHtml}
+            archiveContent={ui.archive}
+            taskContent={ui.home.task}
+            commonContent={ui.common}
             onRestore={(taskId) => {
               void updateArchivedTask(taskId, null)
             }}

@@ -36,6 +36,7 @@ export default function useSettingsPage({
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [preferredLanguage, setPreferredLanguage] = useState<'sv' | 'en'>('sv')
   const [message, setMessage] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [adminUsers, setAdminUsers] = useState<StoreUser[]>([])
@@ -100,6 +101,7 @@ export default function useSettingsPage({
         setCurrentUser(userData)
         setName(userData.name || '')
         setEmail(userData.email || '')
+        setPreferredLanguage(userData.preferredLanguage === 'en' ? 'en' : 'sv')
 
         if (userData.role === 'admin' && userData.organizationId) {
           const [usersResponse, spacesResponse] = await Promise.all([
@@ -177,6 +179,7 @@ export default function useSettingsPage({
           name: name.trim() || null,
           email: email.trim() || null,
           password: password.trim() || null,
+          preferredLanguage,
         }),
       })
 
@@ -194,7 +197,9 @@ export default function useSettingsPage({
         email: updatedUser.email,
         role: updatedUser.role,
         organizationId: updatedUser.organizationId,
+        preferredLanguage: updatedUser.preferredLanguage === 'en' ? 'en' : 'sv',
       })
+      setPreferredLanguage(updatedUser.preferredLanguage === 'en' ? 'en' : 'sv')
       setPassword('')
       setMessage('Settings saved.')
     } catch (saveError) {
@@ -479,6 +484,7 @@ export default function useSettingsPage({
     name,
     email,
     password,
+    preferredLanguage,
     message,
     error,
     adminUsers,
@@ -494,6 +500,7 @@ export default function useSettingsPage({
     setName,
     setEmail,
     setPassword,
+    setPreferredLanguage,
     setMemberSpaceDraftIds,
     setAdminOrgName,
     setNewAdminUserName,

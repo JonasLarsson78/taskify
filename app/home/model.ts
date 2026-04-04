@@ -4,6 +4,7 @@ export type StoreUser = {
   email?: string
   role?: 'admin' | 'user' | 'guest'
   organizationId?: number | null
+  preferredLanguage?: 'sv' | 'en'
 }
 
 export type Organization = {
