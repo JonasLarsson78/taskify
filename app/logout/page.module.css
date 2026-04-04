@@ -1,0 +1,35 @@
+.shell {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: radial-gradient(
+      circle at top left,
+      rgba(255, 113, 164, 0.12),
+      transparent 30%
+    ),
+    radial-gradient(
+      circle at top right,
+      rgba(111, 90, 214, 0.1),
+      transparent 26%
+    ),
+    linear-gradient(180deg, #fbfbff 0%, #f2f4fb 100%);
+}
+
+.card {
+  width: min(460px, 100%);
+  border-radius: 18px;
+  border: 1px solid rgba(32, 33, 67, 0.1);
+  background: rgba(255, 255, 255, 0.86);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 10px 26px rgba(25, 26, 65, 0.1);
+  padding: 18px;
+}
+
+@supports (-webkit-touch-callout: none) {
+  .shell {
+    min-height: -webkit-fill-available;
+  }
+}
