@@ -10,6 +10,7 @@ type HomeSidebarProps = {
   spaces: Space[]
   selectedSpaceId: number | null
   onChangeView: (next: ViewMode) => void
+  onOpenArchive: () => void
   onSelectSpace: (space: Space) => void
   onCreateSpace: () => void
 }
@@ -22,6 +23,7 @@ export default function HomeSidebar({
   spaces,
   selectedSpaceId,
   onChangeView,
+  onOpenArchive,
   onSelectSpace,
   onCreateSpace,
 }: HomeSidebarProps) {
@@ -69,6 +71,10 @@ export default function HomeSidebar({
         >
           <span className={styles.navIcon}>◎</span>
           Goals
+        </button>
+        <button className={styles.navItem} type="button" onClick={onOpenArchive}>
+          <span className={styles.navIcon}>▣</span>
+          Archive
         </button>
       </section>
 

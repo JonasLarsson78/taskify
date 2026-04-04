@@ -29,6 +29,7 @@ export type ApiTask = {
   meta: string | null
   assigneeIds: number[]
   dueDate: string | null
+  archivedAt: string | null
   stage: 'Initiation' | 'Planning' | 'Execution'
   priority: 'High' | 'Normal' | 'Low'
   section: string

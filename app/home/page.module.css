@@ -483,6 +483,31 @@
   margin-top: 2px;
 }
 
+.archiveTaskMeta {
+  line-height: 1.45;
+}
+
+.archiveTaskMeta :global(p) {
+  margin: 0;
+}
+
+.archiveTaskMeta :global(p + p) {
+  margin-top: 0.45rem;
+}
+
+.archiveTaskMeta :global(ul),
+.archiveTaskMeta :global(ol) {
+  margin: 0.35rem 0 0;
+  padding-left: 1.25rem;
+}
+
+.archiveTaskMeta :global(code) {
+  font-size: 0.72rem;
+  background: rgba(111, 90, 214, 0.08);
+  padding: 0.08rem 0.28rem;
+  border-radius: 6px;
+}
+
 .assigneeCluster {
   display: flex;
   align-items: center;
@@ -769,8 +794,17 @@
 .createTaskQuickAction {
   display: flex;
   justify-content: flex-start;
+  align-items: center;
+  gap: 8px;
   margin-top: -4px;
   margin-bottom: -14px;
+}
+
+.quickSearchInput {
+  flex: 0 1 340px;
+  min-width: 220px;
+  margin-bottom: 10px;
+  border-radius: 999px;
 }
 
 .createTaskGrid {
@@ -1192,9 +1226,16 @@
     width: fit-content;
   }
 
+  .createTaskQuickAction .quickSearchInput {
+    width: 100%;
+    min-width: 0;
+    flex-basis: 100%;
+  }
+
   .createTaskQuickAction {
     margin-top: -2px;
     margin-bottom: -14px;
+    flex-wrap: wrap;
   }
 
   .modalCard {

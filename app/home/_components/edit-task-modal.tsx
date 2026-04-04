@@ -17,6 +17,7 @@ type EditTaskModalProps = {
   color: string
   onClose: () => void
   onSubmit: () => void
+  onArchive: () => void
   onDelete: () => void
   onTitleChange: (value: string) => void
   onMetaChange: (value: string) => void
@@ -41,6 +42,7 @@ export default function EditTaskModal({
   color,
   onClose,
   onSubmit,
+  onArchive,
   onDelete,
   onTitleChange,
   onMetaChange,
@@ -168,6 +170,14 @@ export default function EditTaskModal({
         </div>
 
         <div className={styles.modalActions}>
+          <button
+            className={styles.taskActionBtn}
+            type="button"
+            disabled={busy}
+            onClick={onArchive}
+          >
+            Archive task
+          </button>
           <button
             className={`${styles.taskActionBtn} ${styles.taskActionDanger}`}
             type="button"

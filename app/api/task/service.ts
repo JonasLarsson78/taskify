@@ -7,6 +7,7 @@ type TaskRow = {
   title: string
   meta: string | null
   dueDate: Date | null
+  archivedAt: Date | null
   stage: 'Initiation' | 'Planning' | 'Execution'
   priority: 'High' | 'Normal' | 'Low'
   section: string
@@ -70,6 +71,7 @@ async function ensureTaskTable() {
       \`title\` VARCHAR(191) NOT NULL,
       \`meta\` VARCHAR(191) NULL,
       \`dueDate\` DATETIME(3) NULL,
+      \`archivedAt\` DATETIME(3) NULL,
       \`stage\` VARCHAR(32) NOT NULL DEFAULT 'Planning',
       \`priority\` VARCHAR(16) NOT NULL DEFAULT 'Normal',
       \`section\` VARCHAR(32) NOT NULL DEFAULT 'Review',
@@ -83,6 +85,12 @@ async function ensureTaskTable() {
       INDEX \`Task_space_id_idx\` (\`space_id\`)
     )
   `)
+
+  try {
+    await pool.query('ALTER TABLE `Task` ADD COLUMN `archivedAt` DATETIME(3) NULL')
+  } catch {
+    // Ignore if the column already exists.
+  }
 
   try {
     await pool.query('ALTER TABLE `Task` ADD COLUMN `space_id` INT NULL')
@@ -132,6 +140,7 @@ function mapTaskRow(row: Record<string, unknown>): TaskRow {
     title: String(row.title ?? ''),
     meta: typeof row.meta === 'string' ? row.meta : null,
     dueDate: row.dueDate ? new Date(String(row.dueDate)) : null,
+    archivedAt: row.archivedAt ? new Date(String(row.archivedAt)) : null,
     stage: (row.stage as TaskRow['stage']) || 'Planning',
     priority: normalizePriority(row.priority),
     section:
@@ -149,7 +158,8 @@ function mapTaskRow(row: Record<string, unknown>): TaskRow {
 
 export async function listTasks(
   organizationId?: number | null,
-  spaceId?: number | null
+  spaceId?: number | null,
+  archivedMode: 'exclude' | 'only' | 'include' = 'exclude'
 ) {
   await ensureTaskTable()
 
@@ -167,6 +177,12 @@ export async function listTasks(
     params.push(spaceId)
   }
 
+  if (archivedMode === 'exclude') {
+    clauses.push('archivedAt IS NULL')
+  } else if (archivedMode === 'only') {
+    clauses.push('archivedAt IS NOT NULL')
+  }
+
   if (clauses.length > 0) {
     sql += ` WHERE ${clauses.join(' AND ')}`
   }
@@ -181,11 +197,12 @@ export async function createTask(input: CreateTaskInput) {
   await ensureTaskTable()
 
   const [res] = await pool.query<ResultSetHeader>(
-    'INSERT INTO `Task` (title,meta,dueDate,stage,priority,section,color,assignees,organization_id,space_id,createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(3))',
+    'INSERT INTO `Task` (title,meta,dueDate,archivedAt,stage,priority,section,color,assignees,organization_id,space_id,createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(3))',
     [
       input.title,
       input.meta,
       input.dueDate ? new Date(input.dueDate) : null,
+      null,
       input.stage,
       input.priority,
       input.section,
@@ -222,6 +239,10 @@ export async function updateTask(id: number, patch: UpdateTaskInput) {
   if (patch.dueDate !== undefined) {
     fields.push('dueDate = ?')
     values.push(patch.dueDate ? new Date(patch.dueDate) : null)
+  }
+  if (patch.archivedAt !== undefined) {
+    fields.push('archivedAt = ?')
+    values.push(patch.archivedAt ? new Date(patch.archivedAt) : null)
   }
   if (patch.stage !== undefined) {
     fields.push('stage = ?')

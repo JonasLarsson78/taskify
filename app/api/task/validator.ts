@@ -2,6 +2,7 @@ export type CreateTaskInput = {
   title: string
   meta: string | null
   dueDate: string | null
+  archivedAt?: string | null
   stage: 'Initiation' | 'Planning' | 'Execution'
   priority: 'High' | 'Normal' | 'Low'
   section: string
@@ -106,6 +107,10 @@ export function normalizeUpdateTaskInput(
 
   if (typeof b.dueDate === 'string' || b.dueDate === null) {
     patch.dueDate = (b.dueDate as string | null) ?? null
+  }
+
+  if (typeof b.archivedAt === 'string' || b.archivedAt === null) {
+    patch.archivedAt = (b.archivedAt as string | null) ?? null
   }
 
   if (typeof b.stage === 'string') {

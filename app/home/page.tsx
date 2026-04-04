@@ -135,6 +135,7 @@ export default function HomePage() {
     'High' | 'Normal' | 'Low'
   >('Normal')
   const [viewMode, setViewMode] = useState<ViewMode>('list')
+  const [searchQuery, setSearchQuery] = useState('')
 
   function parseViewMode(value: string | null): ViewMode {
     if (value === 'board' || value === 'box') return value
@@ -159,6 +160,7 @@ export default function HomePage() {
         | 'title'
         | 'meta'
         | 'dueDate'
+        | 'archivedAt'
         | 'priority'
         | 'section'
         | 'assigneeIds'
@@ -379,6 +381,16 @@ export default function HomePage() {
     } finally {
       setCreateTaskBusy(false)
     }
+  }
+
+  async function archiveTaskOnServer(taskId: number): Promise<boolean> {
+    return updateTaskOnServer(
+      taskId,
+      { archivedAt: new Date().toISOString() },
+      {
+        optimisticUpdate: (prev) => prev.filter((task) => task.id !== taskId),
+      }
+    )
   }
 
   async function loadTasksForSpace(
@@ -755,7 +767,34 @@ export default function HomePage() {
         arr.findIndex((candidate) => candidate.id === value.id) === index
     )
     .slice(0, 24)
-  const boardGroups = groupedTasksFromApi(tasks, sectionOptions, sectionColors)
+  const normalizedSearch = searchQuery.trim().toLowerCase()
+  const filteredTasks = tasks.filter((task) => {
+    if (!normalizedSearch) return true
+
+    const assigneeLabels = task.assigneeIds
+      .map(
+        (id) => assigneeOptions.find((option) => option.id === id)?.label || ''
+      )
+      .join(' ')
+
+    const haystack = [
+      task.title,
+      task.meta || '',
+      task.section,
+      task.priority,
+      task.stage,
+      assigneeLabels,
+    ]
+      .join(' ')
+      .toLowerCase()
+
+    return haystack.includes(normalizedSearch)
+  })
+  const boardGroups = groupedTasksFromApi(
+    filteredTasks,
+    sectionOptions,
+    sectionColors
+  )
   const dueThisWeek = countDueThisWeek(tasks)
   const busiestSection = getBusiestSection(tasks)
 
@@ -773,6 +812,7 @@ export default function HomePage() {
         spaces={spaces}
         selectedSpaceId={selectedSpaceId}
         onChangeView={handleChangeView}
+        onOpenArchive={() => router.push('/archive')}
         onSelectSpace={(space) => {
           setSelectedSpaceId(space.id)
           setSectionOptions(normalizeSectionList(space.taskSections))
@@ -847,6 +887,13 @@ export default function HomePage() {
           >
             + New Task
           </button>
+          <input
+            className={`${styles.createInput} ${styles.quickSearchInput}`}
+            type="search"
+            value={searchQuery}
+            placeholder="Search tasks, meta, section or assignee"
+            onChange={(event) => setSearchQuery(event.target.value)}
+          />
         </section>
 
         <HomeOverview
@@ -898,6 +945,13 @@ export default function HomePage() {
           onClose={() => setEditTaskModalOpen(false)}
           onSubmit={() => {
             void saveEditedTask()
+          }}
+          onArchive={() => {
+            if (!editTaskId) return
+            void (async () => {
+              const ok = await archiveTaskOnServer(editTaskId)
+              if (ok) setEditTaskModalOpen(false)
+            })()
           }}
           onDelete={() => {
             if (!editTaskId) return
@@ -1070,6 +1124,15 @@ export default function HomePage() {
         {integrationError ? (
           <section className={styles.board}>
             <div className={styles.taskMeta}>{integrationError}</div>
+          </section>
+        ) : null}
+
+        {searchQuery.trim() ? (
+          <section className={styles.board}>
+            <div className={styles.taskMeta}>
+              Showing {filteredTasks.length} of {tasks.length} tasks for
+              {' '}&quot;{searchQuery.trim()}&quot;
+            </div>
           </section>
         ) : null}
 

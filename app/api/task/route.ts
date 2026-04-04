@@ -7,6 +7,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url)
     const organizationIdRaw = searchParams.get('organizationId')
     const spaceIdRaw = searchParams.get('spaceId')
+    const archivedRaw = searchParams.get('archived')
     const parsedId = organizationIdRaw
       ? Number.parseInt(organizationIdRaw, 10)
       : null
@@ -17,8 +18,14 @@ export async function GET(request: Request) {
       parsedSpaceId !== null && !Number.isNaN(parsedSpaceId)
         ? parsedSpaceId
         : null
+    const archivedMode =
+      archivedRaw === 'only'
+        ? 'only'
+        : archivedRaw === 'include'
+        ? 'include'
+        : 'exclude'
 
-    const tasks = await listTasks(organizationId, spaceId)
+    const tasks = await listTasks(organizationId, spaceId, archivedMode)
     return NextResponse.json(tasks)
   } catch (e) {
     console.error('GET /api/task error', e)
