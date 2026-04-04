@@ -113,7 +113,11 @@ export default function HomeSidebar({
         )}
 
         {canCreateSpace ? (
-          <button className={styles.navItem} type="button" onClick={onCreateSpace}>
+          <button
+            className={styles.navItem}
+            type="button"
+            onClick={onCreateSpace}
+          >
             <span className={styles.navIcon}>+</span>
             New Space
           </button>

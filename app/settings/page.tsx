@@ -854,9 +854,7 @@ export default function SettingsPage() {
                 <label
                   className={`${styles.settingsField} ${styles.settingsFieldFull}`}
                 >
-                  <span className={styles.sectionLabel}>
-                    Organization Name
-                  </span>
+                  <span className={styles.sectionLabel}>Organization Name</span>
                   <input
                     className={styles.createInput}
                     type="text"
