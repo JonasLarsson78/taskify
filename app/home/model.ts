@@ -66,6 +66,18 @@ export type AssigneeOption = {
   label: string
 }
 
+const DONE_SECTIONS = new Set([
+  'ready',
+  'done',
+  'closed',
+  'complete',
+  'completed',
+])
+
+export function isCompletedSection(section: string): boolean {
+  return DONE_SECTIONS.has(section.trim().toLowerCase())
+}
+
 export function getInitial(
   value: string | undefined,
   fallback: string

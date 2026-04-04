@@ -11,6 +11,7 @@ type HomeSidebarProps = {
   selectedSpaceId: number | null
   onChangeView: (next: ViewMode) => void
   onOpenArchive: () => void
+  onOpenGoals: () => void
   onOpenSettings: () => void
   onSelectSpace: (space: Space) => void
   onCreateSpace: () => void
@@ -26,6 +27,7 @@ export default function HomeSidebar({
   selectedSpaceId,
   onChangeView,
   onOpenArchive,
+  onOpenGoals,
   onOpenSettings,
   onSelectSpace,
   onCreateSpace,
@@ -66,11 +68,9 @@ export default function HomeSidebar({
           Notifications
         </button>
         <button
-          className={`${styles.navItem} ${
-            viewMode === 'box' ? styles.navItemActive : ''
-          }`}
+          className={styles.navItem}
           type="button"
-          onClick={() => onChangeView('box')}
+          onClick={onOpenGoals}
           title="Open goals view"
         >
           <span className={styles.navIcon}>◎</span>

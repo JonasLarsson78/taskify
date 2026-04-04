@@ -748,6 +748,30 @@
   text-overflow: ellipsis;
 }
 
+.taskTitleRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.taskDoneBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: rgba(67, 187, 132, 0.14);
+  color: #2f9f6e;
+  border: 1px solid rgba(67, 187, 132, 0.28);
+  white-space: nowrap;
+}
+
 .taskMeta {
   color: #8d91a5;
   font-size: 0.76rem;

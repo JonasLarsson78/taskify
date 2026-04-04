@@ -1,6 +1,7 @@
 import styles from '../page.module.css'
 import { useState, type DragEvent } from 'react'
 import type { AssigneeOption, BoardGroup, UiTask } from '../model'
+import { isCompletedSection } from '../model'
 import TaskAssigneeDropdown from './task-assignee-dropdown'
 
 type HomeTaskBoardProps = {
@@ -112,7 +113,12 @@ export default function HomeTaskBoard({
                     style={{ background: task.color }}
                   />
                   <div className={styles.taskMain}>
-                    <div className={styles.taskTitle}>{task.title}</div>
+                    <div className={styles.taskTitleRow}>
+                      <div className={styles.taskTitle}>{task.title}</div>
+                      {isCompletedSection(task.section) ? (
+                        <span className={styles.taskDoneBadge}>Klar</span>
+                      ) : null}
+                    </div>
                   </div>
                 </div>
 

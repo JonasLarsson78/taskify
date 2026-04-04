@@ -843,6 +843,7 @@ export default function HomePage() {
         selectedSpaceId={selectedSpaceId}
         onChangeView={handleChangeView}
         onOpenArchive={() => router.push('/archive')}
+        onOpenGoals={() => router.push('/goals')}
         onOpenSettings={() => router.push('/settings')}
         canCreateSpace={canManageWorkspaceData}
         onSelectSpace={(space) => {

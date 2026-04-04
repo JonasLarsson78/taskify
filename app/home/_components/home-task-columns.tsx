@@ -1,6 +1,7 @@
 import styles from '../page.module.css'
 import { useState, type DragEvent } from 'react'
 import type { AssigneeOption, BoardGroup, UiTask } from '../model'
+import { isCompletedSection } from '../model'
 import TaskAssigneeDropdown from './task-assignee-dropdown'
 
 type HomeTaskColumnsProps = {
@@ -104,7 +105,12 @@ export default function HomeTaskColumns({
                   onDragEnd={onDragEnd}
                   onClick={() => onOpenTask(task)}
                 >
-                  <div className={styles.taskViewCardTitle}>{task.title}</div>
+                  <div className={styles.taskTitleRow}>
+                    <div className={styles.taskViewCardTitle}>{task.title}</div>
+                    {isCompletedSection(task.section) ? (
+                      <span className={styles.taskDoneBadge}>Klar</span>
+                    ) : null}
+                  </div>
                   <div className={styles.taskViewMetaRow}>
                     Due: {task.dueDate}
                   </div>

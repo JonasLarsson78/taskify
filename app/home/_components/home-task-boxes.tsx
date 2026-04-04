@@ -1,5 +1,6 @@
 import styles from '../page.module.css'
 import type { AssigneeOption, BoardGroup, UiTask } from '../model'
+import { isCompletedSection } from '../model'
 import TaskAssigneeDropdown from './task-assignee-dropdown'
 
 function getTagTextColor(background: string): string {
@@ -59,7 +60,12 @@ export default function HomeTaskBoxes({
             >
               {task.section}
             </div>
-            <div className={styles.taskViewCardTitle}>{task.title}</div>
+            <div className={styles.taskTitleRow}>
+              <div className={styles.taskViewCardTitle}>{task.title}</div>
+              {isCompletedSection(task.section) ? (
+                <span className={styles.taskDoneBadge}>Klar</span>
+              ) : null}
+            </div>
             <div className={styles.taskViewMetaRow}>Due: {task.dueDate}</div>
             <div className={styles.taskViewMetaRow}>
               {task.id ? (
