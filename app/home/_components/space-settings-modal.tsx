@@ -1,4 +1,6 @@
-import styles from '../page.module.css'
+import sharedStyles from '../page.module.css'
+import modalStyles from '../_styles/home-modal-shell.module.css'
+import controlsStyles from '../../settings/_styles/space-settings-controls.module.css'
 import type { AppContent } from '../../../lib/content'
 
 type SpaceSettingsModalProps = {
@@ -56,23 +58,23 @@ export default function SpaceSettingsModal({
 
   return (
     <section
-      className={styles.modalBackdrop}
+      className={modalStyles.modalBackdrop}
       onClick={() => {
         if (!spaceSettingsBusy) onClose()
       }}
     >
       <div
-        className={styles.modalCard}
+        className={modalStyles.modalCard}
         onClick={(event) => event.stopPropagation()}
       >
-        <div className={styles.modalHeader}>
+        <div className={modalStyles.modalHeader}>
           <div>
-            <div className={styles.modalTitle}>{content.title}</div>
-            <div className={styles.modalSub}>{content.subtitle}</div>
+            <div className={modalStyles.modalTitle}>{content.title}</div>
+            <div className={modalStyles.modalSub}>{content.subtitle}</div>
           </div>
           <button
             type="button"
-            className={styles.modalClose}
+            className={modalStyles.modalClose}
             disabled={spaceSettingsBusy}
             onClick={onClose}
           >
@@ -80,9 +82,9 @@ export default function SpaceSettingsModal({
           </button>
         </div>
 
-        <div className={styles.settingsRow}>
+        <div className={controlsStyles.settingsRow}>
           <input
-            className={styles.createInput}
+            className={sharedStyles.createInput}
             type="text"
             placeholder={content.spaceNamePlaceholder}
             value={spaceNameDraft}
@@ -91,9 +93,9 @@ export default function SpaceSettingsModal({
           />
         </div>
 
-        <div className={styles.settingsRow}>
+        <div className={controlsStyles.settingsRow}>
           <input
-            className={styles.createInput}
+            className={sharedStyles.createInput}
             type="text"
             placeholder={content.addColumnPlaceholder}
             value={newSectionName}
@@ -106,7 +108,7 @@ export default function SpaceSettingsModal({
             }}
           />
           <button
-            className={styles.taskActionBtn}
+            className={sharedStyles.taskActionBtn}
             type="button"
             onClick={onAddSection}
             disabled={spaceSettingsBusy}
@@ -115,16 +117,16 @@ export default function SpaceSettingsModal({
           </button>
         </div>
 
-        <div className={styles.settingsChipRow}>
+        <div className={controlsStyles.settingsChipRow}>
           {sectionOptions.map((section) => (
             <div
-              className={`${styles.settingsChip} ${
+              className={`${controlsStyles.settingsChip} ${
                 draggingSectionName === section
-                  ? styles.settingsChipDragging
+                  ? controlsStyles.settingsChipDragging
                   : ''
               } ${
                 dragOverSectionName === section
-                  ? styles.settingsChipDropTarget
+                  ? controlsStyles.settingsChipDropTarget
                   : ''
               }`}
               key={section}
@@ -151,7 +153,7 @@ export default function SpaceSettingsModal({
               <span>{section}</span>
               <input
                 type="color"
-                className={styles.settingsColorInput}
+                className={controlsStyles.settingsColorInput}
                 value={sectionColors[section] || '#6259ff'}
                 onChange={(event) =>
                   onUpdateSectionColor(section, event.target.value)
@@ -161,7 +163,7 @@ export default function SpaceSettingsModal({
               />
               <button
                 type="button"
-                className={styles.settingsChipRemove}
+                className={controlsStyles.settingsChipRemove}
                 onClick={() => onRemoveSection(section)}
                 disabled={spaceSettingsBusy}
               >
@@ -171,9 +173,9 @@ export default function SpaceSettingsModal({
           ))}
         </div>
 
-        <div className={styles.modalActions}>
+        <div className={sharedStyles.modalActions}>
           <button
-            className={styles.modalCancel}
+            className={sharedStyles.modalCancel}
             type="button"
             disabled={spaceSettingsBusy}
             onClick={onClose}
@@ -181,7 +183,7 @@ export default function SpaceSettingsModal({
             {commonContent.cancel}
           </button>
           <button
-            className={styles.createTaskButton}
+            className={sharedStyles.createTaskButton}
             type="button"
             disabled={spaceSettingsBusy}
             onClick={onSave}

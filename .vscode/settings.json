@@ -9,5 +9,13 @@
   "[css]": {
     "editor.defaultFormatter": "Prettier-vsc.vsce-prettier"
   },
-  "editor.formatOnSave": true
+  "editor.formatOnSave": true,
+  "material-icon-theme.folders.associations": {
+  "log": "home",
+  "archive": "home",
+  "goals": "home",
+  "login": "home",
+  "logout": "home",
+  "settings": "home",
+}
 }

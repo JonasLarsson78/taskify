@@ -1,4 +1,6 @@
-import styles from '../page.module.css'
+import sharedStyles from '../page.module.css'
+import modalStyles from '../_styles/home-modal-shell.module.css'
+import formStyles from '../_styles/home-task-editor-form.module.css'
 import type { AssigneeOption } from '../model'
 import MarkdownLiveEditor from './markdown-live-editor'
 import type { AppContent } from '../../../lib/content'
@@ -58,25 +60,25 @@ export default function CreateTaskModal({
 
   return (
     <section
-      className={styles.modalBackdrop}
+      className={modalStyles.modalBackdrop}
       onClick={() => {
         if (!busy) onClose()
       }}
     >
       <div
-        className={styles.modalCard}
+        className={modalStyles.modalCard}
         onClick={(e) => {
           e.stopPropagation()
         }}
       >
-        <div className={styles.modalHeader}>
+        <div className={modalStyles.modalHeader}>
           <div>
-            <div className={styles.modalTitle}>{content.title}</div>
-            <div className={styles.modalSub}>{content.subtitle}</div>
+            <div className={modalStyles.modalTitle}>{content.title}</div>
+            <div className={modalStyles.modalSub}>{content.subtitle}</div>
           </div>
           <button
             type="button"
-            className={styles.modalClose}
+            className={modalStyles.modalClose}
             disabled={busy}
             onClick={onClose}
           >
@@ -84,16 +86,16 @@ export default function CreateTaskModal({
           </button>
         </div>
 
-        <div className={styles.createTaskGrid}>
+        <div className={formStyles.createTaskGrid}>
           <input
-            className={styles.createInput}
+            className={sharedStyles.createInput}
             type="text"
             placeholder={content.taskTitlePlaceholder}
             value={title}
             onChange={(e) => onTitleChange(e.target.value)}
           />
 
-          <div className={styles.createFieldFull}>
+          <div className={formStyles.createFieldFull}>
             <MarkdownLiveEditor
               value={meta}
               onChange={onMetaChange}
@@ -103,14 +105,14 @@ export default function CreateTaskModal({
           </div>
 
           <input
-            className={styles.createInput}
+            className={sharedStyles.createInput}
             type="date"
             value={dueDate}
             onChange={(e) => onDueDateChange(e.target.value)}
           />
 
           <select
-            className={styles.createSelect}
+            className={sharedStyles.createSelect}
             multiple
             value={assigneeIds.map(String)}
             onChange={(e) =>
@@ -129,7 +131,7 @@ export default function CreateTaskModal({
           </select>
 
           <select
-            className={styles.createSelect}
+            className={sharedStyles.createSelect}
             value={section}
             onChange={(e) => onSectionChange(e.target.value)}
           >
@@ -141,7 +143,7 @@ export default function CreateTaskModal({
           </select>
 
           <select
-            className={styles.createSelect}
+            className={sharedStyles.createSelect}
             value={priority}
             onChange={(e) =>
               onPriorityChange(e.target.value as 'High' | 'Normal' | 'Low')
@@ -152,12 +154,12 @@ export default function CreateTaskModal({
             <option value="Low">{taskContent.low}</option>
           </select>
 
-          <label className={styles.createColorField}>
-            <span className={styles.createColorLabel}>
+          <label className={formStyles.createColorField}>
+            <span className={formStyles.createColorLabel}>
               {content.colorLabel}
             </span>
             <input
-              className={styles.createColorInput}
+              className={formStyles.createColorInput}
               type="color"
               value={color}
               onChange={(e) => onColorChange(e.target.value)}
@@ -165,9 +167,9 @@ export default function CreateTaskModal({
           </label>
         </div>
 
-        <div className={styles.modalActions}>
+        <div className={sharedStyles.modalActions}>
           <button
-            className={styles.modalCancel}
+            className={sharedStyles.modalCancel}
             type="button"
             disabled={busy}
             onClick={onClose}
@@ -175,7 +177,7 @@ export default function CreateTaskModal({
             {commonContent.cancel}
           </button>
           <button
-            className={styles.createTaskButton}
+            className={sharedStyles.createTaskButton}
             type="button"
             disabled={busy}
             onClick={onSubmit}

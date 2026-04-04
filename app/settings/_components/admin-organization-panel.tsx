@@ -1,4 +1,5 @@
 import styles from '../../home/page.module.css'
+import panelStyles from '../_styles/settings-panels.module.css'
 import type { AppContent } from '../../../lib/content'
 
 type AdminOrganizationPanelProps = {
@@ -18,18 +19,20 @@ export default function AdminOrganizationPanel({
 }: AdminOrganizationPanelProps) {
   return (
     <section
-      className={`${styles.settingsPanel} ${styles.settingsPanelCompact}`}
+      className={`${panelStyles.settingsPanel} ${panelStyles.settingsPanelCompact}`}
     >
-      <div className={styles.settingsPanelHeader}>
-        <div className={styles.settingsPanelTitle}>{content.title}</div>
-        <div className={styles.settingsHelp}>{content.subtitle}</div>
+      <div className={panelStyles.settingsPanelHeader}>
+        <div className={panelStyles.settingsPanelTitle}>{content.title}</div>
+        <div className={panelStyles.settingsHelp}>{content.subtitle}</div>
       </div>
 
-      <div className={`${styles.settingsGrid} ${styles.settingsGridWide}`}>
+      <div
+        className={`${panelStyles.settingsGrid} ${panelStyles.settingsGridWide}`}
+      >
         <label
-          className={`${styles.settingsField} ${styles.settingsFieldFull}`}
+          className={`${panelStyles.settingsField} ${panelStyles.settingsFieldFull}`}
         >
-          <span className={styles.sectionLabel}>
+          <span className={panelStyles.sectionLabel}>
             {content.organizationName}
           </span>
           <input

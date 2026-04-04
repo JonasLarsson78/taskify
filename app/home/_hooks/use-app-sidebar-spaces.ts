@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { buildAuthHeaders } from '../../lib/request-headers'
-import type { Space } from '../home/model'
+import { buildAuthHeaders } from '../../../lib/request-headers'
+import type { Space } from '../model'
 
 type UseAppSidebarSpacesParams = {
   token: string | null

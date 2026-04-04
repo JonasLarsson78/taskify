@@ -1,4 +1,4 @@
-import styles from '../page.module.css'
+import styles from '../_styles/home-sidebar.module.css'
 import type { Space } from '../model'
 import { getInitial } from '../model'
 import type { AppContent } from '../../../lib/content'

@@ -1,4 +1,4 @@
-import styles from '../page.module.css'
+import styles from '../_styles/home-overview.module.css'
 import type { AppContent } from '../../../lib/content'
 
 type HomeOverviewProps = {

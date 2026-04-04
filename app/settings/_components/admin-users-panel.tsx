@@ -1,5 +1,6 @@
 import type { StoreUser } from '../../home/model'
 import styles from '../../home/page.module.css'
+import panelStyles from '../_styles/settings-panels.module.css'
 import type { AppContent } from '../../../lib/content'
 
 type AdminUsersPanelProps = {
@@ -35,16 +36,20 @@ export default function AdminUsersPanel({
 }: AdminUsersPanelProps) {
   return (
     <section
-      className={`${styles.settingsPanel} ${styles.settingsPanelCompact}`}
+      className={`${panelStyles.settingsPanel} ${panelStyles.settingsPanelCompact}`}
     >
-      <div className={styles.settingsPanelHeader}>
-        <div className={styles.settingsPanelTitle}>{content.title}</div>
-        <div className={styles.settingsHelp}>{content.subtitle}</div>
+      <div className={panelStyles.settingsPanelHeader}>
+        <div className={panelStyles.settingsPanelTitle}>{content.title}</div>
+        <div className={panelStyles.settingsHelp}>{content.subtitle}</div>
       </div>
 
-      <div className={`${styles.settingsGrid} ${styles.settingsGridWide}`}>
-        <label className={styles.settingsField}>
-          <span className={styles.sectionLabel}>{content.newUserName}</span>
+      <div
+        className={`${panelStyles.settingsGrid} ${panelStyles.settingsGridWide}`}
+      >
+        <label className={panelStyles.settingsField}>
+          <span className={panelStyles.sectionLabel}>
+            {content.newUserName}
+          </span>
           <input
             className={styles.createInput}
             type="text"
@@ -55,8 +60,10 @@ export default function AdminUsersPanel({
           />
         </label>
 
-        <label className={styles.settingsField}>
-          <span className={styles.sectionLabel}>{content.newUserEmail}</span>
+        <label className={panelStyles.settingsField}>
+          <span className={panelStyles.sectionLabel}>
+            {content.newUserEmail}
+          </span>
           <input
             className={styles.createInput}
             type="email"
@@ -67,8 +74,10 @@ export default function AdminUsersPanel({
           />
         </label>
 
-        <label className={styles.settingsField}>
-          <span className={styles.sectionLabel}>{content.tempPassword}</span>
+        <label className={panelStyles.settingsField}>
+          <span className={panelStyles.sectionLabel}>
+            {content.tempPassword}
+          </span>
           <input
             className={styles.createInput}
             type="password"
@@ -79,8 +88,8 @@ export default function AdminUsersPanel({
           />
         </label>
 
-        <label className={styles.settingsField}>
-          <span className={styles.sectionLabel}>{content.role}</span>
+        <label className={panelStyles.settingsField}>
+          <span className={panelStyles.sectionLabel}>{content.role}</span>
           <select
             className={styles.createSelect}
             value={newAdminUserRole}
@@ -107,10 +116,10 @@ export default function AdminUsersPanel({
         </button>
       </div>
 
-      <div className={styles.settingsRoleList}>
+      <div className={panelStyles.settingsRoleList}>
         {adminUsers.map((adminUser) => (
-          <div key={adminUser.id} className={styles.settingsRoleRow}>
-            <div className={styles.settingsRoleIdentity}>
+          <div key={adminUser.id} className={panelStyles.settingsRoleRow}>
+            <div className={panelStyles.settingsRoleIdentity}>
               {adminUser.name || adminUser.email || `User ${adminUser.id}`}
             </div>
             <select

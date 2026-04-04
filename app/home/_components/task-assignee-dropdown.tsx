@@ -6,7 +6,7 @@ import {
   type CSSProperties,
 } from 'react'
 import { createPortal } from 'react-dom'
-import styles from '../page.module.css'
+import styles from '../_styles/home-assignee-dropdown.module.css'
 import type { AssigneeOption } from '../model'
 
 type TaskAssigneeDropdownProps = {

@@ -1,4 +1,6 @@
 import styles from '../../home/page.module.css'
+import controlsStyles from '../../settings/_styles/space-settings-controls.module.css'
+import panelStyles from '../../settings/_styles/settings-panels.module.css'
 import type { SpaceItem, TaskItem } from '../model'
 import type { AppContent } from '../../../lib/content'
 
@@ -73,18 +75,20 @@ export default function GoalFormPanel({
 }: GoalFormPanelProps) {
   return (
     <section
-      className={`${styles.settingsPanel} ${styles.settingsPanelCompact}`}
+      className={`${panelStyles.settingsPanel} ${panelStyles.settingsPanelCompact}`}
     >
-      <div className={styles.settingsPanelHeader}>
-        <div className={styles.settingsPanelTitle}>
+      <div className={panelStyles.settingsPanelHeader}>
+        <div className={panelStyles.settingsPanelTitle}>
           {editingGoalId ? content.editTitle : content.createTitle}
         </div>
-        <div className={styles.settingsHelp}>{content.help}</div>
+        <div className={panelStyles.settingsHelp}>{content.help}</div>
       </div>
 
-      <div className={`${styles.settingsGrid} ${styles.settingsGridWide}`}>
-        <label className={styles.settingsField}>
-          <span className={styles.sectionLabel}>{content.titleLabel}</span>
+      <div
+        className={`${panelStyles.settingsGrid} ${panelStyles.settingsGridWide}`}
+      >
+        <label className={panelStyles.settingsField}>
+          <span className={panelStyles.sectionLabel}>{content.titleLabel}</span>
           <input
             className={styles.createInput}
             type="text"
@@ -95,8 +99,10 @@ export default function GoalFormPanel({
           />
         </label>
 
-        <label className={styles.settingsField}>
-          <span className={styles.sectionLabel}>{content.targetDateLabel}</span>
+        <label className={panelStyles.settingsField}>
+          <span className={panelStyles.sectionLabel}>
+            {content.targetDateLabel}
+          </span>
           <input
             className={styles.createInput}
             type="date"
@@ -106,8 +112,8 @@ export default function GoalFormPanel({
           />
         </label>
 
-        <label className={styles.settingsField}>
-          <span className={styles.sectionLabel}>{content.spaceLabel}</span>
+        <label className={panelStyles.settingsField}>
+          <span className={panelStyles.sectionLabel}>{content.spaceLabel}</span>
           <select
             className={styles.createSelect}
             value={spaceId}
@@ -124,9 +130,9 @@ export default function GoalFormPanel({
         </label>
 
         <label
-          className={`${styles.settingsField} ${styles.settingsFieldFull}`}
+          className={`${panelStyles.settingsField} ${panelStyles.settingsFieldFull}`}
         >
-          <span className={styles.sectionLabel}>
+          <span className={panelStyles.sectionLabel}>
             {content.descriptionLabel}
           </span>
           <input
@@ -140,20 +146,22 @@ export default function GoalFormPanel({
         </label>
       </div>
 
-      <div className={styles.settingsMembershipList}>
-        <div className={styles.sectionLabel}>{content.progressOverride}</div>
-        <label className={styles.settingsMembershipRow}>
+      <div className={panelStyles.settingsMembershipList}>
+        <div className={panelStyles.sectionLabel}>
+          {content.progressOverride}
+        </div>
+        <label className={panelStyles.settingsMembershipRow}>
           <input
             type="checkbox"
             checked={useManualProgress}
             disabled={busy || !canWrite}
             onChange={(event) => onToggleManualProgress(event.target.checked)}
           />
-          <span className={styles.settingsRoleIdentity}>
+          <span className={panelStyles.settingsRoleIdentity}>
             {content.useManualProgress}
           </span>
         </label>
-        <div className={styles.settingsRow}>
+        <div className={controlsStyles.settingsRow}>
           <input
             className={styles.createInput}
             type="range"
@@ -168,22 +176,24 @@ export default function GoalFormPanel({
               )
             }
           />
-          <span className={styles.settingsHelp}>{manualProgress}%</span>
+          <span className={panelStyles.settingsHelp}>{manualProgress}%</span>
         </div>
         {!useManualProgress ? (
-          <div className={styles.settingsHelp}>
+          <div className={panelStyles.settingsHelp}>
             {content.autoProgressActive}
           </div>
         ) : null}
       </div>
 
-      <div className={styles.settingsMembershipList}>
-        <div className={styles.sectionLabel}>{content.linkedTasks}</div>
+      <div className={panelStyles.settingsMembershipList}>
+        <div className={panelStyles.sectionLabel}>{content.linkedTasks}</div>
         {visibleTasks.length === 0 ? (
-          <div className={styles.settingsHelp}>{content.noTasksForFilter}</div>
+          <div className={panelStyles.settingsHelp}>
+            {content.noTasksForFilter}
+          </div>
         ) : (
           <div>
-            <div className={styles.settingsRow}>
+            <div className={controlsStyles.settingsRow}>
               <input
                 className={styles.createInput}
                 type="text"
@@ -195,7 +205,7 @@ export default function GoalFormPanel({
                 placeholder={content.searchTaskPlaceholder}
               />
             </div>
-            <div className={styles.settingsRow}>
+            <div className={controlsStyles.settingsRow}>
               <select
                 className={styles.createSelect}
                 value={taskPickerId}
@@ -228,12 +238,12 @@ export default function GoalFormPanel({
         )}
 
         {selectedTasks.length > 0 ? (
-          <div className={styles.settingsMembershipTags}>
+          <div className={panelStyles.settingsMembershipTags}>
             {selectedTasks.map((task) => (
               <button
                 key={task.id}
                 type="button"
-                className={styles.settingsMembershipTag}
+                className={panelStyles.settingsMembershipTag}
                 disabled={busy || !canWrite}
                 onClick={() => onRemoveTask(task.id)}
               >
@@ -242,7 +252,9 @@ export default function GoalFormPanel({
             ))}
           </div>
         ) : (
-          <div className={styles.settingsHelp}>{content.noLinkedTasks}</div>
+          <div className={panelStyles.settingsHelp}>
+            {content.noLinkedTasks}
+          </div>
         )}
       </div>
 

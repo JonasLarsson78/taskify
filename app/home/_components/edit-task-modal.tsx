@@ -1,5 +1,7 @@
 import { useState } from 'react'
-import styles from '../page.module.css'
+import sharedStyles from '../page.module.css'
+import modalStyles from '../_styles/home-modal-shell.module.css'
+import formStyles from '../_styles/home-task-editor-form.module.css'
 import type { AssigneeOption } from '../model'
 import MarkdownLiveEditor from './markdown-live-editor'
 import type { AppContent } from '../../../lib/content'
@@ -70,25 +72,25 @@ export default function EditTaskModal({
 
   return (
     <section
-      className={styles.modalBackdrop}
+      className={modalStyles.modalBackdrop}
       onClick={() => {
         if (!busy) handleClose()
       }}
     >
       <div
-        className={styles.modalCard}
+        className={modalStyles.modalCard}
         onClick={(event) => {
           event.stopPropagation()
         }}
       >
-        <div className={styles.modalHeader}>
+        <div className={modalStyles.modalHeader}>
           <div>
-            <div className={styles.modalTitle}>{content.title}</div>
-            <div className={styles.modalSub}>{content.subtitle}</div>
+            <div className={modalStyles.modalTitle}>{content.title}</div>
+            <div className={modalStyles.modalSub}>{content.subtitle}</div>
           </div>
           <button
             type="button"
-            className={styles.modalClose}
+            className={modalStyles.modalClose}
             disabled={busy}
             onClick={handleClose}
           >
@@ -96,15 +98,15 @@ export default function EditTaskModal({
           </button>
         </div>
 
-        <div className={styles.createTaskGrid}>
+        <div className={formStyles.createTaskGrid}>
           <input
-            className={styles.createInput}
+            className={sharedStyles.createInput}
             type="text"
             placeholder={content.taskTitlePlaceholder}
             value={title}
             onChange={(event) => onTitleChange(event.target.value)}
           />
-          <div className={styles.createFieldFull}>
+          <div className={formStyles.createFieldFull}>
             <MarkdownLiveEditor
               value={meta}
               onChange={onMetaChange}
@@ -114,14 +116,14 @@ export default function EditTaskModal({
             />
           </div>
           <input
-            className={styles.createInput}
+            className={sharedStyles.createInput}
             type="date"
             value={dueDate}
             onChange={(event) => onDueDateChange(event.target.value)}
           />
 
           <select
-            className={styles.createSelect}
+            className={sharedStyles.createSelect}
             multiple
             value={assigneeIds.map(String)}
             onChange={(event) =>
@@ -140,7 +142,7 @@ export default function EditTaskModal({
           </select>
 
           <select
-            className={styles.createSelect}
+            className={sharedStyles.createSelect}
             value={section}
             onChange={(event) => onSectionChange(event.target.value)}
           >
@@ -152,7 +154,7 @@ export default function EditTaskModal({
           </select>
 
           <select
-            className={styles.createSelect}
+            className={sharedStyles.createSelect}
             value={priority}
             onChange={(event) =>
               onPriorityChange(event.target.value as 'High' | 'Normal' | 'Low')
@@ -163,12 +165,12 @@ export default function EditTaskModal({
             <option value="Low">{taskContent.low}</option>
           </select>
 
-          <label className={styles.createColorField}>
-            <span className={styles.createColorLabel}>
+          <label className={formStyles.createColorField}>
+            <span className={formStyles.createColorLabel}>
               {content.colorLabel}
             </span>
             <input
-              className={styles.createColorInput}
+              className={formStyles.createColorInput}
               type="color"
               value={color}
               onChange={(event) => onColorChange(event.target.value)}
@@ -176,9 +178,9 @@ export default function EditTaskModal({
           </label>
         </div>
 
-        <div className={styles.modalActions}>
+        <div className={sharedStyles.modalActions}>
           <button
-            className={styles.taskActionBtn}
+            className={sharedStyles.taskActionBtn}
             type="button"
             disabled={busy}
             onClick={onArchive}
@@ -186,7 +188,7 @@ export default function EditTaskModal({
             {content.archiveTask}
           </button>
           <button
-            className={`${styles.taskActionBtn} ${styles.taskActionDanger}`}
+            className={`${sharedStyles.taskActionBtn} ${sharedStyles.taskActionDanger}`}
             type="button"
             disabled={busy}
             onClick={() => setConfirmDeleteOpen(true)}
@@ -194,7 +196,7 @@ export default function EditTaskModal({
             {content.deleteTask}
           </button>
           <button
-            className={styles.modalCancel}
+            className={sharedStyles.modalCancel}
             type="button"
             disabled={busy}
             onClick={handleClose}
@@ -202,7 +204,7 @@ export default function EditTaskModal({
             {commonContent.cancel}
           </button>
           <button
-            className={styles.createTaskButton}
+            className={sharedStyles.createTaskButton}
             type="button"
             disabled={busy}
             onClick={onSubmit}
@@ -214,29 +216,29 @@ export default function EditTaskModal({
 
       {confirmDeleteOpen ? (
         <section
-          className={styles.modalBackdrop}
+          className={modalStyles.modalBackdrop}
           onClick={() => {
             if (!busy) setConfirmDeleteOpen(false)
           }}
         >
           <div
-            className={styles.modalCard}
+            className={modalStyles.modalCard}
             onClick={(event) => event.stopPropagation()}
           >
-            <div className={styles.modalHeader}>
+            <div className={modalStyles.modalHeader}>
               <div>
-                <div className={styles.modalTitle}>
+                <div className={modalStyles.modalTitle}>
                   {content.deleteConfirmTitle}
                 </div>
-                <div className={styles.modalSub}>
+                <div className={modalStyles.modalSub}>
                   {content.deleteConfirmSubtitle}
                 </div>
               </div>
             </div>
 
-            <div className={styles.modalActions}>
+            <div className={sharedStyles.modalActions}>
               <button
-                className={styles.modalCancel}
+                className={sharedStyles.modalCancel}
                 type="button"
                 disabled={busy}
                 onClick={() => setConfirmDeleteOpen(false)}
@@ -244,7 +246,7 @@ export default function EditTaskModal({
                 {commonContent.cancel}
               </button>
               <button
-                className={`${styles.taskActionBtn} ${styles.taskActionDanger}`}
+                className={`${sharedStyles.taskActionBtn} ${sharedStyles.taskActionDanger}`}
                 type="button"
                 disabled={busy}
                 onClick={() => {

@@ -1,4 +1,5 @@
-import styles from '../page.module.css'
+import sharedStyles from '../page.module.css'
+import styles from '../_styles/home-topbar.module.css'
 import type { ViewMode } from '../model'
 import type { AppContent } from '../../../lib/content'
 
@@ -22,12 +23,12 @@ export default function HomeTopbar({
   content,
 }: HomeTopbarProps) {
   return (
-    <div className={styles.topbar}>
-      <div className={styles.workspaceMeta}>
-        <span className={styles.workspaceBadge}>◫</span>
+    <div className={sharedStyles.topbar}>
+      <div className={sharedStyles.workspaceMeta}>
+        <span className={sharedStyles.workspaceBadge}>◫</span>
         <div>
-          <div className={styles.workspaceTitle}>{projectTitle}</div>
-          <div className={styles.workspaceSub}>{workspaceSub}</div>
+          <div className={sharedStyles.workspaceTitle}>{projectTitle}</div>
+          <div className={sharedStyles.workspaceSub}>{workspaceSub}</div>
         </div>
       </div>
 

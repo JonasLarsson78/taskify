@@ -1,4 +1,5 @@
 import styles from '../../home/page.module.css'
+import panelStyles from '../_styles/settings-panels.module.css'
 import type { SettingsProfileContent } from '../../../lib/content'
 
 type ProfilePanelProps = {
@@ -40,17 +41,21 @@ export default function ProfilePanel({
 }: ProfilePanelProps) {
   return (
     <form
-      className={`${styles.settingsPanel} ${styles.settingsPanelCompact}`}
+      className={`${panelStyles.settingsPanel} ${panelStyles.settingsPanelCompact}`}
       onSubmit={onSubmit}
     >
-      <div className={styles.settingsPanelHeader}>
-        <div className={styles.settingsPanelTitle}>{content.title}</div>
-        <div className={styles.settingsHelp}>{content.subtitle}</div>
+      <div className={panelStyles.settingsPanelHeader}>
+        <div className={panelStyles.settingsPanelTitle}>{content.title}</div>
+        <div className={panelStyles.settingsHelp}>{content.subtitle}</div>
       </div>
 
-      <div className={`${styles.settingsGrid} ${styles.settingsGridWide}`}>
-        <label className={styles.settingsField}>
-          <span className={styles.sectionLabel}>{content.labels.name}</span>
+      <div
+        className={`${panelStyles.settingsGrid} ${panelStyles.settingsGridWide}`}
+      >
+        <label className={panelStyles.settingsField}>
+          <span className={panelStyles.sectionLabel}>
+            {content.labels.name}
+          </span>
           <input
             className={styles.createInput}
             type="text"
@@ -61,8 +66,10 @@ export default function ProfilePanel({
           />
         </label>
 
-        <label className={styles.settingsField}>
-          <span className={styles.sectionLabel}>{content.labels.email}</span>
+        <label className={panelStyles.settingsField}>
+          <span className={panelStyles.sectionLabel}>
+            {content.labels.email}
+          </span>
           <input
             className={styles.createInput}
             type="email"
@@ -73,8 +80,10 @@ export default function ProfilePanel({
           />
         </label>
 
-        <label className={styles.settingsField}>
-          <span className={styles.sectionLabel}>{content.labels.role}</span>
+        <label className={panelStyles.settingsField}>
+          <span className={panelStyles.sectionLabel}>
+            {content.labels.role}
+          </span>
           <input
             className={styles.createInput}
             type="text"
@@ -83,8 +92,10 @@ export default function ProfilePanel({
           />
         </label>
 
-        <label className={styles.settingsField}>
-          <span className={styles.sectionLabel}>{content.labels.language}</span>
+        <label className={panelStyles.settingsField}>
+          <span className={panelStyles.sectionLabel}>
+            {content.labels.language}
+          </span>
           <select
             className={styles.createSelect}
             value={preferredLanguage}
@@ -98,8 +109,8 @@ export default function ProfilePanel({
           </select>
         </label>
 
-        <label className={styles.settingsField}>
-          <span className={styles.sectionLabel}>
+        <label className={panelStyles.settingsField}>
+          <span className={panelStyles.sectionLabel}>
             {content.labels.newPassword}
           </span>
           <input
@@ -110,11 +121,15 @@ export default function ProfilePanel({
             onChange={(event) => onChangePassword(event.target.value)}
             placeholder={content.placeholders.newPassword}
           />
-          <span className={styles.settingsHelp}>{content.passwordHelp}</span>
+          <span className={panelStyles.settingsHelp}>
+            {content.passwordHelp}
+          </span>
         </label>
 
-        <div className={`${styles.settingsField} ${styles.settingsFieldFull}`}>
-          <span className={styles.sectionLabel}>
+        <div
+          className={`${panelStyles.settingsField} ${panelStyles.settingsFieldFull}`}
+        >
+          <span className={panelStyles.sectionLabel}>
             {content.labels.organization}
           </span>
           <input
@@ -126,8 +141,10 @@ export default function ProfilePanel({
         </div>
       </div>
 
-      {error ? <div className={styles.taskMeta}>{error}</div> : null}
-      {message ? <div className={styles.taskMeta}>{message}</div> : null}
+      {error ? <div className={panelStyles.settingsHelp}>{error}</div> : null}
+      {message ? (
+        <div className={panelStyles.settingsHelp}>{message}</div>
+      ) : null}
 
       <div className={styles.modalActions}>
         <button

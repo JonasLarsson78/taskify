@@ -1,4 +1,5 @@
-import styles from '../page.module.css'
+import sharedStyles from '../page.module.css'
+import styles from '../_styles/home-task-views.module.css'
 import { useState, type DragEvent } from 'react'
 import type { AssigneeOption, BoardGroup, UiTask } from '../model'
 import { isCompletedSection } from '../model'
@@ -68,7 +69,7 @@ export default function HomeTaskBoard({
   }
 
   return (
-    <section className={styles.board}>
+    <section className={sharedStyles.board}>
       <div className={styles.tableHead}>
         <div>{taskContent.taskLabel}</div>
         <div>{taskContent.assigneeLabel}</div>

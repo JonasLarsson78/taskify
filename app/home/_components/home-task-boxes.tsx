@@ -1,4 +1,5 @@
-import styles from '../page.module.css'
+import sharedStyles from '../page.module.css'
+import styles from '../_styles/home-task-views.module.css'
 import type { AssigneeOption, BoardGroup, UiTask } from '../model'
 import { isCompletedSection } from '../model'
 import TaskAssigneeDropdown from './task-assignee-dropdown'
@@ -46,7 +47,7 @@ export default function HomeTaskBoxes({
   )
 
   return (
-    <section className={styles.board}>
+    <section className={sharedStyles.board}>
       <div className={styles.taskTiles}>
         {tasks.map((task) => (
           <article

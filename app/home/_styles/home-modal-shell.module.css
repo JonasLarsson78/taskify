@@ -1,0 +1,80 @@
+.modalBackdrop {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(
+      circle at 18% 20%,
+      rgba(255, 95, 152, 0.18),
+      transparent 30%
+    ),
+    radial-gradient(circle at 78% 12%, rgba(98, 89, 255, 0.16), transparent 34%),
+    rgba(14, 15, 31, 0.56);
+  backdrop-filter: blur(7px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 30;
+  padding: 20px;
+}
+
+.modalCard {
+  width: min(820px, 100%);
+  background: linear-gradient(180deg, #ffffff 0%, #f8f9ff 100%);
+  border: 1px solid rgba(51, 58, 109, 0.16);
+  border-radius: 22px;
+  box-shadow: 0 26px 70px rgba(16, 18, 48, 0.34),
+    0 8px 22px rgba(101, 88, 218, 0.12);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.modalHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(64, 69, 118, 0.12);
+}
+
+.modalTitle {
+  font-size: 1.08rem;
+  font-weight: 800;
+  color: #1f2443;
+  letter-spacing: -0.02em;
+}
+
+.modalSub {
+  margin-top: 4px;
+  color: #7a809b;
+  font-size: 0.79rem;
+}
+
+.modalClose {
+  border: 1px solid rgba(56, 62, 110, 0.18);
+  background: linear-gradient(180deg, #ffffff 0%, #f2f4ff 100%);
+  color: #4a4f6d;
+  border-radius: 999px;
+  padding: 7px 12px;
+  font: inherit;
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+
+.modalClose:hover:not(:disabled) {
+  border-color: rgba(101, 88, 218, 0.34);
+  color: #5f54c9;
+}
+
+@media (max-width: 820px) {
+  .modalCard {
+    padding: 13px;
+    border-radius: 18px;
+  }
+
+  .modalHeader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

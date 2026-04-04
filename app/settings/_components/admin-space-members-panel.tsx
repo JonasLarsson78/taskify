@@ -1,5 +1,6 @@
 import type { Space, StoreUser } from '../../home/model'
 import styles from '../../home/page.module.css'
+import panelStyles from '../_styles/settings-panels.module.css'
 import type { AppContent } from '@/lib/content'
 
 type AdminSpaceMembersPanelProps = {
@@ -29,16 +30,18 @@ export default function AdminSpaceMembersPanel({
 }: AdminSpaceMembersPanelProps) {
   return (
     <section
-      className={`${styles.settingsPanel} ${styles.settingsPanelCompact}`}
+      className={`${panelStyles.settingsPanel} ${panelStyles.settingsPanelCompact}`}
     >
-      <div className={styles.settingsPanelHeader}>
-        <div className={styles.settingsPanelTitle}>{content.title}</div>
-        <div className={styles.settingsHelp}>{content.subtitle}</div>
+      <div className={panelStyles.settingsPanelHeader}>
+        <div className={panelStyles.settingsPanelTitle}>{content.title}</div>
+        <div className={panelStyles.settingsHelp}>{content.subtitle}</div>
       </div>
 
-      <div className={`${styles.settingsGrid} ${styles.settingsGridWide}`}>
-        <label className={styles.settingsField}>
-          <span className={styles.sectionLabel}>{content.user}</span>
+      <div
+        className={`${panelStyles.settingsGrid} ${panelStyles.settingsGridWide}`}
+      >
+        <label className={panelStyles.settingsField}>
+          <span className={panelStyles.sectionLabel}>{content.user}</span>
           <select
             className={styles.createSelect}
             value={selectedMemberUserId ?? ''}
@@ -54,8 +57,10 @@ export default function AdminSpaceMembersPanel({
           </select>
         </label>
 
-        <label className={styles.settingsField}>
-          <span className={styles.sectionLabel}>{content.spacesForUser}</span>
+        <label className={panelStyles.settingsField}>
+          <span className={panelStyles.sectionLabel}>
+            {content.spacesForUser}
+          </span>
           <select
             className={styles.createSelect}
             multiple
@@ -87,21 +92,24 @@ export default function AdminSpaceMembersPanel({
         </button>
       </div>
 
-      <div className={styles.settingsMembershipList}>
+      <div className={panelStyles.settingsMembershipList}>
         {adminUsers.map((adminUser) => {
           const userSpaces = adminSpaces.filter((space) =>
             (space.memberIds || []).includes(adminUser.id)
           )
 
           return (
-            <div key={adminUser.id} className={styles.settingsMembershipRow}>
-              <div className={styles.settingsRoleIdentity}>
+            <div
+              key={adminUser.id}
+              className={panelStyles.settingsMembershipRow}
+            >
+              <div className={panelStyles.settingsRoleIdentity}>
                 {adminUser.name || adminUser.email || `User ${adminUser.id}`}
               </div>
 
-              <div className={styles.settingsMembershipTags}>
+              <div className={panelStyles.settingsMembershipTags}>
                 {userSpaces.length === 0 ? (
-                  <span className={styles.settingsHelp}>
+                  <span className={panelStyles.settingsHelp}>
                     {content.noSpaces}
                   </span>
                 ) : (
@@ -109,7 +117,7 @@ export default function AdminSpaceMembersPanel({
                     <button
                       key={`${adminUser.id}-${space.id}`}
                       type="button"
-                      className={styles.settingsMembershipTag}
+                      className={panelStyles.settingsMembershipTag}
                       disabled={adminBusy}
                       onClick={() =>
                         onRemoveUserFromSpace(adminUser.id, space.id)

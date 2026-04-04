@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Loader from '../components/loader/loader'
 import useStore from '../../lib/store'
 import styles from '../home/page.module.css'
+import settingsLayoutStyles from './_styles/settings-layout.module.css'
 import { canWriteTasks } from '../../lib/user-role'
 import { getContent, normalizeLanguage } from '../../lib/content'
 import HomeSidebar from '../home/_components/home-sidebar'
@@ -110,7 +111,9 @@ export default function SettingsPage() {
       />
 
       <section className={styles.content}>
-        <div className={`${styles.topbar} ${styles.settingsTopbar}`}>
+        <div
+          className={`${styles.topbar} ${settingsLayoutStyles.settingsTopbar}`}
+        >
           <div className={styles.workspaceMeta}>
             <span className={styles.workspaceBadge}>⚙</span>
             <div>
@@ -120,7 +123,7 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        <div className={styles.settingsStack}>
+        <div className={settingsLayoutStyles.settingsStack}>
           <ProfilePanel
             name={name}
             email={email}

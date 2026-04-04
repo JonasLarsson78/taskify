@@ -6,6 +6,7 @@ import Loader from '../components/loader/loader'
 import useStore from '../../lib/store'
 import { getContent } from '../../lib/content'
 import styles from '../home/page.module.css'
+import settingsLayoutStyles from '../settings/_styles/settings-layout.module.css'
 import HomeSidebar from '../home/_components/home-sidebar'
 import GoalFormPanel from './_components/goal-form-panel'
 import GoalListPanel from './_components/goal-list-panel'
@@ -94,7 +95,9 @@ export default function GoalsPage() {
       />
 
       <section className={styles.content}>
-        <div className={`${styles.topbar} ${styles.settingsTopbar}`}>
+        <div
+          className={`${styles.topbar} ${settingsLayoutStyles.settingsTopbar}`}
+        >
           <div className={styles.workspaceMeta}>
             <span className={styles.workspaceBadge}>◎</span>
             <div>
@@ -104,7 +107,7 @@ export default function GoalsPage() {
           </div>
         </div>
 
-        <div className={styles.settingsStack}>
+        <div className={settingsLayoutStyles.settingsStack}>
           <GoalFormPanel
             editingGoalId={editingGoalId}
             title={title}

@@ -1,4 +1,5 @@
-import styles from '../page.module.css'
+import sharedStyles from '../page.module.css'
+import styles from '../_styles/home-quick-actions.module.css'
 import type { AppContent } from '../../../lib/content'
 
 type HomeQuickActionsProps = {
@@ -19,7 +20,7 @@ export default function HomeQuickActions({
   return (
     <section className={styles.createTaskQuickAction}>
       <button
-        className={styles.createTaskButton}
+        className={`${sharedStyles.createTaskButton} ${styles.createTaskButton}`}
         type="button"
         disabled={!canWriteTaskData}
         onClick={onNewTask}
@@ -27,7 +28,7 @@ export default function HomeQuickActions({
         + {content.newTask}
       </button>
       <input
-        className={`${styles.createInput} ${styles.quickSearchInput}`}
+        className={`${sharedStyles.createInput} ${styles.quickSearchInput}`}
         type="search"
         value={searchQuery}
         placeholder={content.searchPlaceholder}

@@ -1,4 +1,5 @@
 import styles from '../../home/page.module.css'
+import panelStyles from '../../settings/_styles/settings-panels.module.css'
 import type { Goal } from '../model'
 import type { AppContent } from '../../../lib/content'
 
@@ -21,25 +22,29 @@ export default function GoalListPanel({
 }: GoalListPanelProps) {
   return (
     <section
-      className={`${styles.settingsPanel} ${styles.settingsPanelCompact}`}
+      className={`${panelStyles.settingsPanel} ${panelStyles.settingsPanelCompact}`}
     >
-      <div className={styles.settingsPanelHeader}>
-        <div className={styles.settingsPanelTitle}>{content.title}</div>
-        <div className={styles.settingsHelp}>{content.subtitle}</div>
+      <div className={panelStyles.settingsPanelHeader}>
+        <div className={panelStyles.settingsPanelTitle}>{content.title}</div>
+        <div className={panelStyles.settingsHelp}>{content.subtitle}</div>
       </div>
 
-      <div className={styles.settingsMembershipList}>
+      <div className={panelStyles.settingsMembershipList}>
         {goals.length === 0 ? (
-          <div className={styles.settingsHelp}>{content.noGoals}</div>
+          <div className={panelStyles.settingsHelp}>{content.noGoals}</div>
         ) : (
           goals.map((goal) => (
-            <div key={goal.id} className={styles.settingsMembershipRow}>
+            <div key={goal.id} className={panelStyles.settingsMembershipRow}>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div className={styles.settingsRoleIdentity}>{goal.title}</div>
+                <div className={panelStyles.settingsRoleIdentity}>
+                  {goal.title}
+                </div>
                 {goal.description ? (
-                  <div className={styles.settingsHelp}>{goal.description}</div>
+                  <div className={panelStyles.settingsHelp}>
+                    {goal.description}
+                  </div>
                 ) : null}
-                <div className={styles.settingsHelp}>
+                <div className={panelStyles.settingsHelp}>
                   {content.progressLabel}: {goal.progress}%
                   {goal.manualProgress !== null
                     ? ` (${content.manual})`
@@ -70,16 +75,16 @@ export default function GoalListPanel({
                 </div>
               </div>
 
-              <div className={styles.settingsMembershipTags}>
+              <div className={panelStyles.settingsMembershipTags}>
                 {goal.atRisk ? (
-                  <span className={styles.settingsMembershipTag}>
+                  <span className={panelStyles.settingsMembershipTag}>
                     {content.atRisk}
                   </span>
                 ) : null}
                 {canWrite ? (
                   <button
                     type="button"
-                    className={styles.settingsMembershipTag}
+                    className={panelStyles.settingsMembershipTag}
                     disabled={busy}
                     onClick={() => onEdit(goal)}
                   >
@@ -89,7 +94,7 @@ export default function GoalListPanel({
                 {canWrite ? (
                   <button
                     type="button"
-                    className={styles.settingsMembershipTag}
+                    className={panelStyles.settingsMembershipTag}
                     disabled={busy}
                     onClick={() => onDelete(goal.id)}
                   >

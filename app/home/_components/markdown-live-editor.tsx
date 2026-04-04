@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { marked } from 'marked'
-import styles from '../page.module.css'
+import styles from '../_styles/home-markdown-editor.module.css'
 
 type MarkdownLiveEditorProps = {
   value: string
