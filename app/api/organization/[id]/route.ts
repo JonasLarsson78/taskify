@@ -1,11 +1,20 @@
 import { NextResponse } from 'next/server'
+import { canManageWorkspace } from '../../../../lib/user-role'
+import {
+  forbidden,
+  isSameOrganization,
+  requireApiUser,
+} from '../../_lib/authorization'
 import { getOrganizationById, updateOrganizationName } from '../service'
 
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await requireApiUser(request)
+    if (!auth.ok) return auth.response
+
     const { id } = await params
     const organizationId = Number.parseInt(id, 10)
 
@@ -24,6 +33,13 @@ export async function GET(
       )
     }
 
+    if (
+      auth.user.organizationId !== null &&
+      !isSameOrganization(auth.user, organization.id)
+    ) {
+      return forbidden('You do not have access to this organization')
+    }
+
     return NextResponse.json(organization)
   } catch (e) {
     console.error('GET /api/organization/[id] error', e)
@@ -39,6 +55,12 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await requireApiUser(request)
+    if (!auth.ok) return auth.response
+    if (!canManageWorkspace(auth.user.role)) {
+      return forbidden('Only admins can update the organization')
+    }
+
     const { id } = await params
     const organizationId = Number.parseInt(id, 10)
 
@@ -64,6 +86,13 @@ export async function PUT(
         { error: 'Organization not found' },
         { status: 404 }
       )
+    }
+
+    if (
+      auth.user.organizationId !== null &&
+      !isSameOrganization(auth.user, organization.id)
+    ) {
+      return forbidden('You do not have access to this organization')
     }
 
     const updated = await updateOrganizationName(organizationId, name)

@@ -4,6 +4,10 @@ import { useEffect, useState } from 'react'
 import { marked } from 'marked'
 import { useRouter } from 'next/navigation'
 import Loader from '../components/loader/loader'
+import {
+  buildAuthHeaders,
+  buildJsonAuthHeaders,
+} from '../../lib/request-headers'
 import useStore from '../../lib/store'
 import type { ApiTask, Organization, StoreUser } from '../home/model'
 import styles from '../home/page.module.css'
@@ -51,30 +55,21 @@ export default function ArchivePage() {
   const [tasks, setTasks] = useState<ApiTask[]>([])
   const [integrationError, setIntegrationError] = useState<string | null>(null)
   const [busyTaskId, setBusyTaskId] = useState<number | null>(null)
-
-  async function loadArchivedTasks(organizationId: number | null) {
-    const url = organizationId
-      ? `/api/task?organizationId=${organizationId}&archived=only`
-      : '/api/task?archived=only'
-
-    const response = await fetch(url)
-    if (!response.ok) {
-      const data = await response.json().catch(() => null)
-      throw new Error(data?.error || 'Failed to load archived tasks')
-    }
-
-    const taskData = (await response.json()) as ApiTask[]
-    setTasks(Array.isArray(taskData) ? taskData : [])
-  }
+  const [currentUser, setCurrentUser] = useState<StoreUser | null>(null)
 
   async function updateArchivedTask(taskId: number, archivedAt: string | null) {
     setBusyTaskId(taskId)
     setIntegrationError(null)
 
     try {
+      if (currentUser?.role === 'guest') {
+        setIntegrationError('Guests can only read archived tasks.')
+        return false
+      }
+
       const response = await fetch(`/api/task/${taskId}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: buildJsonAuthHeaders(token),
         body: JSON.stringify({ archivedAt }),
       })
 
@@ -100,7 +95,15 @@ export default function ArchivePage() {
     setIntegrationError(null)
 
     try {
-      const response = await fetch(`/api/task/${taskId}`, { method: 'DELETE' })
+      if (currentUser?.role === 'guest') {
+        setIntegrationError('Guests can only read archived tasks.')
+        return false
+      }
+
+      const response = await fetch(`/api/task/${taskId}`, {
+        method: 'DELETE',
+        headers: buildAuthHeaders(token),
+      })
       if (!response.ok) {
         const data = await response.json().catch(() => null)
         setIntegrationError(data?.error || 'Failed to delete archived task.')
@@ -145,10 +148,15 @@ export default function ArchivePage() {
             ? (verifyData.user as StoreUser)
             : null
 
+        if (mounted) {
+          setCurrentUser(verifiedUser)
+        }
+
         const organizationId = verifiedUser?.organizationId ?? null
         if (organizationId) {
           const organizationResponse = await fetch(
-            `/api/organization/${organizationId}`
+            `/api/organization/${organizationId}`,
+            { headers: buildAuthHeaders(token) }
           )
           if (organizationResponse.ok) {
             const organizationData =
@@ -157,7 +165,22 @@ export default function ArchivePage() {
           }
         }
 
-        await loadArchivedTasks(organizationId)
+        const url = organizationId
+          ? `/api/task?organizationId=${organizationId}&archived=only`
+          : '/api/task?archived=only'
+
+        const taskResponse = await fetch(url, {
+          headers: buildAuthHeaders(token),
+        })
+        if (!taskResponse.ok) {
+          const data = await taskResponse.json().catch(() => null)
+          throw new Error(data?.error || 'Failed to load archived tasks')
+        }
+
+        const taskData = (await taskResponse.json()) as ApiTask[]
+        if (mounted) {
+          setTasks(Array.isArray(taskData) ? taskData : [])
+        }
       } catch (error) {
         console.error('archive page load error', error)
         if (mounted) setIntegrationError('Failed to load archive.')
@@ -253,7 +276,9 @@ export default function ArchivePage() {
                     <button
                       className={styles.taskActionBtn}
                       type="button"
-                      disabled={busyTaskId === task.id}
+                      disabled={
+                        busyTaskId === task.id || currentUser?.role === 'guest'
+                      }
                       onClick={() => {
                         void updateArchivedTask(task.id, null)
                       }}
@@ -263,7 +288,9 @@ export default function ArchivePage() {
                     <button
                       className={`${styles.taskActionBtn} ${styles.taskActionDanger}`}
                       type="button"
-                      disabled={busyTaskId === task.id}
+                      disabled={
+                        busyTaskId === task.id || currentUser?.role === 'guest'
+                      }
                       onClick={() => {
                         void deleteArchivedTask(task.id)
                       }}

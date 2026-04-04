@@ -1,5 +1,6 @@
 import mysql from 'mysql2/promise'
 import type { ResultSetHeader } from 'mysql2/promise'
+import type { UserRole } from '../../../lib/user-role'
 
 const DEFAULT_TASK_SECTIONS = ['Issues Found', 'Review', 'Ready']
 const DEFAULT_SECTION_PALETTE = [
@@ -17,6 +18,7 @@ type SpaceRow = {
   name: string
   taskSections: string[]
   taskSectionColors: Record<string, string>
+  memberIds: number[]
   createdAt: Date
 }
 
@@ -109,6 +111,7 @@ function mapSpaceRow(row: Record<string, unknown>): SpaceRow {
         : `Space ${String(row.id ?? '')}`,
     taskSections,
     taskSectionColors,
+    memberIds: [],
     createdAt: new Date(String(row.createdAt)),
   }
 }
@@ -129,7 +132,86 @@ async function ensureSpaceTable() {
     )
   `)
 
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS \`SpaceMember\` (
+      \`id\` INT NOT NULL AUTO_INCREMENT,
+      \`space_id\` INT NOT NULL,
+      \`user_id\` INT NOT NULL,
+      \`createdAt\` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+      PRIMARY KEY (\`id\`),
+      UNIQUE KEY \`SpaceMember_space_user_uq\` (\`space_id\`, \`user_id\`),
+      INDEX \`SpaceMember_space_id_idx\` (\`space_id\`),
+      INDEX \`SpaceMember_user_id_idx\` (\`user_id\`)
+    )
+  `)
+
   initialized = true
+}
+
+export async function listSpaceMemberIds(spaceId: number): Promise<number[]> {
+  await ensureSpaceTable()
+
+  const [rows] = await pool.query(
+    'SELECT user_id FROM `SpaceMember` WHERE space_id = ? ORDER BY id ASC',
+    [spaceId]
+  )
+
+  return (rows as Record<string, unknown>[])
+    .map((row) => Number(row.user_id))
+    .filter((id) => Number.isInteger(id))
+}
+
+export async function isSpaceMember(
+  spaceId: number,
+  userId: number
+): Promise<boolean> {
+  await ensureSpaceTable()
+
+  const [rows] = await pool.query(
+    'SELECT id FROM `SpaceMember` WHERE space_id = ? AND user_id = ? LIMIT 1',
+    [spaceId, userId]
+  )
+
+  return (rows as Record<string, unknown>[]).length > 0
+}
+
+export async function setSpaceMembers(
+  spaceId: number,
+  userIds: number[]
+): Promise<void> {
+  await ensureSpaceTable()
+
+  const normalized = Array.from(
+    new Set(
+      userIds
+        .map((id) => Number(id))
+        .filter((id) => Number.isInteger(id) && id > 0)
+    )
+  )
+
+  await pool.query('DELETE FROM `SpaceMember` WHERE space_id = ?', [spaceId])
+
+  if (normalized.length === 0) return
+
+  const placeholders = normalized.map(() => '(?, ?, NOW(3))').join(', ')
+  const values = normalized.flatMap((userId) => [spaceId, userId])
+
+  await pool.query(
+    `INSERT INTO \`SpaceMember\` (space_id, user_id, createdAt) VALUES ${placeholders}`,
+    values
+  )
+}
+
+export async function addSpaceMember(
+  spaceId: number,
+  userId: number
+): Promise<void> {
+  await ensureSpaceTable()
+
+  await pool.query(
+    'INSERT IGNORE INTO `SpaceMember` (space_id, user_id, createdAt) VALUES (?, ?, NOW(3))',
+    [spaceId, userId]
+  )
 }
 
 export async function listSpaces(organizationId: number): Promise<SpaceRow[]> {
@@ -140,7 +222,26 @@ export async function listSpaces(organizationId: number): Promise<SpaceRow[]> {
     [organizationId]
   )
 
-  return (rows as Record<string, unknown>[]).map(mapSpaceRow)
+  const spaces = (rows as Record<string, unknown>[]).map(mapSpaceRow)
+  return Promise.all(
+    spaces.map(async (space) => ({
+      ...space,
+      memberIds: await listSpaceMemberIds(space.id),
+    }))
+  )
+}
+
+export async function listSpacesForUser(input: {
+  organizationId: number
+  userId: number
+  role: UserRole
+}): Promise<SpaceRow[]> {
+  const all = await listSpaces(input.organizationId)
+  if (input.role === 'admin') {
+    return all
+  }
+
+  return all.filter((space) => space.memberIds.includes(input.userId))
 }
 
 export async function getSpaceById(id: number): Promise<SpaceRow | null> {
@@ -151,7 +252,13 @@ export async function getSpaceById(id: number): Promise<SpaceRow | null> {
     [id]
   )
   const row = (rows as Record<string, unknown>[])[0]
-  return row ? mapSpaceRow(row) : null
+  if (!row) return null
+
+  const space = mapSpaceRow(row)
+  return {
+    ...space,
+    memberIds: await listSpaceMemberIds(space.id),
+  }
 }
 
 export async function createSpace(input: {

@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs'
 import prisma from '../../../lib/prisma'
 import { signToken } from '../../../lib/auth'
+import { normalizeUserRole } from '../../../lib/user-role'
 
 export async function loginWithEmailPassword(email: string, password: string) {
   const user = await prisma.user.findUnique({ where: { email } })
@@ -17,6 +18,12 @@ export async function loginWithEmailPassword(email: string, password: string) {
   const token = signToken({ userId: user.id })
   const { password: _, ...safe } = user
   void _
+  const rawUser = user as Record<string, unknown>
 
-  return { user: safe, token }
+  const safeUser = {
+    ...safe,
+    role: normalizeUserRole(rawUser.role),
+  }
+
+  return { user: safeUser, token }
 }

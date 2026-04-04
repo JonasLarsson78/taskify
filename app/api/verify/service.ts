@@ -1,5 +1,6 @@
 import prisma from '../../../lib/prisma'
 import { verifyToken } from '../../../lib/auth'
+import { normalizeUserRole } from '../../../lib/user-role'
 
 type VerifyResult =
   | { ok: true; user: Record<string, unknown> }
@@ -38,6 +39,13 @@ export async function verifyAndLoadUser(token: string): Promise<VerifyResult> {
 
   const { password: _, ...safe } = user
   void _
+  const rawUser = user as Record<string, unknown>
 
-  return { ok: true, user: safe as Record<string, unknown> }
+  return {
+    ok: true,
+    user: {
+      ...(safe as Record<string, unknown>),
+      role: normalizeUserRole(rawUser.role),
+    },
+  }
 }

@@ -2,6 +2,7 @@ export type StoreUser = {
   id: number
   name?: string
   email?: string
+  role?: 'admin' | 'user' | 'guest'
   organizationId?: number | null
 }
 
@@ -21,6 +22,7 @@ export type Space = {
   name: string
   taskSections: string[]
   taskSectionColors: Record<string, string>
+  memberIds?: number[]
 }
 
 export type ApiTask = {

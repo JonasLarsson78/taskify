@@ -11,8 +11,10 @@ type HomeSidebarProps = {
   selectedSpaceId: number | null
   onChangeView: (next: ViewMode) => void
   onOpenArchive: () => void
+  onOpenSettings: () => void
   onSelectSpace: (space: Space) => void
   onCreateSpace: () => void
+  canCreateSpace: boolean
 }
 
 export default function HomeSidebar({
@@ -24,8 +26,10 @@ export default function HomeSidebar({
   selectedSpaceId,
   onChangeView,
   onOpenArchive,
+  onOpenSettings,
   onSelectSpace,
   onCreateSpace,
+  canCreateSpace,
 }: HomeSidebarProps) {
   return (
     <aside className={styles.sidebar}>
@@ -72,7 +76,11 @@ export default function HomeSidebar({
           <span className={styles.navIcon}>◎</span>
           Goals
         </button>
-        <button className={styles.navItem} type="button" onClick={onOpenArchive}>
+        <button
+          className={styles.navItem}
+          type="button"
+          onClick={onOpenArchive}
+        >
           <span className={styles.navIcon}>▣</span>
           Archive
         </button>
@@ -104,23 +112,27 @@ export default function HomeSidebar({
           <div className={styles.brandSub}>No spaces found</div>
         )}
 
-        <button
-          className={styles.navItem}
-          type="button"
-          onClick={onCreateSpace}
-        >
-          <span className={styles.navIcon}>+</span>
-          New Space
-        </button>
+        {canCreateSpace ? (
+          <button className={styles.navItem} type="button" onClick={onCreateSpace}>
+            <span className={styles.navIcon}>+</span>
+            New Space
+          </button>
+        ) : null}
       </section>
 
-      <div className={styles.sidebarFooter}>
-        <span className={styles.avatarLarge}>{personInitials}</span>
-        <div>
-          <div className={styles.brandTitle}>{personName}</div>
-          <div className={styles.brandSub}>{userEmail}</div>
+      <button
+        className={styles.sidebarFooterButton}
+        type="button"
+        onClick={onOpenSettings}
+      >
+        <div className={styles.sidebarFooter}>
+          <span className={styles.avatarLarge}>{personInitials}</span>
+          <div>
+            <div className={styles.brandTitle}>{personName}</div>
+            <div className={styles.brandSub}>{userEmail}</div>
+          </div>
         </div>
-      </div>
+      </button>
     </aside>
   )
 }

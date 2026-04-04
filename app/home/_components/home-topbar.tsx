@@ -7,6 +7,8 @@ type HomeTopbarProps = {
   viewMode: ViewMode
   onChangeView: (next: ViewMode) => void
   onOpenSpaceSettings: () => void
+  canOpenSpaceSettings: boolean
+  onLogout: () => void
 }
 
 export default function HomeTopbar({
@@ -15,6 +17,8 @@ export default function HomeTopbar({
   viewMode,
   onChangeView,
   onOpenSpaceSettings,
+  canOpenSpaceSettings,
+  onLogout,
 }: HomeTopbarProps) {
   return (
     <div className={styles.topbar}>
@@ -54,12 +58,21 @@ export default function HomeTopbar({
         >
           □ Box
         </button>
+        {canOpenSpaceSettings ? (
+          <button
+            className={styles.addView}
+            type="button"
+            onClick={onOpenSpaceSettings}
+          >
+            Space settings
+          </button>
+        ) : null}
         <button
-          className={styles.addView}
+          className={styles.topbarPrimaryAction}
           type="button"
-          onClick={onOpenSpaceSettings}
+          onClick={onLogout}
         >
-          Space settings
+          Logout
         </button>
       </div>
     </div>

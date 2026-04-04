@@ -16,6 +16,11 @@ export type FallbackClient = {
       data: Partial<User> & { organizationId?: number | null }
       include?: { organization?: boolean }
     }): Promise<User | UserWithOrg>
+    update(opts: {
+      where: { id: number }
+      data: Partial<User> & { organizationId?: number | null }
+      include?: { organization?: boolean }
+    }): Promise<User | UserWithOrg>
   }
   organization: {
     findUnique(opts: { where: { id: number } }): Promise<Organization | null>

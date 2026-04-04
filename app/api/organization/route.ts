@@ -1,11 +1,21 @@
 import { NextResponse } from 'next/server'
+import { canManageWorkspace } from '../../../lib/user-role'
+import { forbidden, requireApiUser } from '../_lib/authorization'
 import { createOrganization, listOrganizations } from './service'
 import { normalizeCreateOrganizationInput, parseJsonBody } from './validator'
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const auth = await requireApiUser(request)
+    if (!auth.ok) return auth.response
+
     const organizations = await listOrganizations()
-    return NextResponse.json(organizations)
+    const scopedOrganizations =
+      auth.user.organizationId === null && canManageWorkspace(auth.user.role)
+        ? organizations
+        : organizations.filter((org) => org.id === auth.user.organizationId)
+
+    return NextResponse.json(scopedOrganizations)
   } catch (e) {
     console.error('GET /api/organization error', e)
     return NextResponse.json(
@@ -16,6 +26,12 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const auth = await requireApiUser(request)
+  if (!auth.ok) return auth.response
+  if (!canManageWorkspace(auth.user.role)) {
+    return forbidden('Only admins can create organizations')
+  }
+
   let body: unknown = null
   try {
     body = await parseJsonBody(request)

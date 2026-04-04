@@ -4,6 +4,10 @@ import { useEffect, useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import Loader from '../components/loader/loader'
 import useStore from '../../lib/store'
+import {
+  buildAuthHeaders,
+  buildJsonAuthHeaders,
+} from '../../lib/request-headers'
 import CreateTaskModal from './_components/create-task-modal'
 import EditTaskModal from './_components/edit-task-modal'
 import HomeOverview from './_components/home-overview'
@@ -185,7 +189,7 @@ export default function HomePage() {
     try {
       const res = await fetch(`/api/task/${taskId}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: buildJsonAuthHeaders(token),
         body: JSON.stringify(payload),
       })
 
@@ -221,6 +225,7 @@ export default function HomePage() {
   }
 
   function handleOpenTask(task: UiTask) {
+    if (user?.role === 'guest') return
     if (!task.id) return
 
     const source = tasks.find((item) => item.id === task.id)
@@ -311,10 +316,18 @@ export default function HomePage() {
   }
 
   async function deleteTaskOnServer(taskId: number): Promise<boolean> {
+    if (user?.role === 'guest') {
+      setIntegrationError('Guests can only read tasks.')
+      return false
+    }
+
     setTaskActionBusyId(taskId)
     setIntegrationError(null)
     try {
-      const res = await fetch(`/api/task/${taskId}`, { method: 'DELETE' })
+      const res = await fetch(`/api/task/${taskId}`, {
+        method: 'DELETE',
+        headers: buildAuthHeaders(token),
+      })
       if (!res.ok) {
         const data = await res.json().catch(() => null)
         setIntegrationError(data?.error || 'Kunde inte ta bort task.')
@@ -333,6 +346,11 @@ export default function HomePage() {
   }
 
   async function createTaskOnServer() {
+    if (user?.role === 'guest') {
+      setIntegrationError('Guests can only read tasks.')
+      return
+    }
+
     const title = newTaskTitle.trim()
     if (!title) {
       setIntegrationError('Task title is required.')
@@ -345,7 +363,7 @@ export default function HomePage() {
     try {
       const res = await fetch('/api/task', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: buildJsonAuthHeaders(token),
         body: JSON.stringify({
           title,
           meta: newTaskMeta.trim() || null,
@@ -403,7 +421,7 @@ export default function HomePage() {
             spaceId ? `&spaceId=${spaceId}` : ''
           }`
         : '/api/task'
-      const res = await fetch(url)
+      const res = await fetch(url, { headers: buildAuthHeaders(token) })
 
       if (!res.ok) {
         const data = await res.json().catch(() => null)
@@ -429,7 +447,9 @@ export default function HomePage() {
     }
 
     try {
-      const res = await fetch(`/api/space?organizationId=${organizationId}`)
+      const res = await fetch(`/api/space?organizationId=${organizationId}`, {
+        headers: buildAuthHeaders(token),
+      })
       if (!res.ok) {
         setSpaces([])
         setSelectedSpaceId(null)
@@ -467,6 +487,11 @@ export default function HomePage() {
   }
 
   async function saveSectionsForOrganization() {
+    if (user?.role !== 'admin') {
+      setIntegrationError('Only admins can update space settings.')
+      return
+    }
+
     if (!selectedSpaceId) {
       setIntegrationError('Välj ett space först innan du sparar settings.')
       return
@@ -484,7 +509,7 @@ export default function HomePage() {
 
       const res = await fetch(`/api/space/${selectedSpaceId}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: buildJsonAuthHeaders(token),
         body: JSON.stringify({
           name: nextSpaceName,
           taskSections: sectionOptions,
@@ -623,7 +648,8 @@ export default function HomePage() {
             setSelectedOrganizationId(verifiedUser.organizationId)
             activeOrganizationId = verifiedUser.organizationId
             const orgRes = await fetch(
-              `/api/organization/${verifiedUser.organizationId}`
+              `/api/organization/${verifiedUser.organizationId}`,
+              { headers: buildAuthHeaders(token) }
             )
             if (orgRes.ok) {
               const orgData = (await orgRes.json()) as Organization
@@ -637,12 +663,13 @@ export default function HomePage() {
         }
 
         const [usersRes, organizationsRes, tasksRes] = await Promise.all([
-          fetch('/api/user'),
-          fetch('/api/organization'),
+          fetch('/api/user', { headers: buildAuthHeaders(token) }),
+          fetch('/api/organization', { headers: buildAuthHeaders(token) }),
           fetch(
             activeOrganizationId
               ? `/api/task?organizationId=${activeOrganizationId}`
-              : '/api/task'
+              : '/api/task',
+            { headers: buildAuthHeaders(token) }
           ),
         ])
 
@@ -733,6 +760,9 @@ export default function HomePage() {
     organizations[0]?.name ||
     'Company Event'
   const personName = user?.name || 'Guest'
+  const userRole = user?.role || 'guest'
+  const canWriteTaskData = userRole !== 'guest'
+  const canManageWorkspaceData = userRole === 'admin'
   const personInitials =
     personName
       .split(' ')
@@ -813,6 +843,8 @@ export default function HomePage() {
         selectedSpaceId={selectedSpaceId}
         onChangeView={handleChangeView}
         onOpenArchive={() => router.push('/archive')}
+        onOpenSettings={() => router.push('/settings')}
+        canCreateSpace={canManageWorkspaceData}
         onSelectSpace={(space) => {
           setSelectedSpaceId(space.id)
           setSectionOptions(normalizeSectionList(space.taskSections))
@@ -834,7 +866,7 @@ export default function HomePage() {
             const fallbackName = `Space ${spaces.length + 1}`
             const res = await fetch('/api/space', {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
+              headers: buildJsonAuthHeaders(token),
               body: JSON.stringify({
                 organizationId: activeOrganizationId,
                 name: fallbackName,
@@ -869,10 +901,18 @@ export default function HomePage() {
           workspaceSub={workspaceSub}
           viewMode={viewMode}
           onChangeView={handleChangeView}
+          canOpenSpaceSettings={canManageWorkspaceData}
           onOpenSpaceSettings={() => {
+            if (!canManageWorkspaceData) {
+              setIntegrationError('Only admins can change space settings.')
+              return
+            }
             setIntegrationError(null)
             setSpaceNameDraft(activeSpace?.name?.trim() || projectTitle)
             setSpaceSettingsOpen(true)
+          }}
+          onLogout={() => {
+            router.push('/logout')
           }}
         />
 
@@ -880,6 +920,7 @@ export default function HomePage() {
           <button
             className={styles.createTaskButton}
             type="button"
+            disabled={!canWriteTaskData}
             onClick={() => {
               setIntegrationError(null)
               setCreateTaskModalOpen(true)
@@ -1003,6 +1044,7 @@ export default function HomePage() {
                   type="text"
                   placeholder="Space name"
                   value={spaceNameDraft}
+                  disabled={user?.role !== 'admin' || spaceSettingsBusy}
                   onChange={(event) => setSpaceNameDraft(event.target.value)}
                 />
               </div>
@@ -1130,8 +1172,8 @@ export default function HomePage() {
         {searchQuery.trim() ? (
           <section className={styles.board}>
             <div className={styles.taskMeta}>
-              Showing {filteredTasks.length} of {tasks.length} tasks for
-              {' '}&quot;{searchQuery.trim()}&quot;
+              Showing {filteredTasks.length} of {tasks.length} tasks for &quot;
+              {searchQuery.trim()}&quot;
             </div>
           </section>
         ) : null}

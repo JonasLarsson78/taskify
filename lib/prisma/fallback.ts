@@ -16,6 +16,22 @@ export async function createMysqlFallback(): Promise<FallbackClient> {
     database: u.pathname.replace(/^\//, ''),
   })
 
+  let userRoleColumnEnsured = false
+
+  async function ensureUserRoleColumn() {
+    if (userRoleColumnEnsured) return
+
+    try {
+      await pool.query(
+        "ALTER TABLE `User` ADD COLUMN `role` VARCHAR(32) NOT NULL DEFAULT 'user'"
+      )
+    } catch {
+      // Ignore if the column already exists.
+    }
+
+    userRoleColumnEnsured = true
+  }
+
   return {
     _isFallback: true,
     async $disconnect() {
@@ -23,6 +39,7 @@ export async function createMysqlFallback(): Promise<FallbackClient> {
     },
     user: {
       async findUnique(opts: { where: { id?: number; email?: string } }) {
+        await ensureUserRoleColumn()
         const where = opts?.where ?? {}
 
         if (typeof where.id === 'number') {
@@ -37,6 +54,7 @@ export async function createMysqlFallback(): Promise<FallbackClient> {
             name: r.name,
             email: r.email,
             password: r.password,
+            role: r.role,
             createdAt: r.createdAt,
             organizationId: r.organization_id,
           } as User
@@ -54,6 +72,7 @@ export async function createMysqlFallback(): Promise<FallbackClient> {
             name: r.name,
             email: r.email,
             password: r.password,
+            role: r.role,
             createdAt: r.createdAt,
             organizationId: r.organization_id,
           } as User
@@ -63,6 +82,7 @@ export async function createMysqlFallback(): Promise<FallbackClient> {
       },
 
       async findMany(opts: { include?: { organization?: boolean } } = {}) {
+        await ensureUserRoleColumn()
         const includeOrg = !!opts.include?.organization
         const sql = includeOrg
           ? 'SELECT u.*, o.id as o_id, o.name as o_name, o.address as o_address, o.city as o_city, o.zip as o_zip, o.phone as o_phone, o.email as o_email, o.createdAt as o_createdAt FROM `User` u LEFT JOIN `Organization` o ON u.organization_id = o.id'
@@ -76,6 +96,7 @@ export async function createMysqlFallback(): Promise<FallbackClient> {
             name: r.name,
             email: r.email,
             password: r.password,
+            role: r.role,
             createdAt: r.createdAt,
             organizationId: r.organization_id,
           }
@@ -103,13 +124,15 @@ export async function createMysqlFallback(): Promise<FallbackClient> {
         data: Partial<User> & { organizationId?: number | null }
         include?: { organization?: boolean }
       }) {
+        await ensureUserRoleColumn()
         const data = opts.data || {}
         const [res] = await pool.query<ResultSetHeader>(
-          'INSERT INTO `User` (name,email,password,organization_id,createdAt) VALUES (?, ?, ?, ?, NOW())',
+          'INSERT INTO `User` (name,email,password,role,organization_id,createdAt) VALUES (?, ?, ?, ?, ?, NOW())',
           [
             data.name ?? null,
             data.email ?? null,
             data.password ?? null,
+            data.role ?? 'user',
             data.organizationId ?? null,
           ]
         )
@@ -128,6 +151,7 @@ export async function createMysqlFallback(): Promise<FallbackClient> {
             name: r.name,
             email: r.email,
             password: r.password,
+            role: r.role,
             createdAt: r.createdAt,
             organizationId: r.organization_id,
             organization: r.o_id
@@ -157,6 +181,82 @@ export async function createMysqlFallback(): Promise<FallbackClient> {
           name: r.name,
           email: r.email,
           password: r.password,
+          role: r.role,
+          createdAt: r.createdAt,
+          organizationId: r.organization_id,
+        } as User
+      },
+
+      async update(opts: {
+        where: { id: number }
+        data: Partial<User> & { organizationId?: number | null }
+        include?: { organization?: boolean }
+      }) {
+        await ensureUserRoleColumn()
+        const id = opts.where.id
+        const data = opts.data || {}
+        const existing = await this.findUnique({ where: { id } })
+
+        if (!existing) {
+          throw new Error(`User ${id} not found`)
+        }
+
+        await pool.query(
+          'UPDATE `User` SET name = ?, email = ?, password = ?, role = ?, organization_id = ? WHERE id = ? LIMIT 1',
+          [
+            data.name ?? existing.name ?? null,
+            data.email ?? existing.email ?? null,
+            data.password ?? existing.password ?? null,
+            data.role ?? existing.role ?? 'user',
+            data.organizationId ?? existing.organizationId ?? null,
+            id,
+          ]
+        )
+
+        const includeOrg = !!opts.include?.organization
+
+        if (includeOrg) {
+          const [rows] = await pool.query<RowDataPacket[]>(
+            'SELECT u.*, o.id as o_id, o.name as o_name, o.address as o_address, o.city as o_city, o.zip as o_zip, o.phone as o_phone, o.email as o_email, o.createdAt as o_createdAt FROM `User` u LEFT JOIN `Organization` o ON u.organization_id = o.id WHERE u.id = ? LIMIT 1',
+            [id]
+          )
+          const r = rows[0]
+          const result: UserWithOrg = {
+            id: r.id,
+            name: r.name,
+            email: r.email,
+            password: r.password,
+            role: r.role,
+            createdAt: r.createdAt,
+            organizationId: r.organization_id,
+            organization: r.o_id
+              ? {
+                  id: r.o_id,
+                  name: r.o_name,
+                  address: r.o_address,
+                  city: r.o_city,
+                  zip: r.o_zip,
+                  phone: r.o_phone,
+                  email: r.o_email,
+                  createdAt: r.o_createdAt,
+                }
+              : null,
+          }
+          return result
+        }
+
+        const [rows] = await pool.query<RowDataPacket[]>(
+          'SELECT * FROM `User` WHERE id = ? LIMIT 1',
+          [id]
+        )
+        const r = rows[0]
+
+        return {
+          id: r.id,
+          name: r.name,
+          email: r.email,
+          password: r.password,
+          role: r.role,
           createdAt: r.createdAt,
           organizationId: r.organization_id,
         } as User

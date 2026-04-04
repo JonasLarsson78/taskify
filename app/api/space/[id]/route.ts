@@ -1,5 +1,12 @@
 import { NextResponse } from 'next/server'
-import { getSpaceById, updateSpace } from '../service'
+import { canManageWorkspace } from '../../../../lib/user-role'
+import { forbidden, requireApiUser } from '../../_lib/authorization'
+import {
+  getSpaceById,
+  isSpaceMember,
+  setSpaceMembers,
+  updateSpace,
+} from '../service'
 
 function parseSpaceId(params: { id: string }) {
   const id = Number.parseInt(params.id, 10)
@@ -7,10 +14,13 @@ function parseSpaceId(params: { id: string }) {
 }
 
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await requireApiUser(request)
+    if (!auth.ok) return auth.response
+
     const resolved = await params
     const spaceId = parseSpaceId(resolved)
     if (spaceId === null) {
@@ -20,6 +30,20 @@ export async function GET(
     const space = await getSpaceById(spaceId)
     if (!space) {
       return NextResponse.json({ error: 'Space not found' }, { status: 404 })
+    }
+
+    if (
+      auth.user.organizationId !== null &&
+      space.organizationId !== auth.user.organizationId
+    ) {
+      return forbidden('You do not have access to this space')
+    }
+
+    if (auth.user.role !== 'admin') {
+      const member = await isSpaceMember(space.id, auth.user.id)
+      if (!member) {
+        return forbidden('You are not a member of this space')
+      }
     }
 
     return NextResponse.json(space)
@@ -37,16 +61,35 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await requireApiUser(request)
+    if (!auth.ok) return auth.response
+    if (!canManageWorkspace(auth.user.role)) {
+      return forbidden('Only admins can update spaces')
+    }
+
     const resolved = await params
     const spaceId = parseSpaceId(resolved)
     if (spaceId === null) {
       return NextResponse.json({ error: 'Invalid space id' }, { status: 400 })
     }
 
+    const existingSpace = await getSpaceById(spaceId)
+    if (!existingSpace) {
+      return NextResponse.json({ error: 'Space not found' }, { status: 404 })
+    }
+
+    if (
+      auth.user.organizationId !== null &&
+      existingSpace.organizationId !== auth.user.organizationId
+    ) {
+      return forbidden('You do not have access to this space')
+    }
+
     const body = (await request.json().catch(() => null)) as {
       name?: unknown
       taskSections?: unknown
       taskSectionColors?: unknown
+      memberIds?: unknown
     } | null
 
     const patch: {
@@ -88,9 +131,20 @@ export async function PUT(
       )
     }
 
+    const memberIds = Array.isArray(body?.memberIds)
+      ? body.memberIds
+          .filter((value): value is number => typeof value === 'number')
+          .slice(0, 100)
+      : undefined
+
     const updated = await updateSpace(spaceId, patch)
     if (!updated) {
       return NextResponse.json({ error: 'Space not found' }, { status: 404 })
+    }
+
+    if (memberIds) {
+      await setSpaceMembers(spaceId, memberIds)
+      updated.memberIds = memberIds
     }
 
     return NextResponse.json(updated)

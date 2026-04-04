@@ -1,10 +1,25 @@
 import { NextResponse } from 'next/server'
-import { createUser, ensureOrganizationExists, listUsers } from './service'
+import { canManageWorkspace } from '../../../lib/user-role'
+import { forbidden, requireApiUser } from '../_lib/authorization'
+import {
+  createUser,
+  ensureOrganizationExists,
+  listUsers,
+  listUsersByOrganization,
+} from './service'
 import { normalizeCreateUserInput, parseJsonBody } from './validator'
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const users = await listUsers()
+    const auth = await requireApiUser(request)
+    if (!auth.ok) return auth.response
+
+    const users = canManageWorkspace(auth.user.role)
+      ? auth.user.organizationId === null
+        ? await listUsers()
+        : await listUsersByOrganization(auth.user.organizationId)
+      : await listUsersByOrganization(auth.user.organizationId)
+
     const safeUsers = users.map(({ password: _password, ...safe }) => {
       void _password
       return safe
@@ -20,6 +35,12 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const auth = await requireApiUser(request)
+  if (!auth.ok) return auth.response
+  if (!canManageWorkspace(auth.user.role)) {
+    return forbidden('Only admins can create users')
+  }
+
   let body: unknown = null
   try {
     body = await parseJsonBody(request)
@@ -33,6 +54,16 @@ export async function POST(request: Request) {
 
   try {
     const input = normalizeCreateUserInput(body)
+    if (
+      auth.user.organizationId !== null &&
+      input.organizationId !== auth.user.organizationId
+    ) {
+      return NextResponse.json(
+        { error: 'Users must belong to your organization' },
+        { status: 403 }
+      )
+    }
+
     await ensureOrganizationExists(input.organizationId)
     const safe = await createUser(input)
 

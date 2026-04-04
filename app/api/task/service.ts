@@ -87,7 +87,9 @@ async function ensureTaskTable() {
   `)
 
   try {
-    await pool.query('ALTER TABLE `Task` ADD COLUMN `archivedAt` DATETIME(3) NULL')
+    await pool.query(
+      'ALTER TABLE `Task` ADD COLUMN `archivedAt` DATETIME(3) NULL'
+    )
   } catch {
     // Ignore if the column already exists.
   }
@@ -216,6 +218,17 @@ export async function createTask(input: CreateTaskInput) {
   const insertId = res.insertId
   const [rows] = await pool.query('SELECT * FROM `Task` WHERE id = ? LIMIT 1', [
     insertId,
+  ])
+
+  const row = (rows as Record<string, unknown>[])[0]
+  return row ? mapTaskRow(row) : null
+}
+
+export async function getTaskById(id: number) {
+  await ensureTaskTable()
+
+  const [rows] = await pool.query('SELECT * FROM `Task` WHERE id = ? LIMIT 1', [
+    id,
   ])
 
   const row = (rows as Record<string, unknown>[])[0]
