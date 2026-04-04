@@ -2,6 +2,13 @@ import sharedStyles from '../page.module.css'
 import styles from '../_styles/home-topbar.module.css'
 import type { ViewMode } from '../model'
 import type { AppContent } from '../../../lib/content'
+import {
+  Kanban,
+  LayoutGrid,
+  List,
+  SlidersHorizontal,
+  Square,
+} from 'lucide-react'
 
 type HomeTopbarProps = {
   projectTitle: string
@@ -25,7 +32,9 @@ export default function HomeTopbar({
   return (
     <div className={sharedStyles.topbar}>
       <div className={sharedStyles.workspaceMeta}>
-        <span className={sharedStyles.workspaceBadge}>◫</span>
+        <span className={sharedStyles.workspaceBadge}>
+          <LayoutGrid className={sharedStyles.workspaceBadgeIcon} />
+        </span>
         <div>
           <div className={sharedStyles.workspaceTitle}>{projectTitle}</div>
           <div className={sharedStyles.workspaceSub}>{workspaceSub}</div>
@@ -40,7 +49,7 @@ export default function HomeTopbar({
           type="button"
           onClick={() => onChangeView('list')}
         >
-          ≡ {content.list}
+          <List className={styles.actionIcon} /> {content.list}
         </button>
         <button
           className={`${styles.actionPill} ${
@@ -49,7 +58,7 @@ export default function HomeTopbar({
           type="button"
           onClick={() => onChangeView('board')}
         >
-          ◫ {content.board}
+          <Kanban className={styles.actionIcon} /> {content.board}
         </button>
         <button
           className={`${styles.actionPill} ${
@@ -58,7 +67,7 @@ export default function HomeTopbar({
           type="button"
           onClick={() => onChangeView('box')}
         >
-          □ {content.box}
+          <Square className={styles.actionIcon} /> {content.box}
         </button>
         {canOpenSpaceSettings ? (
           <button
@@ -66,6 +75,7 @@ export default function HomeTopbar({
             type="button"
             onClick={onOpenSpaceSettings}
           >
+            <SlidersHorizontal className={styles.actionIcon} />
             {content.spaceSettings}
           </button>
         ) : null}

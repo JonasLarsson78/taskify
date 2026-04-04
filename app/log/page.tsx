@@ -9,6 +9,7 @@ import { subscribeToWorkspaceEvents } from '../../lib/realtime/client'
 import HomeSidebar from '../home/_components/home-sidebar'
 import styles from '../home/page.module.css'
 import logStyles from './page.module.css'
+import { Eraser, Pause, Play } from 'lucide-react'
 
 type WorkspaceEvent = {
   organizationId: number
@@ -197,14 +198,22 @@ export default function LogPage() {
               type="button"
               onClick={() => setEvents([])}
             >
-              {ui.log.actions.clear}
+              <Eraser className={logStyles.btnIcon} aria-hidden="true" />
+              <span>{ui.log.actions.clear}</span>
             </button>
             <button
               className={logStyles.btn}
               type="button"
               onClick={() => setPaused((prev) => !prev)}
             >
-              {paused ? ui.log.actions.resume : ui.log.actions.pause}
+              {paused ? (
+                <Play className={logStyles.btnIcon} aria-hidden="true" />
+              ) : (
+                <Pause className={logStyles.btnIcon} aria-hidden="true" />
+              )}
+              <span>
+                {paused ? ui.log.actions.resume : ui.log.actions.pause}
+              </span>
             </button>
           </div>
         </div>

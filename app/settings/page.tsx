@@ -14,6 +14,7 @@ import AdminUsersPanel from './_components/admin-users-panel'
 import AdminSpaceMembersPanel from './_components/admin-space-members-panel'
 import AdminOrganizationPanel from './_components/admin-organization-panel'
 import useSettingsPage from './_hooks/use-settings-page'
+import { Settings } from 'lucide-react'
 
 export default function SettingsPage() {
   const router = useRouter()
@@ -115,7 +116,9 @@ export default function SettingsPage() {
           className={`${styles.topbar} ${settingsLayoutStyles.settingsTopbar}`}
         >
           <div className={styles.workspaceMeta}>
-            <span className={styles.workspaceBadge}>⚙</span>
+            <span className={styles.workspaceBadge}>
+              <Settings className={styles.workspaceBadgeIcon} />
+            </span>
             <div>
               <div className={styles.workspaceTitle}>{ui.settings.title}</div>
               <div className={styles.workspaceSub}>{ui.settings.subtitle}</div>

@@ -1,6 +1,7 @@
 import styles from '../../home/page.module.css'
 import panelStyles from '../_styles/settings-panels.module.css'
 import type { SettingsProfileContent } from '../../../lib/content'
+import { Save } from 'lucide-react'
 
 type ProfilePanelProps = {
   name: string
@@ -148,10 +149,11 @@ export default function ProfilePanel({
 
       <div className={styles.modalActions}>
         <button
-          className={styles.createTaskButton}
+          className={`${styles.createTaskButton} ${panelStyles.buttonWithIcon}`}
           type="submit"
           disabled={busy}
         >
+          <Save className={panelStyles.buttonIcon} aria-hidden="true" />
           {busy ? content.actions.saving : content.actions.save}
         </button>
       </div>

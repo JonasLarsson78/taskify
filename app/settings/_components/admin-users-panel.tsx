@@ -2,6 +2,7 @@ import type { StoreUser } from '../../home/model'
 import styles from '../../home/page.module.css'
 import panelStyles from '../_styles/settings-panels.module.css'
 import type { AppContent } from '../../../lib/content'
+import { UserPlus } from 'lucide-react'
 
 type AdminUsersPanelProps = {
   adminUsers: StoreUser[]
@@ -107,11 +108,12 @@ export default function AdminUsersPanel({
 
       <div className={styles.modalActions}>
         <button
-          className={styles.createTaskButton}
+          className={`${styles.createTaskButton} ${panelStyles.buttonWithIcon}`}
           type="button"
           disabled={adminBusy}
           onClick={onCreateUser}
         >
+          <UserPlus className={panelStyles.buttonIcon} aria-hidden="true" />
           {adminBusy ? content.creating : content.create}
         </button>
       </div>

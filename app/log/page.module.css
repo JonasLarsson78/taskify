@@ -51,6 +51,9 @@
 .btn {
   -webkit-appearance: none;
   appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   border: 1px solid rgba(28, 29, 58, 0.1);
   background: rgba(255, 255, 255, 0.86);
   border-radius: 999px;
@@ -58,6 +61,12 @@
   font: inherit;
   color: #343953;
   font-size: 0.86rem;
+}
+
+.btnIcon {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
 }
 
 .btnPrimary {

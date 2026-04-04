@@ -30,6 +30,12 @@
   font-weight: 700;
 }
 
+.actionIcon {
+  width: 14px;
+  height: 14px;
+  stroke-width: 2.25;
+}
+
 :global(:root[data-theme='dark']) .actionPill,
 :global(:root[data-theme='dark']) .addView {
   border-color: rgba(173, 184, 235, 0.24);

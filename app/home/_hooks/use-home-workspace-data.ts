@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { buildAuthHeaders } from '../../../lib/request-headers'
 import { subscribeToWorkspaceEvents } from '../../../lib/realtime/client'
 import {
@@ -43,6 +43,10 @@ export default function useHomeWorkspaceData({
   ])
   const [sectionColors, setSectionColors] = useState<Record<string, string>>(
     () => normalizeSectionColorMap(null, DEFAULT_TASK_SECTIONS)
+  )
+  const realtimeSubscribedAtRef = useRef(0)
+  const taskRefreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null
   )
 
   const loadTasksForSpace = useCallback(
@@ -125,6 +129,23 @@ export default function useHomeWorkspaceData({
       }
     },
     [token, loadTasksForSpace]
+  )
+
+  const queueTaskRefresh = useCallback(
+    (organizationId: number | null, spaceId: number | null) => {
+      if (!organizationId) return
+
+      if (taskRefreshTimeoutRef.current) {
+        clearTimeout(taskRefreshTimeoutRef.current)
+      }
+
+      // Coalesce rapid realtime task events into a single fetch.
+      taskRefreshTimeoutRef.current = setTimeout(() => {
+        taskRefreshTimeoutRef.current = null
+        void loadTasksForSpace(organizationId, spaceId)
+      }, 350)
+    },
+    [loadTasksForSpace]
   )
 
   /* eslint-disable react-hooks/exhaustive-deps */
@@ -241,11 +262,16 @@ export default function useHomeWorkspaceData({
   useEffect(() => {
     if (!token || !selectedOrganizationId) return
 
-    return subscribeToWorkspaceEvents({
+    realtimeSubscribedAtRef.current = Date.now()
+
+    const unsubscribe = subscribeToWorkspaceEvents({
       token,
       organizationId: selectedOrganizationId,
       onEvent: (event) => {
         if (event.type === 'connected') return
+
+        // Ignore replayed history from before this subscription.
+        if (event.at < realtimeSubscribedAtRef.current - 1000) return
 
         void (async () => {
           if (
@@ -264,20 +290,32 @@ export default function useHomeWorkspaceData({
               const usersData = (await usersRes.json()) as StoreUser[]
               setUsers(Array.isArray(usersData) ? usersData : [])
             }
+
+            return
           }
 
-          await loadTasksForSpace(selectedOrganizationId, selectedSpaceId)
+          if (event.type === 'task.changed') {
+            queueTaskRefresh(selectedOrganizationId, selectedSpaceId)
+          }
         })()
       },
       onError: () => {
         // Ignore transient stream reconnect errors in the UI.
       },
     })
+
+    return () => {
+      unsubscribe()
+      if (taskRefreshTimeoutRef.current) {
+        clearTimeout(taskRefreshTimeoutRef.current)
+        taskRefreshTimeoutRef.current = null
+      }
+    }
   }, [
     token,
     selectedOrganizationId,
     selectedSpaceId,
-    loadTasksForSpace,
+    queueTaskRefresh,
     loadSpacesForOrganization,
   ])
 

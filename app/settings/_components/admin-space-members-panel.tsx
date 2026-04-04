@@ -2,6 +2,7 @@ import type { Space, StoreUser } from '../../home/model'
 import styles from '../../home/page.module.css'
 import panelStyles from '../_styles/settings-panels.module.css'
 import type { AppContent } from '@/lib/content'
+import { Save, UserMinus } from 'lucide-react'
 
 type AdminSpaceMembersPanelProps = {
   adminUsers: StoreUser[]
@@ -83,11 +84,12 @@ export default function AdminSpaceMembersPanel({
 
       <div className={styles.modalActions}>
         <button
-          className={styles.createTaskButton}
+          className={`${styles.createTaskButton} ${panelStyles.buttonWithIcon}`}
           type="button"
           disabled={adminBusy || !selectedMemberUserId}
           onClick={onSaveUserSpaces}
         >
+          <Save className={panelStyles.buttonIcon} aria-hidden="true" />
           {adminBusy ? content.savingUserSpaces : content.saveUserSpaces}
         </button>
       </div>
@@ -117,13 +119,17 @@ export default function AdminSpaceMembersPanel({
                     <button
                       key={`${adminUser.id}-${space.id}`}
                       type="button"
-                      className={panelStyles.settingsMembershipTag}
+                      className={`${panelStyles.settingsMembershipTag} ${panelStyles.buttonWithIcon}`}
                       disabled={adminBusy}
                       onClick={() =>
                         onRemoveUserFromSpace(adminUser.id, space.id)
                       }
                     >
-                      {space.name} ×
+                      <UserMinus
+                        className={panelStyles.buttonIcon}
+                        aria-hidden="true"
+                      />
+                      <span>{space.name}</span>
                     </button>
                   ))
                 )}

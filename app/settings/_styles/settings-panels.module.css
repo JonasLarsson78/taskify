@@ -208,6 +208,18 @@
   margin-bottom: 6px;
 }
 
+.buttonWithIcon {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.buttonIcon {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+}
+
 :global(:root[data-theme='dark']) .settingsPanel {
   background: rgba(19, 24, 41, 0.84);
   border-color: rgba(173, 184, 235, 0.22);

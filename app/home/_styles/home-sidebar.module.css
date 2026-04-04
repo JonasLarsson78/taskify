@@ -112,6 +112,12 @@
   font-weight: 800;
 }
 
+.navIconSvg {
+  width: 14px;
+  height: 14px;
+  stroke-width: 2.3;
+}
+
 .spaceIconMarketing {
   background: rgba(255, 195, 0, 0.14);
   color: #d89b00;

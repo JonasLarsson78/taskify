@@ -5,6 +5,16 @@ import type { Space } from '../model'
 import { getInitial } from '../model'
 import type { AppContent } from '../../../lib/content'
 import useTheme from '../../_hooks/use-theme'
+import {
+  Archive,
+  CircleDot,
+  House,
+  LogOut,
+  Moon,
+  Plus,
+  Sun,
+  Target,
+} from 'lucide-react'
 
 type HomeSidebarProps = {
   personInitials: string
@@ -68,7 +78,9 @@ export default function HomeSidebar({
           onClick={onOpenHome}
           title={content.home}
         >
-          <span className={styles.navIcon}>⌂</span>
+          <span className={styles.navIcon}>
+            <House className={styles.navIconSvg} />
+          </span>
           {content.home}
         </button>
         <button
@@ -79,7 +91,9 @@ export default function HomeSidebar({
           onClick={onOpenLog}
           title={content.log}
         >
-          <span className={styles.navIcon}>◌</span>
+          <span className={styles.navIcon}>
+            <CircleDot className={styles.navIconSvg} />
+          </span>
           {content.log}
         </button>
         <button
@@ -90,7 +104,9 @@ export default function HomeSidebar({
           onClick={onOpenGoals}
           title={content.goals}
         >
-          <span className={styles.navIcon}>◎</span>
+          <span className={styles.navIcon}>
+            <Target className={styles.navIconSvg} />
+          </span>
           {content.goals}
         </button>
         <button
@@ -100,7 +116,9 @@ export default function HomeSidebar({
           type="button"
           onClick={onOpenArchive}
         >
-          <span className={styles.navIcon}>▣</span>
+          <span className={styles.navIcon}>
+            <Archive className={styles.navIconSvg} />
+          </span>
           {content.archive}
         </button>
       </section>
@@ -138,7 +156,9 @@ export default function HomeSidebar({
               type="button"
               onClick={onCreateSpace}
             >
-              <span className={styles.navIcon}>+</span>
+              <span className={styles.navIcon}>
+                <Plus className={styles.navIconSvg} />
+              </span>
               {content.newSpace}
             </button>
           ) : null}
@@ -152,7 +172,13 @@ export default function HomeSidebar({
           onClick={toggleTheme}
           title={isDark ? content.lightMode : content.darkMode}
         >
-          <span className={styles.navIcon}>{isDark ? '☀' : '☾'}</span>
+          <span className={styles.navIcon}>
+            {isDark ? (
+              <Sun className={styles.navIconSvg} />
+            ) : (
+              <Moon className={styles.navIconSvg} />
+            )}
+          </span>
           {isDark ? content.lightMode : content.darkMode}
         </button>
 
@@ -162,7 +188,9 @@ export default function HomeSidebar({
           onClick={onOpenLogout}
           title={content.logout}
         >
-          <span className={styles.navIcon}>↦</span>
+          <span className={styles.navIcon}>
+            <LogOut className={styles.navIconSvg} />
+          </span>
           {content.logout}
         </button>
 

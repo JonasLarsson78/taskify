@@ -9,6 +9,7 @@ import { getContent } from '../../lib/content'
 import styles from '../home/page.module.css'
 import HomeSidebar from '../home/_components/home-sidebar'
 import ArchiveTaskGrid from './_components/archive-task-grid'
+import { Archive as ArchiveIcon } from 'lucide-react'
 import useArchivePage from './_hooks/use-archive-page'
 
 function getTagTextColor(background: string): string {
@@ -102,7 +103,9 @@ export default function ArchivePage() {
       <section className={styles.content}>
         <div className={styles.topbar}>
           <div className={styles.workspaceMeta}>
-            <span className={styles.workspaceBadge}>▣</span>
+            <span className={styles.workspaceBadge}>
+              <ArchiveIcon className={styles.workspaceBadgeIcon} />
+            </span>
             <div>
               <div className={styles.workspaceTitle}>{ui.archive.title}</div>
               <div className={styles.workspaceSub}>

@@ -84,6 +84,12 @@
   font-weight: 800;
 }
 
+.workspaceBadgeIcon {
+  width: 17px;
+  height: 17px;
+  stroke-width: 2.3;
+}
+
 .workspaceTitle {
   font-size: clamp(1.35rem, 1.6vw, 1.75rem);
   font-weight: 800;

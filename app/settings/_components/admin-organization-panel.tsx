@@ -1,6 +1,7 @@
 import styles from '../../home/page.module.css'
 import panelStyles from '../_styles/settings-panels.module.css'
 import type { AppContent } from '../../../lib/content'
+import { Building2 } from 'lucide-react'
 
 type AdminOrganizationPanelProps = {
   adminOrgName: string
@@ -48,11 +49,12 @@ export default function AdminOrganizationPanel({
 
       <div className={styles.modalActions}>
         <button
-          className={styles.createTaskButton}
+          className={`${styles.createTaskButton} ${panelStyles.buttonWithIcon}`}
           type="button"
           disabled={adminBusy}
           onClick={onSave}
         >
+          <Building2 className={panelStyles.buttonIcon} aria-hidden="true" />
           {adminBusy ? content.savingOrganization : content.saveOrganization}
         </button>
       </div>

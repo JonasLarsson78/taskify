@@ -11,6 +11,7 @@ import HomeSidebar from '../home/_components/home-sidebar'
 import GoalFormPanel from './_components/goal-form-panel'
 import GoalListPanel from './_components/goal-list-panel'
 import useGoalsPage from './_hooks/use-goals-page'
+import { Target } from 'lucide-react'
 
 export default function GoalsPage() {
   const router = useRouter()
@@ -99,7 +100,9 @@ export default function GoalsPage() {
           className={`${styles.topbar} ${settingsLayoutStyles.settingsTopbar}`}
         >
           <div className={styles.workspaceMeta}>
-            <span className={styles.workspaceBadge}>◎</span>
+            <span className={styles.workspaceBadge}>
+              <Target className={styles.workspaceBadgeIcon} />
+            </span>
             <div>
               <div className={styles.workspaceTitle}>{ui.goals.title}</div>
               <div className={styles.workspaceSub}>{ui.goals.subtitle}</div>
