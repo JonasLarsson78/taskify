@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { verifySessionCached } from '../../../lib/auth/session-client'
 import {
   buildAuthHeaders,
   buildJsonAuthHeaders,
@@ -39,6 +40,8 @@ export default function useGoalsPage({
   const [manualProgress, setManualProgress] = useState(0)
   const [taskPickerId, setTaskPickerId] = useState<string>('')
   const [taskSearchQuery, setTaskSearchQuery] = useState('')
+  const realtimeSubscribedAtRef = useRef(0)
+  const reloadTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const canWrite = canWriteTasks(user?.role || 'guest')
 
@@ -84,21 +87,13 @@ export default function useGoalsPage({
           return
         }
 
-        const verifyResponse = await fetch('/api/verify', {
-          method: 'GET',
-          headers: { Authorization: `Bearer ${token}` },
-        })
-
-        if (!verifyResponse.ok) {
+        const verifyResult = await verifySessionCached<VerifiedUser>(token)
+        if (!verifyResult.ok) {
           redirectToLogin()
           return
         }
 
-        const verifyData = await verifyResponse.json().catch(() => null)
-        const verifiedUser =
-          verifyData && typeof verifyData === 'object' && 'user' in verifyData
-            ? (verifyData.user as VerifiedUser)
-            : null
+        const verifiedUser = verifyResult.user
 
         if (!verifiedUser?.id || !verifiedUser.organizationId) {
           redirectToHome()
@@ -132,17 +127,49 @@ export default function useGoalsPage({
     const organizationId = user?.organizationId
     if (!token || !organizationId) return
 
-    return subscribeToWorkspaceEvents({
+    realtimeSubscribedAtRef.current = Date.now()
+
+    const queueReload = () => {
+      if (reloadTimeoutRef.current) {
+        clearTimeout(reloadTimeoutRef.current)
+      }
+
+      reloadTimeoutRef.current = setTimeout(() => {
+        reloadTimeoutRef.current = null
+        void reloadGoalsData(organizationId)
+      }, 350)
+    }
+
+    const unsubscribe = subscribeToWorkspaceEvents({
       token,
       organizationId,
       onEvent: (event) => {
         if (event.type === 'connected') return
-        void reloadGoalsData(organizationId)
+
+        // Ignore replayed history from before this subscription.
+        if (event.at < realtimeSubscribedAtRef.current - 1000) return
+
+        if (
+          event.type === 'goal.changed' ||
+          event.type === 'task.changed' ||
+          event.type === 'space.changed' ||
+          event.type === 'organization.changed'
+        ) {
+          queueReload()
+        }
       },
       onError: () => {
         // Ignore transient stream reconnect errors in the UI.
       },
     })
+
+    return () => {
+      unsubscribe()
+      if (reloadTimeoutRef.current) {
+        clearTimeout(reloadTimeoutRef.current)
+        reloadTimeoutRef.current = null
+      }
+    }
   }, [token, user?.organizationId, reloadGoalsData])
 
   const visibleTasks = useMemo(() => {

@@ -1,5 +1,6 @@
 import { create, StateCreator } from 'zustand'
 import { persist } from 'zustand/middleware'
+import { clearVerifiedSessionCache } from '../../auth/session-client'
 import type { AppState, Organization, User } from './app-store.types'
 
 export const useAppStore = create<AppState>()(
@@ -12,9 +13,27 @@ export const useAppStore = create<AppState>()(
       setUser: (user: User) => set({ user }),
       setOrganization: (organization: Organization | null) =>
         set({ organization }),
-      setToken: (token: string | null) => set({ token }),
+      setToken: (token: string | null) => {
+        const previousToken = _get().token
+        if (previousToken && previousToken !== token) {
+          clearVerifiedSessionCache(previousToken)
+        }
+
+        if (token === null) {
+          clearVerifiedSessionCache()
+        }
+
+        set({ token })
+      },
       setRehydrated: (v: boolean) => set({ rehydrated: v }),
       logout: () => {
+        const previousToken = _get().token
+        if (previousToken) {
+          clearVerifiedSessionCache(previousToken)
+        } else {
+          clearVerifiedSessionCache()
+        }
+
         set({ user: null, organization: null, token: null })
         try {
           api?.persist?.clearStorage?.()

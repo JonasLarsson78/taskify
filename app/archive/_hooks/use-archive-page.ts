@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { verifySessionCached } from '../../../lib/auth/session-client'
 import {
   buildAuthHeaders,
   buildJsonAuthHeaders,
@@ -23,6 +24,8 @@ export default function useArchivePage({
   const [integrationError, setIntegrationError] = useState<string | null>(null)
   const [busyTaskId, setBusyTaskId] = useState<number | null>(null)
   const [currentUser, setCurrentUser] = useState<StoreUser | null>(null)
+  const realtimeSubscribedAtRef = useRef(0)
+  const reloadTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const reloadArchivedTasks = useCallback(
     async (organizationId: number | null) => {
@@ -116,21 +119,13 @@ export default function useArchivePage({
           return
         }
 
-        const verifyResponse = await fetch('/api/verify', {
-          method: 'GET',
-          headers: { Authorization: `Bearer ${token}` },
-        })
-
-        if (!verifyResponse.ok) {
+        const verifyResult = await verifySessionCached<StoreUser>(token)
+        if (!verifyResult.ok) {
           redirectToLogin()
           return
         }
 
-        const verifyData = await verifyResponse.json().catch(() => null)
-        const verifiedUser =
-          verifyData && typeof verifyData === 'object' && 'user' in verifyData
-            ? (verifyData.user as StoreUser)
-            : null
+        const verifiedUser = verifyResult.user
 
         if (mounted) {
           setCurrentUser(verifiedUser)
@@ -169,17 +164,48 @@ export default function useArchivePage({
     const organizationId = currentUser?.organizationId
     if (!token || !organizationId) return
 
-    return subscribeToWorkspaceEvents({
+    realtimeSubscribedAtRef.current = Date.now()
+
+    const queueReload = () => {
+      if (reloadTimeoutRef.current) {
+        clearTimeout(reloadTimeoutRef.current)
+      }
+
+      reloadTimeoutRef.current = setTimeout(() => {
+        reloadTimeoutRef.current = null
+        void reloadArchivedTasks(organizationId)
+      }, 350)
+    }
+
+    const unsubscribe = subscribeToWorkspaceEvents({
       token,
       organizationId,
       onEvent: (event) => {
         if (event.type === 'connected') return
-        void reloadArchivedTasks(organizationId)
+
+        // Ignore replayed history from before this subscription.
+        if (event.at < realtimeSubscribedAtRef.current - 1000) return
+
+        if (
+          event.type === 'task.changed' ||
+          event.type === 'space.changed' ||
+          event.type === 'organization.changed'
+        ) {
+          queueReload()
+        }
       },
       onError: () => {
         // Ignore transient stream reconnect errors in the UI.
       },
     })
+
+    return () => {
+      unsubscribe()
+      if (reloadTimeoutRef.current) {
+        clearTimeout(reloadTimeoutRef.current)
+        reloadTimeoutRef.current = null
+      }
+    }
   }, [token, currentUser?.organizationId, reloadArchivedTasks])
 
   return {

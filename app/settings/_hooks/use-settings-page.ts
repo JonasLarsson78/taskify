@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { verifySessionCached } from '../../../lib/auth/session-client'
 import {
   buildAuthHeaders,
   buildJsonAuthHeaders,
@@ -115,21 +116,13 @@ export default function useSettingsPage({
           return
         }
 
-        const verifyResponse = await fetch('/api/verify', {
-          method: 'GET',
-          headers: { Authorization: `Bearer ${token}` },
-        })
-
-        if (!verifyResponse.ok) {
+        const verifyResult = await verifySessionCached<SettingsUser>(token)
+        if (!verifyResult.ok) {
           redirectToLogin()
           return
         }
 
-        const verifyData = await verifyResponse.json().catch(() => null)
-        const verifiedUser =
-          verifyData && typeof verifyData === 'object' && 'user' in verifyData
-            ? (verifyData.user as SettingsUser)
-            : null
+        const verifiedUser = verifyResult.user
 
         if (!verifiedUser?.id) {
           redirectToHome()

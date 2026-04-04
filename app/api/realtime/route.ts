@@ -18,6 +18,7 @@ function parseOrganizationId(raw: string | null): number | null {
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const token = searchParams.get('token')
+  const replay = searchParams.get('replay') === '1'
 
   if (!token) {
     return NextResponse.json({ error: 'No token provided' }, { status: 401 })
@@ -96,9 +97,12 @@ export async function GET(request: Request) {
 
       void (async () => {
         try {
-          const recentEvents = await listRecentWorkspaceEvents(organizationId)
-          for (const event of recentEvents) {
-            send(event)
+          // Replay is opt-in to avoid re-fetch storms when clients reconnect.
+          if (replay) {
+            const recentEvents = await listRecentWorkspaceEvents(organizationId)
+            for (const event of recentEvents) {
+              send(event)
+            }
           }
 
           lastEventId = await getWorkspaceEventCursor(organizationId)

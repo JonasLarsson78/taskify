@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { verifySessionCached } from '../../../lib/auth/session-client'
 import { buildAuthHeaders } from '../../../lib/request-headers'
 import { subscribeToWorkspaceEvents } from '../../../lib/realtime/client'
 import {
@@ -160,21 +161,13 @@ export default function useHomeWorkspaceData({
           return
         }
 
-        const res = await fetch('/api/verify', {
-          method: 'GET',
-          headers: { Authorization: `Bearer ${token}` },
-        })
-
-        if (!res.ok) {
+        const verifyResult = await verifySessionCached<StoreUser>(token)
+        if (!verifyResult.ok) {
           redirectToLogin()
           return
         }
 
-        const verifyData = await res.json().catch(() => null)
-        const verifiedUser =
-          verifyData && typeof verifyData === 'object' && 'user' in verifyData
-            ? (verifyData.user as StoreUser)
-            : null
+        const verifiedUser = verifyResult.user
 
         let activeOrganizationId: number | null = null
 
