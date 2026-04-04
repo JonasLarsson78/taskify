@@ -1,20 +1,36 @@
 import type { User, Organization } from '@prisma/client'
 import type { RowDataPacket, ResultSetHeader } from 'mysql2/promise'
+import { getMysqlPool } from '../mysql/pool'
 import type { FallbackClient, UserWithOrg } from './types'
 
-export async function createMysqlFallback(): Promise<FallbackClient> {
-  const mysql = await import('mysql2/promise')
-  const url = process.env.DATABASE_URL
-  if (!url) throw new Error('DATABASE_URL not set')
+function isConnectionLimitError(error: unknown): boolean {
+  if (!error || typeof error !== 'object') return false
+  const code = (error as { code?: unknown }).code
+  return code === 'ER_CON_COUNT_ERROR'
+}
 
-  const u = new URL(url)
-  const pool = mysql.createPool({
-    host: u.hostname,
-    port: Number(u.port || 3306),
-    user: decodeURIComponent(u.username),
-    password: decodeURIComponent(u.password),
-    database: u.pathname.replace(/^\//, ''),
-  })
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+export async function createMysqlFallback(): Promise<FallbackClient> {
+  const pool = getMysqlPool()
+
+  async function queryRows<T extends RowDataPacket[]>(
+    sql: string,
+    params: unknown[]
+  ) {
+    try {
+      const [rows] = await pool.query<T>(sql, params)
+      return rows
+    } catch (error) {
+      if (!isConnectionLimitError(error)) throw error
+
+      await sleep(120)
+      const [rows] = await pool.query<T>(sql, params)
+      return rows
+    }
+  }
 
   let userColumnsEnsured = false
 
@@ -43,7 +59,7 @@ export async function createMysqlFallback(): Promise<FallbackClient> {
   return {
     _isFallback: true,
     async $disconnect() {
-      await pool.end()
+      // Shared global pool is reused across modules and should stay alive.
     },
     user: {
       async findUnique(opts: { where: { id?: number; email?: string } }) {
@@ -51,7 +67,7 @@ export async function createMysqlFallback(): Promise<FallbackClient> {
         const where = opts?.where ?? {}
 
         if (typeof where.id === 'number') {
-          const [rows] = await pool.query<RowDataPacket[]>(
+          const rows = await queryRows<RowDataPacket[]>(
             'SELECT * FROM `User` WHERE id = ? LIMIT 1',
             [where.id]
           )
@@ -70,7 +86,7 @@ export async function createMysqlFallback(): Promise<FallbackClient> {
         }
 
         if (typeof where.email === 'string') {
-          const [rows] = await pool.query<RowDataPacket[]>(
+          const rows = await queryRows<RowDataPacket[]>(
             'SELECT * FROM `User` WHERE email = ? LIMIT 1',
             [where.email]
           )

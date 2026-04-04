@@ -151,6 +151,22 @@ export default function HomePage() {
     router.replace(`${pathname}?${params.toString()}`)
   }
 
+  function buildHomeUrl(nextView: ViewMode, nextSpaceId?: number | null) {
+    const params = new URLSearchParams(
+      typeof window !== 'undefined' ? window.location.search : ''
+    )
+
+    params.set('view', nextView)
+
+    if (nextSpaceId) {
+      params.set('spaceId', String(nextSpaceId))
+    } else {
+      params.delete('spaceId')
+    }
+
+    return `${pathname}?${params.toString()}`
+  }
+
   async function saveSectionsForOrganization() {
     if (user?.role !== 'admin') {
       setIntegrationError(ui.home.errors.adminOnlySpaceSettings)
@@ -296,6 +312,39 @@ export default function HomePage() {
     setViewMode((prev) => (prev === next ? prev : next))
   }, [])
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const params = new URLSearchParams(window.location.search)
+    const rawSpaceId = params.get('spaceId')
+    const nextSpaceId = Number.parseInt(rawSpaceId || '', 10)
+
+    if (!Number.isFinite(nextSpaceId)) return
+    if (nextSpaceId === selectedSpaceId) return
+
+    const nextSpace = spaces.find((space) => space.id === nextSpaceId)
+
+    if (!nextSpace) return
+
+    setSelectedSpaceId(nextSpace.id)
+    setSectionOptions(normalizeSectionList(nextSpace.taskSections))
+    setSectionColors(
+      normalizeSectionColorMap(
+        nextSpace.taskSectionColors,
+        nextSpace.taskSections
+      )
+    )
+    void loadTasksForSpace(activeOrganizationId, nextSpace.id)
+  }, [
+    activeOrganizationId,
+    loadTasksForSpace,
+    selectedSpaceId,
+    setSectionColors,
+    setSectionOptions,
+    setSelectedSpaceId,
+    spaces,
+  ])
+
   if (checking) {
     return (
       <main className="center-screen">
@@ -391,12 +440,16 @@ export default function HomePage() {
         personInitials={personInitials}
         personName={personName}
         userEmail={user?.email || ui.home.signedIn}
-        viewMode={viewMode}
+        activeItem="home"
+        showSpaces
         spaces={spaces}
         selectedSpaceId={selectedSpaceId}
         content={ui.home.sidebar}
-        onChangeView={handleChangeView}
+        onOpenHome={() =>
+          router.replace(buildHomeUrl(viewMode, selectedSpaceId))
+        }
         onOpenArchive={() => router.push('/archive')}
+        onOpenLog={() => router.push('/log')}
         onOpenGoals={() => router.push('/goals')}
         onOpenSettings={() => router.push('/settings')}
         canCreateSpace={canManageWorkspaceData}
@@ -409,6 +462,7 @@ export default function HomePage() {
               space.taskSections
             )
           )
+          router.replace(buildHomeUrl(viewMode, space.id))
           void loadTasksForSpace(activeOrganizationId, space.id)
         }}
         onCreateSpace={() => {

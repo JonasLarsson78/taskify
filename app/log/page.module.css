@@ -1,0 +1,122 @@
+.shell {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: radial-gradient(
+      circle at top left,
+      rgba(255, 113, 164, 0.12),
+      transparent 26%
+    ),
+    radial-gradient(
+      circle at top right,
+      rgba(111, 90, 214, 0.08),
+      transparent 24%
+    ),
+    linear-gradient(180deg, #fbfbff 0%, #f2f4fb 100%);
+  padding: 24px;
+}
+
+.wrap {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 18px 42px 32px 0px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.title {
+  font-size: clamp(1.25rem, 2vw, 1.8rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.sub {
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn {
+  -webkit-appearance: none;
+  appearance: none;
+  border: 1px solid rgba(28, 29, 58, 0.1);
+  background: rgba(255, 255, 255, 0.86);
+  border-radius: 999px;
+  padding: 8px 12px;
+  font: inherit;
+  color: #343953;
+  font-size: 0.86rem;
+}
+
+.btnPrimary {
+  border-color: rgba(111, 90, 214, 0.2);
+  color: #fff;
+  background: linear-gradient(135deg, #7e78ff, #6259ff);
+}
+
+.card {
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(32, 33, 67, 0.08);
+  border-radius: 18px;
+  box-shadow: 0 10px 28px rgba(25, 26, 65, 0.08);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  padding: 10px;
+}
+
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.item {
+  border: 1px solid rgba(32, 33, 67, 0.08);
+  border-radius: 12px;
+  padding: 10px;
+  background: #fff;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.message {
+  font-size: 0.92rem;
+  color: #2d324c;
+}
+
+.meta {
+  color: var(--muted);
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+
+.empty {
+  color: var(--muted);
+  text-align: center;
+  padding: 20px;
+}
+
+.error {
+  color: #a11a58;
+  background: rgba(255, 126, 171, 0.16);
+  border: 1px solid rgba(161, 26, 88, 0.25);
+  border-radius: 12px;
+  padding: 10px;
+}

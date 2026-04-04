@@ -1,7 +1,11 @@
 import { NextResponse } from 'next/server'
 import { verifyAndLoadUser } from '../verify/service'
 import { normalizeUserRole } from '../../../lib/user-role'
-import { subscribeWorkspaceEvents } from '../../../lib/realtime/workspace-events'
+import {
+  getWorkspaceEventCursor,
+  listRecentWorkspaceEvents,
+  listWorkspaceEventsSince,
+} from '../../../lib/realtime/workspace-events'
 
 export const dynamic = 'force-dynamic'
 
@@ -66,7 +70,48 @@ export async function GET(request: Request) {
         )
       }
 
-      const unsubscribe = subscribeWorkspaceEvents(organizationId, send)
+      let lastEventId = 0
+      let polling = false
+
+      const poll = async () => {
+        if (closed || polling) return
+        polling = true
+
+        try {
+          const events = await listWorkspaceEventsSince(
+            organizationId,
+            lastEventId
+          )
+
+          for (const event of events) {
+            send(event)
+            lastEventId = event.id
+          }
+        } catch (error) {
+          console.error('realtime poll error', error)
+        } finally {
+          polling = false
+        }
+      }
+
+      void (async () => {
+        try {
+          const recentEvents = await listRecentWorkspaceEvents(organizationId)
+          for (const event of recentEvents) {
+            send(event)
+          }
+
+          lastEventId = await getWorkspaceEventCursor(organizationId)
+        } catch (error) {
+          console.error('realtime cursor error', error)
+          lastEventId = 0
+        }
+      })()
+
+      const poller = setInterval(() => {
+        void poll()
+      }, 1000)
+
       const heartbeat = setInterval(() => {
         if (closed) return
         controller.enqueue(encoder.encode(': heartbeat\n\n'))
@@ -77,8 +122,8 @@ export async function GET(request: Request) {
       const close = () => {
         if (closed) return
         closed = true
+        clearInterval(poller)
         clearInterval(heartbeat)
-        unsubscribe()
         controller.close()
       }
 

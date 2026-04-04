@@ -1,9 +1,11 @@
 .shell {
   min-height: 100vh;
   display: flex;
+  padding-left: 280px;
+  overflow-x: hidden;
   background: radial-gradient(
       circle at top left,
-      rgba(255, 113, 164, 0.12),
+      rgba(212, 139, 166, 0.12),
       transparent 26%
     ),
     radial-gradient(
@@ -15,6 +17,15 @@
 }
 
 .sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 248px;
+  height: 100vh;
+  height: 100dvh;
+  overflow-y: auto;
+  box-sizing: border-box;
+  z-index: 4;
   border-right: 1px solid rgba(32, 33, 67, 0.08);
   background: rgba(255, 255, 255, 0.78);
   backdrop-filter: blur(14px);
@@ -147,6 +158,15 @@
   text-align: left;
 }
 
+.sidebarFooterButtonActive .sidebarFooter {
+  color: #5f54c9;
+  border-top-color: rgba(101, 88, 218, 0.22);
+}
+
+.sidebarFooterButtonActive .avatarLarge {
+  box-shadow: 0 10px 24px rgba(101, 88, 218, 0.2);
+}
+
 .sidebarFooterButton:hover .sidebarFooter {
   color: #5f54c9;
 }
@@ -178,7 +198,6 @@
 
 .settingsContent {
   max-width: 900px;
-  margin: 0 auto;
   width: 100%;
   gap: 8px;
   padding-bottom: 48px;
@@ -420,12 +439,13 @@
 }
 
 .content {
-  padding: 18px 20px 24px;
+  padding: 18px 42px 32px 0px;
   display: flex;
   flex-direction: column;
   gap: 14px;
   flex: 1 1 auto;
   min-width: 0;
+  max-width: 100%;
 }
 
 .topbar {
@@ -1492,9 +1512,18 @@
 @media (max-width: 1100px) {
   .shell {
     flex-direction: column;
+    padding-left: 0;
   }
 
   .sidebar {
+    position: static;
+    width: auto;
+    height: auto;
+    left: auto;
+    z-index: auto;
+    min-height: auto;
+    max-height: none;
+    overflow-y: visible;
     border-right: 0;
     border-bottom: 1px solid rgba(32, 33, 67, 0.08);
   }

@@ -101,7 +101,19 @@ export async function PUT(
       return NextResponse.json({ error: 'Task not found' }, { status: 404 })
     }
 
-    publishWorkspaceEvent(updated.organizationId, 'task.changed')
+    const movedBetweenSections =
+      existingTask.section !== updated.section &&
+      parsed.data.section !== undefined
+
+    publishWorkspaceEvent(updated.organizationId, 'task.changed', {
+      action: movedBetweenSections ? 'moved' : 'updated',
+      taskId: updated.id,
+      title: updated.title,
+      section: updated.section,
+      fromSection: movedBetweenSections ? existingTask.section : undefined,
+      toSection: movedBetweenSections ? updated.section : undefined,
+      spaceId: updated.spaceId,
+    })
 
     return NextResponse.json(updated)
   } catch (e) {
@@ -155,7 +167,13 @@ export async function DELETE(
       return NextResponse.json({ error: 'Task not found' }, { status: 404 })
     }
 
-    publishWorkspaceEvent(existingTask.organizationId, 'task.changed')
+    publishWorkspaceEvent(existingTask.organizationId, 'task.changed', {
+      action: 'deleted',
+      taskId: existingTask.id,
+      title: existingTask.title,
+      section: existingTask.section,
+      spaceId: existingTask.spaceId,
+    })
 
     return NextResponse.json({ ok: true })
   } catch (e) {

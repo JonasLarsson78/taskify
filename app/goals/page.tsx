@@ -6,6 +6,7 @@ import Loader from '../components/loader/loader'
 import useStore from '../../lib/store'
 import { getContent } from '../../lib/content'
 import styles from '../home/page.module.css'
+import HomeSidebar from '../home/_components/home-sidebar'
 import GoalFormPanel from './_components/goal-form-panel'
 import GoalListPanel from './_components/goal-list-panel'
 import useGoalsPage from './_hooks/use-goals-page'
@@ -18,6 +19,14 @@ export default function GoalsPage() {
   const rehydrated = useStore((s) => s.rehydrated)
   const user = useStore((s) => s.user)
   const ui = getContent(user?.preferredLanguage)
+  const personName = user?.name || ui.home.guest
+  const personInitials =
+    personName
+      .split(' ')
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase())
+      .join('') || 'GU'
   const {
     checking,
     busy,
@@ -70,7 +79,20 @@ export default function GoalsPage() {
 
   return (
     <main className={styles.shell}>
-      <section className={`${styles.content} ${styles.settingsContent}`}>
+      <HomeSidebar
+        personInitials={personInitials}
+        personName={personName}
+        userEmail={user?.email || ui.home.signedIn}
+        activeItem="goals"
+        content={ui.home.sidebar}
+        onOpenHome={() => router.push('/home')}
+        onOpenArchive={() => router.push('/archive')}
+        onOpenLog={() => router.push('/log')}
+        onOpenGoals={() => router.push('/goals')}
+        onOpenSettings={() => router.push('/settings')}
+      />
+
+      <section className={styles.content}>
         <div className={`${styles.topbar} ${styles.settingsTopbar}`}>
           <div className={styles.workspaceMeta}>
             <span className={styles.workspaceBadge}>◎</span>
@@ -78,16 +100,6 @@ export default function GoalsPage() {
               <div className={styles.workspaceTitle}>{ui.goals.title}</div>
               <div className={styles.workspaceSub}>{ui.goals.subtitle}</div>
             </div>
-          </div>
-
-          <div className={styles.topbarActions}>
-            <button
-              className={styles.modalCancel}
-              type="button"
-              onClick={() => router.push('/home')}
-            >
-              {ui.common.backToHome}
-            </button>
           </div>
         </div>
 

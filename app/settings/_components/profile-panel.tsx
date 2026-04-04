@@ -17,7 +17,6 @@ type ProfilePanelProps = {
   onChangeEmail: (value: string) => void
   onChangePassword: (value: string) => void
   onChangePreferredLanguage: (value: 'sv' | 'en') => void
-  onCancel: () => void
   onSubmit: (event: React.FormEvent) => void
 }
 
@@ -37,7 +36,6 @@ export default function ProfilePanel({
   onChangeEmail,
   onChangePassword,
   onChangePreferredLanguage,
-  onCancel,
   onSubmit,
 }: ProfilePanelProps) {
   return (
@@ -132,14 +130,6 @@ export default function ProfilePanel({
       {message ? <div className={styles.taskMeta}>{message}</div> : null}
 
       <div className={styles.modalActions}>
-        <button
-          className={styles.modalCancel}
-          type="button"
-          disabled={busy}
-          onClick={onCancel}
-        >
-          {content.actions.cancel}
-        </button>
         <button
           className={styles.createTaskButton}
           type="submit"

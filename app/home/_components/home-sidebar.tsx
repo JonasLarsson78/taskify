@@ -1,5 +1,5 @@
 import styles from '../page.module.css'
-import type { Space, ViewMode } from '../model'
+import type { Space } from '../model'
 import { getInitial } from '../model'
 import type { AppContent } from '../../../lib/content'
 
@@ -7,16 +7,18 @@ type HomeSidebarProps = {
   personInitials: string
   personName: string
   userEmail: string
-  viewMode: ViewMode
-  spaces: Space[]
-  selectedSpaceId: number | null
-  onChangeView: (next: ViewMode) => void
+  activeItem: 'home' | 'goals' | 'archive' | 'log' | 'settings'
+  showSpaces?: boolean
+  spaces?: Space[]
+  selectedSpaceId?: number | null
+  onOpenHome: () => void
+  onOpenLog: () => void
   onOpenArchive: () => void
   onOpenGoals: () => void
   onOpenSettings: () => void
-  onSelectSpace: (space: Space) => void
-  onCreateSpace: () => void
-  canCreateSpace: boolean
+  onSelectSpace?: (space: Space) => void
+  onCreateSpace?: () => void
+  canCreateSpace?: boolean
   content: AppContent['home']['sidebar']
 }
 
@@ -24,16 +26,18 @@ export default function HomeSidebar({
   personInitials,
   personName,
   userEmail,
-  viewMode,
-  spaces,
-  selectedSpaceId,
-  onChangeView,
+  activeItem,
+  showSpaces = false,
+  spaces = [],
+  selectedSpaceId = null,
+  onOpenHome,
+  onOpenLog,
   onOpenArchive,
   onOpenGoals,
   onOpenSettings,
   onSelectSpace,
   onCreateSpace,
-  canCreateSpace,
+  canCreateSpace = false,
   content,
 }: HomeSidebarProps) {
   return (
@@ -50,37 +54,41 @@ export default function HomeSidebar({
         <div className={styles.sectionLabel}>{content.workspace}</div>
         <button
           className={`${styles.navItem} ${
-            viewMode === 'list' ? styles.navItemActive : ''
+            activeItem === 'home' ? styles.navItemActive : ''
           }`}
           type="button"
-          onClick={() => onChangeView('list')}
-          title="Open home view"
+          onClick={onOpenHome}
+          title={content.home}
         >
           <span className={styles.navIcon}>⌂</span>
           {content.home}
         </button>
         <button
           className={`${styles.navItem} ${
-            viewMode === 'board' ? styles.navItemActive : ''
+            activeItem === 'log' ? styles.navItemActive : ''
           }`}
           type="button"
-          onClick={() => onChangeView('board')}
-          title="Open notifications view"
+          onClick={onOpenLog}
+          title={content.log}
         >
           <span className={styles.navIcon}>◌</span>
-          {content.notifications}
+          {content.log}
         </button>
         <button
-          className={styles.navItem}
+          className={`${styles.navItem} ${
+            activeItem === 'goals' ? styles.navItemActive : ''
+          }`}
           type="button"
           onClick={onOpenGoals}
-          title="Open goals view"
+          title={content.goals}
         >
           <span className={styles.navIcon}>◎</span>
           {content.goals}
         </button>
         <button
-          className={styles.navItem}
+          className={`${styles.navItem} ${
+            activeItem === 'archive' ? styles.navItemActive : ''
+          }`}
           type="button"
           onClick={onOpenArchive}
         >
@@ -89,46 +97,50 @@ export default function HomeSidebar({
         </button>
       </section>
 
-      <section className={styles.navSection}>
-        <div className={styles.sectionLabel}>{content.spaces}</div>
-        {spaces.length > 0 ? (
-          spaces.map((space) => {
-            const isActive = selectedSpaceId === space.id
+      {showSpaces ? (
+        <section className={styles.navSection}>
+          <div className={styles.sectionLabel}>{content.spaces}</div>
+          {spaces.length > 0 ? (
+            spaces.map((space) => {
+              const isActive = selectedSpaceId === space.id
 
-            return (
-              <button
-                className={`${styles.spaceItem} ${
-                  isActive ? styles.spaceActive : ''
-                }`}
-                type="button"
-                key={space.id}
-                onClick={() => onSelectSpace(space)}
-              >
-                <span className={styles.spaceIcon}>
-                  {getInitial(space.name, 'S')}
-                </span>
-                {space.name || `Space ${space.id}`}
-              </button>
-            )
-          })
-        ) : (
-          <div className={styles.brandSub}>{content.noSpaces}</div>
-        )}
+              return (
+                <button
+                  className={`${styles.spaceItem} ${
+                    isActive ? styles.spaceActive : ''
+                  }`}
+                  type="button"
+                  key={space.id}
+                  onClick={() => onSelectSpace?.(space)}
+                >
+                  <span className={styles.spaceIcon}>
+                    {getInitial(space.name, 'S')}
+                  </span>
+                  {space.name || `Space ${space.id}`}
+                </button>
+              )
+            })
+          ) : (
+            <div className={styles.brandSub}>{content.noSpaces}</div>
+          )}
 
-        {canCreateSpace ? (
-          <button
-            className={styles.navItem}
-            type="button"
-            onClick={onCreateSpace}
-          >
-            <span className={styles.navIcon}>+</span>
-            {content.newSpace}
-          </button>
-        ) : null}
-      </section>
+          {canCreateSpace ? (
+            <button
+              className={styles.navItem}
+              type="button"
+              onClick={onCreateSpace}
+            >
+              <span className={styles.navIcon}>+</span>
+              {content.newSpace}
+            </button>
+          ) : null}
+        </section>
+      ) : null}
 
       <button
-        className={styles.sidebarFooterButton}
+        className={`${styles.sidebarFooterButton} ${
+          activeItem === 'settings' ? styles.sidebarFooterButtonActive : ''
+        }`}
         type="button"
         onClick={onOpenSettings}
       >

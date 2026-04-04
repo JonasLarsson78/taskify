@@ -2,6 +2,7 @@ type WorkspaceEvent = {
   organizationId: number
   type: string
   at: number
+  details?: Record<string, unknown>
 }
 
 type SubscribeOptions = {

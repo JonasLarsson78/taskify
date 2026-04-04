@@ -7,6 +7,7 @@ import Loader from '../components/loader/loader'
 import useStore from '../../lib/store'
 import { getContent } from '../../lib/content'
 import styles from '../home/page.module.css'
+import HomeSidebar from '../home/_components/home-sidebar'
 import ArchiveTaskGrid from './_components/archive-task-grid'
 import useArchivePage from './_hooks/use-archive-page'
 
@@ -51,6 +52,14 @@ export default function ArchivePage() {
   const rehydrated = useStore((state) => state.rehydrated)
   const user = useStore((state) => state.user)
   const ui = getContent(user?.preferredLanguage)
+  const personName = user?.name || ui.home.guest
+  const personInitials =
+    personName
+      .split(' ')
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase())
+      .join('') || 'GU'
   const {
     checking,
     organization,
@@ -76,6 +85,19 @@ export default function ArchivePage() {
 
   return (
     <main className={styles.shell}>
+      <HomeSidebar
+        personInitials={personInitials}
+        personName={personName}
+        userEmail={user?.email || ui.home.signedIn}
+        activeItem="archive"
+        content={ui.home.sidebar}
+        onOpenHome={() => router.push('/home')}
+        onOpenArchive={() => router.push('/archive')}
+        onOpenLog={() => router.push('/log')}
+        onOpenGoals={() => router.push('/goals')}
+        onOpenSettings={() => router.push('/settings')}
+      />
+
       <section className={styles.content}>
         <div className={styles.topbar}>
           <div className={styles.workspaceMeta}>
@@ -88,16 +110,6 @@ export default function ArchivePage() {
                   : ui.archive.subtitleFallback}
               </div>
             </div>
-          </div>
-
-          <div className={styles.topbarActions}>
-            <button
-              className={styles.modalCancel}
-              type="button"
-              onClick={() => router.push('/home')}
-            >
-              {ui.common.backToHome}
-            </button>
           </div>
         </div>
 

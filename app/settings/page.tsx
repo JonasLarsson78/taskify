@@ -7,6 +7,7 @@ import useStore from '../../lib/store'
 import styles from '../home/page.module.css'
 import { canWriteTasks } from '../../lib/user-role'
 import { getContent, normalizeLanguage } from '../../lib/content'
+import HomeSidebar from '../home/_components/home-sidebar'
 import ProfilePanel from './_components/profile-panel'
 import AdminUsersPanel from './_components/admin-users-panel'
 import AdminSpaceMembersPanel from './_components/admin-space-members-panel'
@@ -74,6 +75,15 @@ export default function SettingsPage() {
     currentUser?.preferredLanguage || sessionUser?.preferredLanguage
   )
   const ui = getContent(uiLanguage)
+  const sidebarUser = currentUser || sessionUser
+  const personName = sidebarUser?.name || ui.home.guest
+  const personInitials =
+    personName
+      .split(' ')
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase())
+      .join('') || 'GU'
 
   if (checking) {
     return (
@@ -85,7 +95,20 @@ export default function SettingsPage() {
 
   return (
     <main className={styles.shell}>
-      <section className={`${styles.content} ${styles.settingsContent}`}>
+      <HomeSidebar
+        personInitials={personInitials}
+        personName={personName}
+        userEmail={sidebarUser?.email || ui.home.signedIn}
+        activeItem="settings"
+        content={ui.home.sidebar}
+        onOpenHome={() => router.push('/home')}
+        onOpenArchive={() => router.push('/archive')}
+        onOpenLog={() => router.push('/log')}
+        onOpenGoals={() => router.push('/goals')}
+        onOpenSettings={() => router.push('/settings')}
+      />
+
+      <section className={styles.content}>
         <div className={`${styles.topbar} ${styles.settingsTopbar}`}>
           <div className={styles.workspaceMeta}>
             <span className={styles.workspaceBadge}>⚙</span>
@@ -93,16 +116,6 @@ export default function SettingsPage() {
               <div className={styles.workspaceTitle}>{ui.settings.title}</div>
               <div className={styles.workspaceSub}>{ui.settings.subtitle}</div>
             </div>
-          </div>
-
-          <div className={styles.topbarActions}>
-            <button
-              className={styles.modalCancel}
-              type="button"
-              onClick={() => router.push('/home')}
-            >
-              {ui.common.backToHome}
-            </button>
           </div>
         </div>
 
@@ -125,7 +138,6 @@ export default function SettingsPage() {
             onChangeEmail={setEmail}
             onChangePassword={setPassword}
             onChangePreferredLanguage={setPreferredLanguage}
-            onCancel={() => router.push('/home')}
             onSubmit={handleSubmit}
           />
 

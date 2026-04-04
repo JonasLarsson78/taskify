@@ -162,7 +162,13 @@ export async function POST(request: Request) {
       )
     }
 
-    publishWorkspaceEvent(created.organizationId, 'task.changed')
+    publishWorkspaceEvent(created.organizationId, 'task.changed', {
+      action: 'created',
+      taskId: created.id,
+      title: created.title,
+      section: created.section,
+      spaceId: created.spaceId,
+    })
     return NextResponse.json(created)
   } catch (e) {
     console.error('POST /api/task error', e)

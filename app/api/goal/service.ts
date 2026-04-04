@@ -1,5 +1,5 @@
-import mysql from 'mysql2/promise'
 import type { ResultSetHeader } from 'mysql2/promise'
+import { getMysqlPool } from '../../../lib/mysql/pool'
 import type { CreateGoalInput, UpdateGoalInput } from './validator'
 
 type GoalRow = {
@@ -23,23 +23,7 @@ export type GoalWithStats = GoalRow & {
 
 let initialized = false
 
-function getDbConfigFromEnv() {
-  const url = process.env.DATABASE_URL
-  if (!url) {
-    throw new Error('DATABASE_URL not set')
-  }
-
-  const u = new URL(url)
-  return {
-    host: u.hostname,
-    port: Number(u.port || 3306),
-    user: decodeURIComponent(u.username),
-    password: decodeURIComponent(u.password),
-    database: u.pathname.replace(/^\//, ''),
-  }
-}
-
-const pool = mysql.createPool(getDbConfigFromEnv())
+const pool = getMysqlPool()
 
 async function ensureGoalTables() {
   if (initialized) return
