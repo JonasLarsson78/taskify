@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { usePathname, useRouter, useSearchParams } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import Loader from '../components/loader/loader'
 import useStore from '../../lib/store'
 import { buildJsonAuthHeaders } from '../../lib/request-headers'
@@ -34,7 +34,6 @@ import styles from './page.module.css'
 export default function HomePage() {
   const router = useRouter()
   const pathname = usePathname()
-  const searchParams = useSearchParams()
   const token = useStore((s) => s.token)
   const rehydrated = useStore((s) => s.rehydrated)
   const user = useStore((s) => s.user)
@@ -166,6 +165,36 @@ export default function HomePage() {
     }
 
     return `${pathname}?${params.toString()}`
+  }
+
+  function applyUrlViewState(nextSearch: string) {
+    const params = new URLSearchParams(nextSearch)
+
+    const nextView = parseViewMode(params.get('view'))
+    setViewMode((prev) => (prev === nextView ? prev : nextView))
+  }
+
+  function applyUrlSpaceState(nextSearch: string) {
+    const params = new URLSearchParams(nextSearch)
+    const rawSpaceId = params.get('spaceId')
+    const nextSpaceId = Number.parseInt(rawSpaceId || '', 10)
+
+    if (!Number.isFinite(nextSpaceId)) return
+    if (nextSpaceId === selectedSpaceId) return
+
+    const nextSpace = spaces.find((space) => space.id === nextSpaceId)
+    if (!nextSpace) return
+
+    setTasks([])
+    setSelectedSpaceId(nextSpace.id)
+    setSectionOptions(normalizeSectionList(nextSpace.taskSections))
+    setSectionColors(
+      normalizeSectionColorMap(
+        nextSpace.taskSectionColors,
+        nextSpace.taskSections
+      )
+    )
+    void loadTasksForSpace(activeOrganizationId, nextSpace.id)
   }
 
   async function saveSectionsForOrganization() {
@@ -307,36 +336,17 @@ export default function HomePage() {
   }, [sectionOptions, setSectionColors])
 
   useEffect(() => {
-    const next = parseViewMode(searchParams.get('view'))
-    setViewMode((prev) => (prev === next ? prev : next))
-  }, [searchParams])
+    if (typeof window === 'undefined') return
+    applyUrlViewState(window.location.search)
+  }, [])
 
   useEffect(() => {
-    const rawSpaceId = searchParams.get('spaceId')
-    const nextSpaceId = Number.parseInt(rawSpaceId || '', 10)
-
-    if (!Number.isFinite(nextSpaceId)) return
-    if (nextSpaceId === selectedSpaceId) return
-
-    const nextSpace = spaces.find((space) => space.id === nextSpaceId)
-
-    if (!nextSpace) return
-
-    setTasks([])
-    setSelectedSpaceId(nextSpace.id)
-    setSectionOptions(normalizeSectionList(nextSpace.taskSections))
-    setSectionColors(
-      normalizeSectionColorMap(
-        nextSpace.taskSectionColors,
-        nextSpace.taskSections
-      )
-    )
-    void loadTasksForSpace(activeOrganizationId, nextSpace.id)
+    if (typeof window === 'undefined') return
+    if (spaces.length === 0) return
+    applyUrlSpaceState(window.location.search)
   }, [
     activeOrganizationId,
     loadTasksForSpace,
-    searchParams,
-    selectedSpaceId,
     setSectionColors,
     setSectionOptions,
     setSelectedSpaceId,
