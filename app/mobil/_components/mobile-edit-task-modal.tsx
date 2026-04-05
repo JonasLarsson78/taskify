@@ -95,49 +95,55 @@ export default function MobileEditTaskModal({
             type="text"
             placeholder={content.taskTitlePlaceholder}
             value={title}
-            onChange={e => onTitleChange(e.target.value)}
+            onChange={(e) => onTitleChange(e.target.value)}
           />
           <textarea
             className={formStyles.createFieldFull}
             placeholder={content.descriptionPlaceholder}
             value={meta}
-            onChange={e => onMetaChange(e.target.value)}
+            onChange={(e) => onMetaChange(e.target.value)}
           />
           <input
             className={formStyles.createFieldFull}
             type="date"
             value={dueDate}
-            onChange={e => onDueDateChange(e.target.value)}
+            onChange={(e) => onDueDateChange(e.target.value)}
           />
           {/* Assignee select */}
           <select
             className={formStyles.createFieldFull}
             value={assigneeIds[0] ?? ''}
-            onChange={e => onAssigneeIdsChange([Number(e.target.value)])}
+            onChange={(e) => onAssigneeIdsChange([Number(e.target.value)])}
             disabled={busy}
           >
             <option value="">{taskContent.assigneeLabel}</option>
-            {assigneeOptions.map(opt => (
-              <option key={opt.id} value={opt.id}>{opt.label}</option>
+            {assigneeOptions.map((opt) => (
+              <option key={opt.id} value={opt.id}>
+                {opt.label}
+              </option>
             ))}
           </select>
           {/* Section select */}
           <select
             className={formStyles.createFieldFull}
             value={section}
-            onChange={e => onSectionChange(e.target.value)}
+            onChange={(e) => onSectionChange(e.target.value)}
             disabled={busy}
           >
             <option value="">Section</option>
-            {sectionOptions.map(opt => (
-              <option key={opt} value={opt}>{opt}</option>
+            {sectionOptions.map((opt) => (
+              <option key={opt} value={opt}>
+                {opt}
+              </option>
             ))}
           </select>
           {/* Priority select */}
           <select
             className={formStyles.createFieldFull}
             value={priority}
-            onChange={e => onPriorityChange(e.target.value as 'High' | 'Normal' | 'Low')}
+            onChange={(e) =>
+              onPriorityChange(e.target.value as 'High' | 'Normal' | 'Low')
+            }
             disabled={busy}
           >
             <option value="">{taskContent.priorityPrefix || 'Priority'}</option>
@@ -150,9 +156,14 @@ export default function MobileEditTaskModal({
             className={formStyles.createFieldFull}
             type="color"
             value={color}
-            onChange={e => onColorChange(e.target.value)}
+            onChange={(e) => onColorChange(e.target.value)}
             disabled={busy}
-            style={{height: 40, padding: 0, border: 'none', background: 'none'}}
+            style={{
+              height: 40,
+              padding: 0,
+              border: 'none',
+              background: 'none',
+            }}
           />
         </div>
         <div className={styles.mobileModalActions}>
