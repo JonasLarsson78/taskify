@@ -67,7 +67,8 @@ export default function useTheme() {
   }, [theme, isClient])
 
   const resolvedTheme = useMemo(
-    () => (theme === 'system' ? (isClient ? getSystemTheme() : 'light') : theme),
+    () =>
+      theme === 'system' ? (isClient ? getSystemTheme() : 'light') : theme,
     [theme, isClient]
   )
 
