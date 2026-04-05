@@ -8,6 +8,7 @@ import { buildAuthHeaders } from '../../lib/request-headers'
 import { getContent } from '../../lib/content'
 import LoginShowcase from './_components/login-showcase'
 import LoginForm from './_components/login-form'
+import LoginMobile from './_components/login-mobile'
 
 type LoginMetrics = {
   activeProjects: number
@@ -100,7 +101,9 @@ export default function LoginPage() {
         } catch {}
       }
 
-      router.push('/home')
+      // Redirect to /mobil on mobile, otherwise /home
+      const isMobile = typeof window !== 'undefined' && /android|iphone|ipad|ipod|opera mini|iemobile|mobile/i.test(navigator.userAgent)
+      router.push(isMobile ? '/mobil' : '/home')
     } catch {
       setError(ui.login.networkError)
     } finally {
@@ -109,18 +112,34 @@ export default function LoginPage() {
   }
 
   return (
-    <main className={styles.shell}>
-      <LoginShowcase content={ui.login} metrics={metrics} />
-      <LoginForm
-        email={email}
-        password={password}
-        loading={loading}
-        error={error}
-        content={ui.login}
-        onChangeEmail={setEmail}
-        onChangePassword={setPassword}
-        onSubmit={handleSubmit}
-      />
-    </main>
+    <>
+      <main className={`${styles.shell} ${styles.desktopOnly}`}>
+        <LoginShowcase content={ui.login} metrics={metrics} />
+        <LoginForm
+          email={email}
+          password={password}
+          loading={loading}
+          error={error}
+          content={ui.login}
+          onChangeEmail={setEmail}
+          onChangePassword={setPassword}
+          onSubmit={handleSubmit}
+        />
+      </main>
+
+      <section className={styles.mobileOnly}>
+        <LoginMobile
+          email={email}
+          password={password}
+          loading={loading}
+          error={error}
+          content={ui.login}
+          metrics={metrics}
+          onChangeEmail={setEmail}
+          onChangePassword={setPassword}
+          onSubmit={handleSubmit}
+        />
+      </section>
+    </>
   )
 }

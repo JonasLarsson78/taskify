@@ -213,6 +213,223 @@
   opacity: 0.75;
 }
 
+.desktopOnly {
+  display: flex;
+}
+
+.mobileOnly {
+  display: none;
+}
+
+.mobileShell {
+  min-height: 100dvh;
+  box-sizing: border-box;
+  padding: max(0.8rem, env(safe-area-inset-top)) 0.95rem
+    max(0.95rem, env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  background: var(--background);
+}
+
+.mobileHero {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  padding: 0.15rem 0.1rem 0.1rem;
+}
+
+.mobileBrandRow {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.mobileBrandMark {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: linear-gradient(140deg, #8d6dfd 0%, #ff5f98 55%, #ffc858 100%);
+  box-shadow: 0 10px 22px rgba(111, 90, 214, 0.2);
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.mobileBrandMark::after {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.mobileBrandTitle {
+  margin: 0;
+  font-family: var(--font-display), var(--font-sans), sans-serif;
+  font-size: 1.02rem;
+  font-weight: 800;
+  color: var(--foreground);
+}
+
+.mobileBrandSub {
+  margin: 1px 0 0;
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+.mobileHeadline {
+  margin: 0;
+  font-family: var(--font-display), var(--font-sans), sans-serif;
+  font-size: clamp(1.12rem, 5.8vw, 1.36rem);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  color: var(--foreground);
+}
+
+.mobileLead {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.mobileKpiRow {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  padding-bottom: 1px;
+}
+
+.mobileKpiCard:nth-child(3) {
+  grid-column: 1 / -1;
+}
+
+.mobileKpiRow::-webkit-scrollbar {
+  display: none;
+}
+
+.mobileKpiCard {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 9px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: 0 10px 22px rgba(33, 36, 80, 0.08);
+}
+
+.mobileKpiLabel {
+  font-size: 0.64rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.mobileKpiValue {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--foreground);
+}
+
+.mobileAuthPanel {
+  display: flex;
+  flex: 0 0 auto;
+}
+
+.mobileForm {
+  width: 100%;
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: 0 16px 30px rgba(26, 28, 70, 0.12);
+  backdrop-filter: blur(10px);
+  padding: 0.95rem;
+}
+
+.mobileFormTitle {
+  margin: 0;
+  font-family: var(--font-display), var(--font-sans), sans-serif;
+  font-size: 1.32rem;
+  font-weight: 800;
+  color: var(--foreground);
+  letter-spacing: -0.03em;
+}
+
+.mobileFormSubtitle {
+  margin: 0.22rem 0 0.72rem;
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+
+.mobileError {
+  color: #fff;
+  background: linear-gradient(135deg, #ff5f98, #ff8080);
+  border-radius: 10px;
+  padding: 8px 10px;
+  margin-bottom: 9px;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.mobileLabel {
+  display: block;
+  margin-bottom: 8px;
+}
+
+.mobileLabelTitle {
+  display: block;
+  font-size: 0.72rem;
+  margin-bottom: 5px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.mobileInput {
+  width: 100%;
+  min-height: 44px;
+  padding: 11px 12px;
+  box-sizing: border-box;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--foreground);
+  background: var(--surface);
+  font-size: 16px;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.mobileInput:focus {
+  border-color: rgba(111, 90, 214, 0.42);
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(111, 90, 214, 0.12);
+}
+
+.mobileSubmit {
+  width: 100%;
+  margin-top: 6px;
+  min-height: 44px;
+  padding: 11px 14px;
+  background: linear-gradient(135deg, #6f5ad6, #ff5a96);
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  box-shadow: 0 14px 26px rgba(111, 90, 214, 0.22);
+}
+
+.mobileSubmit:disabled {
+  cursor: not-allowed;
+  opacity: 0.75;
+}
+
 :global(:root[data-theme='dark']) .shell {
   background: radial-gradient(
       circle at 8% 10%,
@@ -276,20 +493,205 @@
   }
 }
 
-@media (max-width: 620px) {
+@media (max-width: 900px), (hover: none) and (pointer: coarse) {
+  .desktopOnly {
+    display: none;
+  }
+
+  .mobileOnly {
+    display: block;
+  }
+
+  .shell {
+    justify-content: flex-start;
+    align-items: stretch;
+    gap: 0.35rem;
+    padding-top: max(0.45rem, env(safe-area-inset-top));
+    padding-bottom: max(0.7rem, env(safe-area-inset-bottom));
+  }
+
   .showcase {
-    padding: 1rem 0.8rem 0;
+    order: 2;
+    width: min(100%, 560px);
+    min-width: 0;
+    padding: 0.25rem 1rem 0;
+    gap: 0.55rem;
+    align-items: flex-start;
+    text-align: left;
   }
 
   .authPanel {
-    padding: 1rem;
+    order: 1;
+    width: min(100%, 560px);
+    min-width: 0;
+    padding: 0.5rem 1rem 0.6rem;
+    align-items: flex-start;
   }
 
   .kpiGrid {
-    flex-direction: column;
+    width: 100%;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+    gap: 8px;
+  }
+
+  .kpiGrid::-webkit-scrollbar {
+    display: none;
   }
 
   .kpiCard {
-    flex-basis: 100%;
+    flex: 0 0 min(180px, 62vw);
+    border-radius: 12px;
+    padding: 9px 10px;
+    box-shadow: 0 10px 22px rgba(33, 36, 80, 0.09);
+  }
+
+  .brandRow {
+    gap: 0.7rem;
+  }
+
+  .brandMark {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+  }
+
+  .brandMark::after {
+    inset: 7px;
+    border-radius: 7px;
+  }
+
+  .brandTitle {
+    font-size: 1rem;
+  }
+
+  .brandSub {
+    font-size: 0.78rem;
+  }
+
+  .headline {
+    max-width: 100%;
+    font-size: clamp(1.08rem, 6.2vw, 1.34rem);
+    line-height: 1.08;
+  }
+
+  .lead {
+    max-width: 100%;
+    font-size: 0.8rem;
+    line-height: 1.45;
+  }
+
+  .form {
+    width: 100%;
+    border-radius: 18px;
+    padding: 1rem;
+    border-color: rgba(32, 33, 67, 0.12);
+    box-shadow: 0 16px 30px rgba(26, 28, 70, 0.12);
+  }
+
+  .title {
+    font-size: 1.35rem;
+  }
+
+  .subtitle {
+    margin: 0.32rem 0 0.9rem;
+    font-size: 0.86rem;
+  }
+
+  .label {
+    margin-bottom: 10px;
+  }
+
+  .labelTitle {
+    margin-bottom: 5px;
+    font-size: 0.74rem;
+  }
+
+  .input {
+    min-height: 44px;
+    padding: 11px 12px;
+    border-radius: 12px;
+    font-size: 16px;
+  }
+
+  .submit {
+    margin-top: 10px;
+    min-height: 46px;
+    padding: 12px 14px;
+    font-size: 0.95rem;
+  }
+
+  .error {
+    margin-bottom: 10px;
+    padding: 9px 11px;
+    font-size: 0.84rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .mobileShell {
+    padding: max(0.65rem, env(safe-area-inset-top)) 0.75rem
+      max(0.85rem, env(safe-area-inset-bottom));
+    gap: 0.75rem;
+  }
+
+  .mobileKpiCard {
+    padding: 7px 8px;
+  }
+
+  .mobileHeadline {
+    font-size: clamp(1.06rem, 5.5vw, 1.25rem);
+  }
+
+  .mobileForm {
+    padding: 0.8rem;
+  }
+
+  .shell {
+    justify-content: flex-start;
+    gap: 0.45rem;
+    padding-top: max(0.35rem, env(safe-area-inset-top));
+    padding-bottom: max(0.6rem, env(safe-area-inset-bottom));
+  }
+
+  .showcase {
+    padding: 0.15rem 0.75rem 0;
+  }
+
+  .authPanel {
+    padding: 0.42rem 0.75rem 0.65rem;
+  }
+
+  .kpiCard {
+    flex-basis: min(170px, 68vw);
+  }
+
+  .headline {
+    font-size: clamp(1.12rem, 6.6vw, 1.38rem);
+  }
+
+  .submit {
+    min-height: 44px;
+  }
+}
+
+@media (max-height: 760px) and (max-width: 620px) {
+  .mobileShell {
+    gap: 0.62rem;
+  }
+
+  .mobileHero {
+    gap: 0.4rem;
+  }
+
+  .mobileLead {
+    display: none;
+  }
+
+  .mobileKpiRow {
+    display: none;
   }
 }

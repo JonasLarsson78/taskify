@@ -14,9 +14,19 @@ export default function LogoutPage() {
       router.replace('/login')
     }, 120)
 
-    try {
-      useStore.getState().logout()
-    } catch {}
+    void (async () => {
+      try {
+        // Inform the server to clear the HttpOnly cookie
+        await fetch('/api/logout', {
+          method: 'POST',
+          credentials: 'same-origin',
+        })
+      } catch {}
+
+      try {
+        useStore.getState().logout()
+      } catch {}
+    })()
 
     return () => clearTimeout(timeout)
   }, [router])

@@ -29,6 +29,10 @@ function applyTheme(theme: Theme) {
   const resolved = theme === 'system' ? getSystemTheme() : theme
   document.documentElement.setAttribute('data-theme', resolved)
   document.documentElement.style.colorScheme = resolved
+  // Sync theme to cookie for SSR
+  try {
+    document.cookie = `taskify-theme=${theme}; path=/; max-age=31536000`
+  } catch {}
 }
 
 export default function ThemeSync() {
@@ -36,14 +40,26 @@ export default function ThemeSync() {
     const theme = readStoredTheme()
     applyTheme(theme)
 
-    if (theme !== 'system') return
+    // Listen for theme changes in localStorage (multi-tab)
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === THEME_STORAGE_KEY) {
+        const newTheme = readStoredTheme()
+        applyTheme(newTheme)
+      }
+    }
+    window.addEventListener('storage', onStorage)
 
-    const media = window.matchMedia('(prefers-color-scheme: dark)')
-    const handler = () => applyTheme('system')
-    media.addEventListener('change', handler)
-
+    if (theme === 'system') {
+      const media = window.matchMedia('(prefers-color-scheme: dark)')
+      const handler = () => applyTheme('system')
+      media.addEventListener('change', handler)
+      return () => {
+        media.removeEventListener('change', handler)
+        window.removeEventListener('storage', onStorage)
+      }
+    }
     return () => {
-      media.removeEventListener('change', handler)
+      window.removeEventListener('storage', onStorage)
     }
   }, [])
 

@@ -29,11 +29,21 @@ export async function POST(request: Request) {
         { status: 401 }
       )
 
-    return NextResponse.json({
-      ok: true,
-      user: result.user,
-      token: result.token,
-    })
+    // Set an HttpOnly cookie so the server can detect authenticated users
+    const maxAge = 60 * 60 * 24 * 30 // 30 days
+    const secure = process.env.NODE_ENV === 'production' ? 'Secure; ' : ''
+    const cookieValue = `token=${encodeURIComponent(
+      result.token
+    )}; Path=/; HttpOnly; SameSite=Lax; ${secure}Max-Age=${maxAge}`
+
+    return NextResponse.json(
+      {
+        ok: true,
+        user: result.user,
+        token: result.token,
+      },
+      { headers: { 'Set-Cookie': cookieValue } }
+    )
   } catch (e) {
     console.error('POST /api/login error', e)
     return NextResponse.json({ error: 'Login failed' }, { status: 500 })
