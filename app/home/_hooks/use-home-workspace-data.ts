@@ -52,6 +52,12 @@ export default function useHomeWorkspaceData({
   const taskRequestIdRef = useRef(0)
   const taskCacheRef = useRef<Map<string, ApiTask[]>>(new Map())
   const taskCacheFetchedAtRef = useRef<Map<string, number>>(new Map())
+  const taskInFlightRef = useRef<Map<string, Promise<ApiTask[] | null>>>(
+    new Map()
+  )
+  const spacesInFlightRef = useRef<Map<number, Promise<Space[] | null>>>(
+    new Map()
+  )
   const taskRefreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
     null
   )
@@ -80,6 +86,12 @@ export default function useHomeWorkspaceData({
         setTasks(cached)
       }
 
+      const inFlight = taskInFlightRef.current.get(cacheKey)
+      if (inFlight && !options?.forceRefresh) {
+        await inFlight
+        return
+      }
+
       setTasksLoading(true)
 
       try {
@@ -88,20 +100,28 @@ export default function useHomeWorkspaceData({
               spaceId ? `&spaceId=${spaceId}` : ''
             }`
           : '/api/task'
-        const res = await fetch(url, { headers: buildAuthHeaders(token) })
+        const request = fetch(url, { headers: buildAuthHeaders(token) })
+          .then(async (res) => {
+            if (!res.ok) return null
+            const taskData = (await res.json()) as ApiTask[]
+            return Array.isArray(taskData) ? taskData : []
+          })
+          .finally(() => {
+            taskInFlightRef.current.delete(cacheKey)
+          })
+        taskInFlightRef.current.set(cacheKey, request)
+
+        const normalizedTasks = await request
 
         if (requestId !== taskRequestIdRef.current) return
 
-        if (!res.ok) {
-          const data = await res.json().catch(() => null)
+        if (!normalizedTasks) {
           setIntegrationError(
-            data?.error || 'Kunde inte ladda tasks for space.'
+            'Kunde inte ladda tasks for space.'
           )
           return
         }
 
-        const taskData = (await res.json()) as ApiTask[]
-        const normalizedTasks = Array.isArray(taskData) ? taskData : []
         taskCacheRef.current.set(cacheKey, normalizedTasks)
         taskCacheFetchedAtRef.current.set(cacheKey, Date.now())
         setTasks(normalizedTasks)
@@ -132,10 +152,28 @@ export default function useHomeWorkspaceData({
       }
 
       try {
-        const res = await fetch(`/api/space?organizationId=${organizationId}`, {
-          headers: buildAuthHeaders(token),
-        })
-        if (!res.ok) {
+        const inFlight = spacesInFlightRef.current.get(organizationId)
+        const request =
+          inFlight ||
+          fetch(`/api/space?organizationId=${organizationId}`, {
+            headers: buildAuthHeaders(token),
+          })
+            .then(async (res) => {
+              if (!res.ok) return null
+              const data = (await res.json()) as Space[]
+              return Array.isArray(data) ? data : []
+            })
+            .finally(() => {
+              spacesInFlightRef.current.delete(organizationId)
+            })
+
+        if (!inFlight) {
+          spacesInFlightRef.current.set(organizationId, request)
+        }
+
+        const nextSpaces = await request
+
+        if (!nextSpaces) {
           taskCacheRef.current.clear()
           taskCacheFetchedAtRef.current.clear()
           setSpaces([])
@@ -148,8 +186,6 @@ export default function useHomeWorkspaceData({
           return
         }
 
-        const data = (await res.json()) as Space[]
-        const nextSpaces = Array.isArray(data) ? data : []
         setSpaces(nextSpaces)
 
         const nextSelectedSpaceId = nextSpaces[0]?.id ?? null
@@ -220,14 +256,11 @@ export default function useHomeWorkspaceData({
 
         const verifiedUser = verifyResult.user
 
-        let activeOrganizationId: number | null = null
-
         if (verifiedUser?.id) {
           setUser(verifiedUser)
 
           if (verifiedUser.organizationId) {
             setSelectedOrganizationId(verifiedUser.organizationId)
-            activeOrganizationId = verifiedUser.organizationId
             const orgRes = await fetch(
               `/api/organization/${verifiedUser.organizationId}`,
               { headers: buildAuthHeaders(token) }
@@ -243,15 +276,9 @@ export default function useHomeWorkspaceData({
           }
         }
 
-        const [usersRes, organizationsRes, tasksRes] = await Promise.all([
+        const [usersRes, organizationsRes] = await Promise.all([
           fetch('/api/user', { headers: buildAuthHeaders(token) }),
           fetch('/api/organization', { headers: buildAuthHeaders(token) }),
-          fetch(
-            activeOrganizationId
-              ? `/api/task?organizationId=${activeOrganizationId}`
-              : '/api/task',
-            { headers: buildAuthHeaders(token) }
-          ),
         ])
 
         if (usersRes.ok) {
@@ -267,16 +294,6 @@ export default function useHomeWorkspaceData({
           )
         }
 
-        if (tasksRes.ok) {
-          const taskData = (await tasksRes.json()) as ApiTask[]
-          const normalizedTasks = Array.isArray(taskData) ? taskData : []
-          setTasks(normalizedTasks)
-
-          const initialCacheKey = `${activeOrganizationId ?? 'none'}:none`
-          taskCacheRef.current.set(initialCacheKey, normalizedTasks)
-          taskCacheFetchedAtRef.current.set(initialCacheKey, Date.now())
-        }
-
         if (verifiedUser?.organizationId) {
           await loadSpacesForOrganization(verifiedUser.organizationId)
         } else {
@@ -290,7 +307,7 @@ export default function useHomeWorkspaceData({
           )
         }
 
-        if (!usersRes.ok || !organizationsRes.ok || !tasksRes.ok) {
+        if (!usersRes.ok || !organizationsRes.ok) {
           setIntegrationError('Viss dashboard-data kunde inte laddas.')
         }
 
