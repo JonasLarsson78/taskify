@@ -9,7 +9,7 @@
     "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
-    "clear": "rm -rf .next",
+    "clear": "rm -rf .next && rm -rf node_modules && rm -rf package-lock.json && rm -rf dist && rm -rf prisma/generated",
     "dev:clean": "npm run clear && npm run dev"
   },
   "dependencies": {
@@ -36,6 +36,6 @@
     "eslint-config-next": "16.2.2",
     "prisma": "^7.6.0",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "5.9.3"
   }
 }

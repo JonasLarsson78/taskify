@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import Loader from '../components/loader/loader'
 import useStore from '../../lib/store'
 import { buildJsonAuthHeaders } from '../../lib/request-headers'
@@ -34,6 +34,7 @@ import styles from './page.module.css'
 export default function HomePage() {
   const router = useRouter()
   const pathname = usePathname()
+  const searchParams = useSearchParams()
   const token = useStore((s) => s.token)
   const rehydrated = useStore((s) => s.rehydrated)
   const user = useStore((s) => s.user)
@@ -306,17 +307,12 @@ export default function HomePage() {
   }, [sectionOptions, setSectionColors])
 
   useEffect(() => {
-    if (typeof window === 'undefined') return
-    const params = new URLSearchParams(window.location.search)
-    const next = parseViewMode(params.get('view'))
+    const next = parseViewMode(searchParams.get('view'))
     setViewMode((prev) => (prev === next ? prev : next))
-  }, [])
+  }, [searchParams])
 
   useEffect(() => {
-    if (typeof window === 'undefined') return
-
-    const params = new URLSearchParams(window.location.search)
-    const rawSpaceId = params.get('spaceId')
+    const rawSpaceId = searchParams.get('spaceId')
     const nextSpaceId = Number.parseInt(rawSpaceId || '', 10)
 
     if (!Number.isFinite(nextSpaceId)) return
@@ -326,6 +322,7 @@ export default function HomePage() {
 
     if (!nextSpace) return
 
+    setTasks([])
     setSelectedSpaceId(nextSpace.id)
     setSectionOptions(normalizeSectionList(nextSpace.taskSections))
     setSectionColors(
@@ -338,10 +335,12 @@ export default function HomePage() {
   }, [
     activeOrganizationId,
     loadTasksForSpace,
+    searchParams,
     selectedSpaceId,
     setSectionColors,
     setSectionOptions,
     setSelectedSpaceId,
+    setTasks,
     spaces,
   ])
 
@@ -400,7 +399,12 @@ export default function HomePage() {
     )
     .slice(0, 24)
   const normalizedSearch = searchQuery.trim().toLowerCase()
-  const filteredTasks = tasks.filter((task) => {
+  const tasksForSelectedSpace =
+    typeof selectedSpaceId === 'number'
+      ? tasks.filter((task) => task.spaceId === selectedSpaceId)
+      : tasks
+
+  const filteredTasks = tasksForSelectedSpace.filter((task) => {
     if (!normalizedSearch) return true
 
     const assigneeLabels = task.assigneeIds
@@ -427,8 +431,8 @@ export default function HomePage() {
     sectionOptions,
     sectionColors
   )
-  const dueThisWeek = countDueThisWeek(tasks)
-  const busiestSection = getBusiestSection(tasks)
+  const dueThisWeek = countDueThisWeek(tasksForSelectedSpace)
+  const busiestSection = getBusiestSection(tasksForSelectedSpace)
 
   const workspaceSub = organization?.city
     ? ui.home.workspaceSubConnected(organization.city)
@@ -455,6 +459,7 @@ export default function HomePage() {
         onOpenLogout={() => router.push('/logout')}
         canCreateSpace={canManageWorkspaceData}
         onSelectSpace={(space) => {
+          setTasks([])
           setSelectedSpaceId(space.id)
           setSectionOptions(normalizeSectionList(space.taskSections))
           setSectionColors(
