@@ -24,7 +24,7 @@
 @media screen and (-webkit-min-device-pixel-ratio: 2) and (max-device-width: 430px) {
   .createFieldFull[type='date'] {
     max-width: 100%;
-    width: calc(100% - 32px);
+    width: calc(100% - 24px);
     box-sizing: border-box;
   }
 }
