@@ -22,6 +22,8 @@ type UseHomeWorkspaceDataParams = {
   redirectToLogin: () => void
 }
 
+const TASK_CACHE_TTL_MS = 20_000
+
 export default function useHomeWorkspaceData({
   token,
   rehydrated,
@@ -49,14 +51,29 @@ export default function useHomeWorkspaceData({
   const realtimeSubscribedAtRef = useRef(0)
   const taskRequestIdRef = useRef(0)
   const taskCacheRef = useRef<Map<string, ApiTask[]>>(new Map())
+  const taskCacheFetchedAtRef = useRef<Map<string, number>>(new Map())
   const taskRefreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
     null
   )
 
   const loadTasksForSpace = useCallback(
-    async (organizationId: number | null, spaceId: number | null) => {
+    async (
+      organizationId: number | null,
+      spaceId: number | null,
+      options?: { forceRefresh?: boolean }
+    ) => {
       const cacheKey = `${organizationId ?? 'none'}:${spaceId ?? 'none'}`
       const cached = taskCacheRef.current.get(cacheKey)
+      const cachedAt = taskCacheFetchedAtRef.current.get(cacheKey) ?? 0
+      const now = Date.now()
+      const isFresh = cachedAt > 0 && now - cachedAt < TASK_CACHE_TTL_MS
+
+      if (cached && isFresh && !options?.forceRefresh) {
+        setTasks(cached)
+        setTasksLoading(false)
+        return
+      }
+
       const requestId = ++taskRequestIdRef.current
 
       if (cached) {
@@ -86,6 +103,7 @@ export default function useHomeWorkspaceData({
         const taskData = (await res.json()) as ApiTask[]
         const normalizedTasks = Array.isArray(taskData) ? taskData : []
         taskCacheRef.current.set(cacheKey, normalizedTasks)
+        taskCacheFetchedAtRef.current.set(cacheKey, Date.now())
         setTasks(normalizedTasks)
       } catch (error) {
         if (requestId !== taskRequestIdRef.current) return
@@ -104,6 +122,7 @@ export default function useHomeWorkspaceData({
     async (organizationId: number | null) => {
       if (!organizationId) {
         taskCacheRef.current.clear()
+        taskCacheFetchedAtRef.current.clear()
         setSpaces([])
         setSelectedSpaceId(null)
         setSectionOptions([...DEFAULT_TASK_SECTIONS])
@@ -117,6 +136,8 @@ export default function useHomeWorkspaceData({
           headers: buildAuthHeaders(token),
         })
         if (!res.ok) {
+          taskCacheRef.current.clear()
+          taskCacheFetchedAtRef.current.clear()
           setSpaces([])
           setSelectedSpaceId(null)
           setSectionOptions([...DEFAULT_TASK_SECTIONS])
@@ -148,6 +169,8 @@ export default function useHomeWorkspaceData({
         await loadTasksForSpace(organizationId, nextSelectedSpaceId)
       } catch (error) {
         console.error('load spaces for organization error', error)
+        taskCacheRef.current.clear()
+        taskCacheFetchedAtRef.current.clear()
         setSpaces([])
         setSelectedSpaceId(null)
         setSectionOptions([...DEFAULT_TASK_SECTIONS])
@@ -169,7 +192,9 @@ export default function useHomeWorkspaceData({
       // Coalesce rapid realtime task events into a single fetch.
       taskRefreshTimeoutRef.current = setTimeout(() => {
         taskRefreshTimeoutRef.current = null
-        void loadTasksForSpace(organizationId, spaceId)
+        void loadTasksForSpace(organizationId, spaceId, {
+          forceRefresh: true,
+        })
       }, 350)
     },
     [loadTasksForSpace]
@@ -249,12 +274,14 @@ export default function useHomeWorkspaceData({
 
           const initialCacheKey = `${activeOrganizationId ?? 'none'}:none`
           taskCacheRef.current.set(initialCacheKey, normalizedTasks)
+          taskCacheFetchedAtRef.current.set(initialCacheKey, Date.now())
         }
 
         if (verifiedUser?.organizationId) {
           await loadSpacesForOrganization(verifiedUser.organizationId)
         } else {
           taskCacheRef.current.clear()
+          taskCacheFetchedAtRef.current.clear()
           setSpaces([])
           setSelectedSpaceId(null)
           setSectionOptions([...DEFAULT_TASK_SECTIONS])

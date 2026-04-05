@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { verifySessionCached } from '../../../lib/auth/session-client'
 import {
   buildAuthHeaders,
@@ -55,6 +55,9 @@ export default function useSettingsPage({
   const [newAdminUserRole, setNewAdminUserRole] = useState<
     'admin' | 'user' | 'guest'
   >('user')
+  const adminReloadTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null
+  )
 
   const reloadAdminData = useCallback(
     async (organizationId: number) => {
@@ -201,6 +204,17 @@ export default function useSettingsPage({
     const organizationId = currentUser?.organizationId
     if (!token || !organizationId) return
 
+    const queueAdminReload = () => {
+      if (adminReloadTimeoutRef.current) {
+        clearTimeout(adminReloadTimeoutRef.current)
+      }
+
+      adminReloadTimeoutRef.current = setTimeout(() => {
+        adminReloadTimeoutRef.current = null
+        void reloadAdminData(organizationId)
+      }, 350)
+    }
+
     return subscribeToWorkspaceEvents({
       token,
       organizationId,
@@ -212,7 +226,7 @@ export default function useSettingsPage({
           event.type === 'user.changed' ||
           event.type === 'organization.changed'
         ) {
-          void reloadAdminData(organizationId)
+          queueAdminReload()
         }
       },
       onError: () => {
@@ -226,6 +240,15 @@ export default function useSettingsPage({
     selectedMemberUserId,
     reloadAdminData,
   ])
+
+  useEffect(() => {
+    return () => {
+      if (adminReloadTimeoutRef.current) {
+        clearTimeout(adminReloadTimeoutRef.current)
+        adminReloadTimeoutRef.current = null
+      }
+    }
+  }, [])
 
   useEffect(() => {
     if (!organization?.name) return

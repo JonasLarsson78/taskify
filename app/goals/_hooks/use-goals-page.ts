@@ -15,6 +15,8 @@ type UseGoalsPageParams = {
   redirectToHome: () => void
 }
 
+const GOALS_DATA_TTL_MS = 20_000
+
 export default function useGoalsPage({
   token,
   rehydrated,
@@ -42,11 +44,18 @@ export default function useGoalsPage({
   const [taskSearchQuery, setTaskSearchQuery] = useState('')
   const realtimeSubscribedAtRef = useRef(0)
   const reloadTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const dataFetchedAtRef = useRef<Record<number, number>>({})
 
   const canWrite = canWriteTasks(user?.role || 'guest')
 
   const reloadGoalsData = useCallback(
-    async (organizationId: number) => {
+    async (organizationId: number, options?: { forceRefresh?: boolean }) => {
+      const lastFetchedAt = dataFetchedAtRef.current[organizationId] ?? 0
+      const isFresh = Date.now() - lastFetchedAt < GOALS_DATA_TTL_MS
+      if (isFresh && !options?.forceRefresh) {
+        return
+      }
+
       const [goalsResponse, tasksResponse, spacesResponse] = await Promise.all([
         fetch(`/api/goal?organizationId=${organizationId}`, {
           headers: buildAuthHeaders(token),
@@ -72,6 +81,7 @@ export default function useGoalsPage({
       setGoals(Array.isArray(goalsData) ? goalsData : [])
       setTasks(Array.isArray(tasksData) ? tasksData : [])
       setSpaces(Array.isArray(spacesData) ? spacesData : [])
+      dataFetchedAtRef.current[organizationId] = Date.now()
     },
     [token]
   )
@@ -136,7 +146,7 @@ export default function useGoalsPage({
 
       reloadTimeoutRef.current = setTimeout(() => {
         reloadTimeoutRef.current = null
-        void reloadGoalsData(organizationId)
+        void reloadGoalsData(organizationId, { forceRefresh: true })
       }, 350)
     }
 
@@ -255,6 +265,7 @@ export default function useGoalsPage({
       : []
 
     setGoals(Array.isArray(goalsData) ? goalsData : [])
+    dataFetchedAtRef.current[user.organizationId] = Date.now()
   }
 
   async function handleSaveGoal() {
