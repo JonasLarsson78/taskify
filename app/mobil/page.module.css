@@ -1,3 +1,9 @@
+/* iOS Safari fix: gör input[type=date] lika bred som övriga fält */
+.mobileModalCard input[type="date"].createFieldFull {
+  max-width: 100%;
+  width: 100%;
+  box-sizing: border-box;
+}
 .shell {
   min-height: 100vh;
   display: flex;
