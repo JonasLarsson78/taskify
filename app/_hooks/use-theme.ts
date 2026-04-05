@@ -21,22 +21,25 @@ function applyTheme(theme: Theme) {
 }
 
 export default function useTheme() {
-  const [theme, setTheme] = useState<Theme>(() => {
-    if (typeof window === 'undefined') return 'system'
+  const [theme, setTheme] = useState<Theme>('system')
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
 
     try {
       const saved = window.localStorage.getItem(THEME_STORAGE_KEY)
       if (saved === 'light' || saved === 'dark' || saved === 'system') {
-        return saved
+        setTheme(saved)
       }
     } catch {
-      return 'system'
+      // ignore storage errors and keep system theme
     }
-
-    return 'system'
-  })
+  }, [])
 
   useEffect(() => {
+    if (!mounted) return
+
     applyTheme(theme)
 
     if (theme !== 'system') return
@@ -48,11 +51,11 @@ export default function useTheme() {
     return () => {
       media.removeEventListener('change', handler)
     }
-  }, [theme])
+  }, [theme, mounted])
 
   const resolvedTheme = useMemo(
-    () => (theme === 'system' ? getSystemTheme() : theme),
-    [theme]
+    () => (theme === 'system' ? (mounted ? getSystemTheme() : 'light') : theme),
+    [theme, mounted]
   )
 
   function updateTheme(nextTheme: Theme) {
@@ -69,6 +72,7 @@ export default function useTheme() {
   return {
     theme,
     resolvedTheme,
+    mounted,
     setTheme: updateTheme,
     toggleTheme,
   }

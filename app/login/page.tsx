@@ -16,7 +16,8 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const user = useStore((state) => state.user)
-  const ui = getContent(user?.preferredLanguage)
+  const rehydrated = useStore((state) => state.rehydrated)
+  const ui = getContent(rehydrated ? user?.preferredLanguage : 'sv')
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
