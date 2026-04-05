@@ -11,13 +11,30 @@ export default function Home() {
   const token = useStore((s) => s.token)
   const rehydrated = useStore((s) => s.rehydrated)
 
+  function isMobileOrStandaloneApp() {
+    if (typeof window === 'undefined') return false
+
+    const mobileUserAgent =
+      /android|iphone|ipad|ipod|opera mini|iemobile|mobile/i.test(
+        navigator.userAgent
+      )
+    const standaloneByMedia = window.matchMedia(
+      '(display-mode: standalone)'
+    ).matches
+    const standaloneBySafari =
+      'standalone' in navigator &&
+      Boolean((navigator as Navigator & { standalone?: boolean }).standalone)
+
+    return mobileUserAgent || standaloneByMedia || standaloneBySafari
+  }
+
   useEffect(() => {
     if (!rehydrated) return
     try {
       if (!token) {
         router.replace('/login')
       } else {
-        router.replace('/home')
+        router.replace(isMobileOrStandaloneApp() ? '/mobil' : '/home')
       }
     } catch {
       router.replace('/login')

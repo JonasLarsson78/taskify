@@ -1,8 +1,12 @@
 {
+  "id": "/",
   "name": "Taskify",
   "short_name": "Taskify",
-  "start_url": "/mobil",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "orientation": "portrait",
+  "prefer_related_applications": false,
   "background_color": "#18192a",
   "theme_color": "#18192a",
   "icons": [
