@@ -32,6 +32,7 @@ export default function useHomeWorkspaceData({
   redirectToLogin,
 }: UseHomeWorkspaceDataParams) {
   const [checking, setChecking] = useState(true)
+  const [tasksLoading, setTasksLoading] = useState(false)
   const [users, setUsers] = useState<StoreUser[]>([])
   const [organizations, setOrganizations] = useState<Organization[]>([])
   const [spaces, setSpaces] = useState<Space[]>([])
@@ -46,12 +47,24 @@ export default function useHomeWorkspaceData({
     () => normalizeSectionColorMap(null, DEFAULT_TASK_SECTIONS)
   )
   const realtimeSubscribedAtRef = useRef(0)
+  const taskRequestIdRef = useRef(0)
+  const taskCacheRef = useRef<Map<string, ApiTask[]>>(new Map())
   const taskRefreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
     null
   )
 
   const loadTasksForSpace = useCallback(
     async (organizationId: number | null, spaceId: number | null) => {
+      const cacheKey = `${organizationId ?? 'none'}:${spaceId ?? 'none'}`
+      const cached = taskCacheRef.current.get(cacheKey)
+      const requestId = ++taskRequestIdRef.current
+
+      if (cached) {
+        setTasks(cached)
+      }
+
+      setTasksLoading(true)
+
       try {
         const url = organizationId
           ? `/api/task?organizationId=${organizationId}${
@@ -59,6 +72,8 @@ export default function useHomeWorkspaceData({
             }`
           : '/api/task'
         const res = await fetch(url, { headers: buildAuthHeaders(token) })
+
+        if (requestId !== taskRequestIdRef.current) return
 
         if (!res.ok) {
           const data = await res.json().catch(() => null)
@@ -69,10 +84,17 @@ export default function useHomeWorkspaceData({
         }
 
         const taskData = (await res.json()) as ApiTask[]
-        setTasks(Array.isArray(taskData) ? taskData : [])
+        const normalizedTasks = Array.isArray(taskData) ? taskData : []
+        taskCacheRef.current.set(cacheKey, normalizedTasks)
+        setTasks(normalizedTasks)
       } catch (error) {
+        if (requestId !== taskRequestIdRef.current) return
         console.error('load tasks for space error', error)
         setIntegrationError('Kunde inte ladda tasks for space.')
+      } finally {
+        if (requestId === taskRequestIdRef.current) {
+          setTasksLoading(false)
+        }
       }
     },
     [token, setIntegrationError, setTasks]
@@ -81,10 +103,12 @@ export default function useHomeWorkspaceData({
   const loadSpacesForOrganization = useCallback(
     async (organizationId: number | null) => {
       if (!organizationId) {
+        taskCacheRef.current.clear()
         setSpaces([])
         setSelectedSpaceId(null)
         setSectionOptions([...DEFAULT_TASK_SECTIONS])
         setSectionColors(normalizeSectionColorMap(null, DEFAULT_TASK_SECTIONS))
+        setTasksLoading(false)
         return
       }
 
@@ -99,6 +123,7 @@ export default function useHomeWorkspaceData({
           setSectionColors(
             normalizeSectionColorMap(null, DEFAULT_TASK_SECTIONS)
           )
+          setTasksLoading(false)
           return
         }
 
@@ -127,6 +152,7 @@ export default function useHomeWorkspaceData({
         setSelectedSpaceId(null)
         setSectionOptions([...DEFAULT_TASK_SECTIONS])
         setSectionColors(normalizeSectionColorMap(null, DEFAULT_TASK_SECTIONS))
+        setTasksLoading(false)
       }
     },
     [token, loadTasksForSpace]
@@ -218,12 +244,17 @@ export default function useHomeWorkspaceData({
 
         if (tasksRes.ok) {
           const taskData = (await tasksRes.json()) as ApiTask[]
-          setTasks(Array.isArray(taskData) ? taskData : [])
+          const normalizedTasks = Array.isArray(taskData) ? taskData : []
+          setTasks(normalizedTasks)
+
+          const initialCacheKey = `${activeOrganizationId ?? 'none'}:none`
+          taskCacheRef.current.set(initialCacheKey, normalizedTasks)
         }
 
         if (verifiedUser?.organizationId) {
           await loadSpacesForOrganization(verifiedUser.organizationId)
         } else {
+          taskCacheRef.current.clear()
           setSpaces([])
           setSelectedSpaceId(null)
           setSectionOptions([...DEFAULT_TASK_SECTIONS])
@@ -314,6 +345,7 @@ export default function useHomeWorkspaceData({
 
   return {
     checking,
+    tasksLoading,
     users,
     organizations,
     spaces,

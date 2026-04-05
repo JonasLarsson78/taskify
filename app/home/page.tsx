@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import Loader from '../components/loader/loader'
 import useStore from '../../lib/store'
@@ -45,6 +45,7 @@ export default function HomePage() {
   const [integrationError, setIntegrationError] = useState<string | null>(null)
   const {
     checking,
+    tasksLoading,
     users,
     organizations,
     spaces,
@@ -167,35 +168,45 @@ export default function HomePage() {
     return `${pathname}?${params.toString()}`
   }
 
-  function applyUrlViewState(nextSearch: string) {
+  const applyUrlViewState = useCallback((nextSearch: string) => {
     const params = new URLSearchParams(nextSearch)
 
     const nextView = parseViewMode(params.get('view'))
     setViewMode((prev) => (prev === nextView ? prev : nextView))
-  }
+  }, [])
 
-  function applyUrlSpaceState(nextSearch: string) {
-    const params = new URLSearchParams(nextSearch)
-    const rawSpaceId = params.get('spaceId')
-    const nextSpaceId = Number.parseInt(rawSpaceId || '', 10)
+  const applyUrlSpaceState = useCallback(
+    (nextSearch: string) => {
+      const params = new URLSearchParams(nextSearch)
+      const rawSpaceId = params.get('spaceId')
+      const nextSpaceId = Number.parseInt(rawSpaceId || '', 10)
 
-    if (!Number.isFinite(nextSpaceId)) return
-    if (nextSpaceId === selectedSpaceId) return
+      if (!Number.isFinite(nextSpaceId)) return
+      if (nextSpaceId === selectedSpaceId) return
 
-    const nextSpace = spaces.find((space) => space.id === nextSpaceId)
-    if (!nextSpace) return
+      const nextSpace = spaces.find((space) => space.id === nextSpaceId)
+      if (!nextSpace) return
 
-    setTasks([])
-    setSelectedSpaceId(nextSpace.id)
-    setSectionOptions(normalizeSectionList(nextSpace.taskSections))
-    setSectionColors(
-      normalizeSectionColorMap(
-        nextSpace.taskSectionColors,
-        nextSpace.taskSections
+      setSelectedSpaceId(nextSpace.id)
+      setSectionOptions(normalizeSectionList(nextSpace.taskSections))
+      setSectionColors(
+        normalizeSectionColorMap(
+          nextSpace.taskSectionColors,
+          nextSpace.taskSections
+        )
       )
-    )
-    void loadTasksForSpace(activeOrganizationId, nextSpace.id)
-  }
+      void loadTasksForSpace(activeOrganizationId, nextSpace.id)
+    },
+    [
+      activeOrganizationId,
+      loadTasksForSpace,
+      selectedSpaceId,
+      setSectionColors,
+      setSectionOptions,
+      setSelectedSpaceId,
+      spaces,
+    ]
+  )
 
   async function saveSectionsForOrganization() {
     if (user?.role !== 'admin') {
@@ -338,21 +349,13 @@ export default function HomePage() {
   useEffect(() => {
     if (typeof window === 'undefined') return
     applyUrlViewState(window.location.search)
-  }, [])
+  }, [applyUrlViewState])
 
   useEffect(() => {
     if (typeof window === 'undefined') return
     if (spaces.length === 0) return
     applyUrlSpaceState(window.location.search)
-  }, [
-    activeOrganizationId,
-    loadTasksForSpace,
-    setSectionColors,
-    setSectionOptions,
-    setSelectedSpaceId,
-    setTasks,
-    spaces,
-  ])
+  }, [applyUrlSpaceState, spaces.length])
 
   if (checking) {
     return (
@@ -469,7 +472,6 @@ export default function HomePage() {
         onOpenLogout={() => router.push('/logout')}
         canCreateSpace={canManageWorkspaceData}
         onSelectSpace={(space) => {
-          setTasks([])
           setSelectedSpaceId(space.id)
           setSectionOptions(normalizeSectionList(space.taskSections))
           setSectionColors(
@@ -515,7 +517,6 @@ export default function HomePage() {
                 created.taskSections
               )
             )
-            setTasks([])
           })()
         }}
       />
@@ -682,6 +683,12 @@ export default function HomePage() {
                 searchQuery.trim()
               )}
             </div>
+          </section>
+        ) : null}
+
+        {tasksLoading && !integrationError ? (
+          <section className={styles.board}>
+            <div className={styles.taskMeta}>{ui.home.loading}</div>
           </section>
         ) : null}
 
