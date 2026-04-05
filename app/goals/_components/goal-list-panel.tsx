@@ -1,4 +1,3 @@
-import styles from '../../home/page.module.css'
 import panelStyles from '../../settings/_styles/settings-panels.module.css'
 import type { Goal } from '../model'
 import type { AppContent } from '../../../lib/content'
