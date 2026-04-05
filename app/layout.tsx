@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Manrope, Space_Grotesk } from 'next/font/google'
+import ThemeSync from './_components/theme-sync'
 import './globals.css'
 
 const manrope = Manrope({
@@ -32,7 +33,10 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${manrope.variable} ${spaceGrotesk.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <ThemeSync />
+        {children}
+      </body>
     </html>
   )
 }
