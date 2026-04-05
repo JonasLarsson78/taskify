@@ -27,6 +27,23 @@ export default function LoginPage() {
   const rehydrated = useStore((state) => state.rehydrated)
   const ui = getContent(rehydrated ? user?.preferredLanguage : 'sv')
 
+  function isMobileOrStandaloneApp() {
+    if (typeof window === 'undefined') return false
+
+    const mobileUserAgent =
+      /android|iphone|ipad|ipod|opera mini|iemobile|mobile/i.test(
+        navigator.userAgent
+      )
+    const standaloneByMedia = window.matchMedia(
+      '(display-mode: standalone)'
+    ).matches
+    const standaloneBySafari =
+      'standalone' in navigator &&
+      Boolean((navigator as Navigator & { standalone?: boolean }).standalone)
+
+    return mobileUserAgent || standaloneByMedia || standaloneBySafari
+  }
+
   useEffect(() => {
     let cancelled = false
 
@@ -101,13 +118,9 @@ export default function LoginPage() {
         } catch {}
       }
 
-      // Redirect to /mobil on mobile, otherwise /home
-      const isMobile =
-        typeof window !== 'undefined' &&
-        /android|iphone|ipad|ipod|opera mini|iemobile|mobile/i.test(
-          navigator.userAgent
-        )
-      router.push(isMobile ? '/mobil' : '/home')
+      // Keep mobile + standalone users inside the mobile app shell.
+      const targetRoute = isMobileOrStandaloneApp() ? '/mobil' : '/home'
+      router.replace(targetRoute)
     } catch {
       setError(ui.login.networkError)
     } finally {
