@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useSyncExternalStore } from 'react'
 
 type Theme = 'light' | 'dark' | 'system'
 
@@ -20,25 +20,38 @@ function applyTheme(theme: Theme) {
   document.documentElement.style.colorScheme = resolved
 }
 
-export default function useTheme() {
-  const [theme, setTheme] = useState<Theme>('system')
-  const [mounted, setMounted] = useState(false)
+function readStoredTheme(): Theme {
+  if (typeof window === 'undefined') return 'system'
 
-  useEffect(() => {
-    setMounted(true)
-
-    try {
-      const saved = window.localStorage.getItem(THEME_STORAGE_KEY)
-      if (saved === 'light' || saved === 'dark' || saved === 'system') {
-        setTheme(saved)
-      }
-    } catch {
-      // ignore storage errors and keep system theme
+  try {
+    const saved = window.localStorage.getItem(THEME_STORAGE_KEY)
+    if (saved === 'light' || saved === 'dark' || saved === 'system') {
+      return saved
     }
-  }, [])
+  } catch {
+    // ignore storage errors and fallback to system
+  }
+
+  return 'system'
+}
+
+export default function useTheme() {
+  const [themeOverride, setThemeOverride] = useState<Theme>('system')
+  const isClient = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  )
+
+  const storedTheme = useMemo(
+    () => (isClient ? readStoredTheme() : 'system'),
+    [isClient]
+  )
+
+  const theme = themeOverride === 'system' ? storedTheme : themeOverride
 
   useEffect(() => {
-    if (!mounted) return
+    if (!isClient) return
 
     applyTheme(theme)
 
@@ -51,15 +64,15 @@ export default function useTheme() {
     return () => {
       media.removeEventListener('change', handler)
     }
-  }, [theme, mounted])
+  }, [theme, isClient])
 
   const resolvedTheme = useMemo(
-    () => (theme === 'system' ? (mounted ? getSystemTheme() : 'light') : theme),
-    [theme, mounted]
+    () => (theme === 'system' ? (isClient ? getSystemTheme() : 'light') : theme),
+    [theme, isClient]
   )
 
   function updateTheme(nextTheme: Theme) {
-    setTheme(nextTheme)
+    setThemeOverride(nextTheme)
     try {
       window.localStorage.setItem(THEME_STORAGE_KEY, nextTheme)
     } catch {}
@@ -72,7 +85,6 @@ export default function useTheme() {
   return {
     theme,
     resolvedTheme,
-    mounted,
     setTheme: updateTheme,
     toggleTheme,
   }
