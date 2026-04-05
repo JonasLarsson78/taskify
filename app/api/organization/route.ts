@@ -13,7 +13,9 @@ export async function GET(request: Request) {
     const scopedOrganizations =
       auth.user.organizationId === null && canManageWorkspace(auth.user.role)
         ? organizations
-        : organizations.filter((org) => org.id === auth.user.organizationId)
+        : organizations.filter(
+            (org: { id: number }) => org.id === auth.user.organizationId
+          )
 
     return NextResponse.json(scopedOrganizations)
   } catch (e) {

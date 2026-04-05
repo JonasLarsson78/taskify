@@ -17,7 +17,10 @@ export async function listUsersByOrganization(organizationId: number | null) {
     return users
   }
 
-  return users.filter((user) => user.organizationId === organizationId)
+  return users.filter(
+    (user: { organizationId: number | null }) =>
+      user.organizationId === organizationId
+  )
 }
 
 export async function ensureOrganizationExists(organizationId: number | null) {

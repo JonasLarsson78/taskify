@@ -21,10 +21,12 @@ export async function GET(request: Request) {
         : await listUsersByOrganization(auth.user.organizationId)
       : await listUsersByOrganization(auth.user.organizationId)
 
-    const safeUsers = users.map(({ password: _password, ...safe }) => {
-      void _password
-      return safe
-    })
+    const safeUsers = users.map(
+      ({ password: _password, ...safe }: { password?: unknown }) => {
+        void _password
+        return safe
+      }
+    )
     return NextResponse.json(safeUsers)
   } catch (e) {
     console.error('GET /api/user error', e)
