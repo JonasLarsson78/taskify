@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import Loader from '../components/loader/loader'
 import useStore from '../../lib/store'
@@ -79,6 +79,7 @@ export default function HomePage() {
   )
   const [viewMode, setViewMode] = useState<ViewMode>('list')
   const [searchQuery, setSearchQuery] = useState('')
+  const selectedSpaceIdRef = useRef<number | null>(null)
 
   const activeOrganizationId =
     selectedOrganizationId ?? organization?.id ?? user?.organizationId ?? null
@@ -182,7 +183,7 @@ export default function HomePage() {
       const nextSpaceId = Number.parseInt(rawSpaceId || '', 10)
 
       if (!Number.isFinite(nextSpaceId)) return
-      if (nextSpaceId === selectedSpaceId) return
+      if (nextSpaceId === selectedSpaceIdRef.current) return
 
       const nextSpace = spaces.find((space) => space.id === nextSpaceId)
       if (!nextSpace) return
@@ -200,7 +201,6 @@ export default function HomePage() {
     [
       activeOrganizationId,
       loadTasksForSpace,
-      selectedSpaceId,
       setSectionColors,
       setSectionOptions,
       setSelectedSpaceId,
@@ -345,6 +345,10 @@ export default function HomePage() {
   useEffect(() => {
     setSectionColors((prev) => normalizeSectionColorMap(prev, sectionOptions))
   }, [sectionOptions, setSectionColors])
+
+  useEffect(() => {
+    selectedSpaceIdRef.current = selectedSpaceId
+  }, [selectedSpaceId])
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -686,12 +690,6 @@ export default function HomePage() {
           </section>
         ) : null}
 
-        {tasksLoading && !integrationError ? (
-          <section className={styles.board}>
-            <div className={styles.taskMeta}>{ui.home.loading}</div>
-          </section>
-        ) : null}
-
         <HomeTaskViews
           viewMode={viewMode}
           groups={boardGroups}
@@ -703,6 +701,10 @@ export default function HomePage() {
           onAssigneesChange={handleAssigneesChange}
           onOpenTask={handleOpenTask}
         />
+
+        {tasksLoading && !integrationError ? (
+          <Loader message={ui.home.loading} />
+        ) : null}
       </section>
     </main>
   )
