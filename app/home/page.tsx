@@ -392,8 +392,12 @@ export default function HomePage() {
             <div className={styles.workspaceLoadingHeader}>
               <span className={styles.workspaceLoadingBadge} aria-hidden />
               <div>
-                <p className={styles.workspaceLoadingKicker}>Taskify Workspace</p>
-                <h1 className={styles.workspaceLoadingTitle}>{ui.home.loading}</h1>
+                <p className={styles.workspaceLoadingKicker}>
+                  Taskify Workspace
+                </p>
+                <h1 className={styles.workspaceLoadingTitle}>
+                  {ui.home.loading}
+                </h1>
               </div>
             </div>
 

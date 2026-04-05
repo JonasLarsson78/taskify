@@ -184,7 +184,9 @@ export default function LogPage() {
               <span className={styles.workspaceLoadingBadge} aria-hidden />
               <div>
                 <p className={styles.workspaceLoadingKicker}>Taskify Log</p>
-                <h1 className={styles.workspaceLoadingTitle}>{ui.log.loading}</h1>
+                <h1 className={styles.workspaceLoadingTitle}>
+                  {ui.log.loading}
+                </h1>
               </div>
             </div>
 

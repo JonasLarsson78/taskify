@@ -99,7 +99,9 @@ export default function ArchivePage() {
               <span className={styles.workspaceLoadingBadge} aria-hidden />
               <div>
                 <p className={styles.workspaceLoadingKicker}>Taskify Archive</p>
-                <h1 className={styles.workspaceLoadingTitle}>{ui.archive.loading}</h1>
+                <h1 className={styles.workspaceLoadingTitle}>
+                  {ui.archive.loading}
+                </h1>
               </div>
             </div>
 

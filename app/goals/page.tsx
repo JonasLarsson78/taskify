@@ -94,7 +94,9 @@ export default function GoalsPage() {
               <span className={styles.workspaceLoadingBadge} aria-hidden />
               <div>
                 <p className={styles.workspaceLoadingKicker}>Taskify Goals</p>
-                <h1 className={styles.workspaceLoadingTitle}>{ui.goals.loading}</h1>
+                <h1 className={styles.workspaceLoadingTitle}>
+                  {ui.goals.loading}
+                </h1>
               </div>
             </div>
 

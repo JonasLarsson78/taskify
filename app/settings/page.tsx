@@ -109,8 +109,12 @@ export default function SettingsPage() {
             <div className={styles.workspaceLoadingHeader}>
               <span className={styles.workspaceLoadingBadge} aria-hidden />
               <div>
-                <p className={styles.workspaceLoadingKicker}>Taskify Settings</p>
-                <h1 className={styles.workspaceLoadingTitle}>{ui.settings.loading}</h1>
+                <p className={styles.workspaceLoadingKicker}>
+                  Taskify Settings
+                </p>
+                <h1 className={styles.workspaceLoadingTitle}>
+                  {ui.settings.loading}
+                </h1>
               </div>
             </div>
 
