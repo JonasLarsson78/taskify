@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import styles from './page.module.css'
 import useStore from '../../lib/store'
@@ -9,15 +9,56 @@ import { getContent } from '../../lib/content'
 import LoginShowcase from './_components/login-showcase'
 import LoginForm from './_components/login-form'
 
+type LoginMetrics = {
+  activeProjects: number
+  tasksClosed: number
+  leadTimeDays: number | null
+}
+
 export default function LoginPage() {
   const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [metrics, setMetrics] = useState<LoginMetrics | null>(null)
   const user = useStore((state) => state.user)
   const rehydrated = useStore((state) => state.rehydrated)
   const ui = getContent(rehydrated ? user?.preferredLanguage : 'sv')
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadMetrics() {
+      try {
+        const res = await fetch('/api/login-metrics', { cache: 'no-store' })
+        if (!res.ok) return
+
+        const data = (await res.json()) as Partial<LoginMetrics>
+        if (cancelled) return
+
+        setMetrics({
+          activeProjects:
+            typeof data.activeProjects === 'number' ? data.activeProjects : 0,
+          tasksClosed: typeof data.tasksClosed === 'number' ? data.tasksClosed : 0,
+          leadTimeDays:
+            typeof data.leadTimeDays === 'number' ? data.leadTimeDays : null,
+        })
+      } catch {
+        // ignore metrics fetch errors on login page
+      }
+    }
+
+    void loadMetrics()
+    const intervalId = window.setInterval(() => {
+      void loadMetrics()
+    }, 45000)
+
+    return () => {
+      cancelled = true
+      window.clearInterval(intervalId)
+    }
+  }, [])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -68,7 +109,7 @@ export default function LoginPage() {
 
   return (
     <main className={styles.shell}>
-      <LoginShowcase content={ui.login} />
+      <LoginShowcase content={ui.login} metrics={metrics} />
       <LoginForm
         email={email}
         password={password}
