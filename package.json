@@ -9,6 +9,7 @@
     "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
+    "check": "npm run lint && npm run build",
     "clear": "rm -rf .next && rm -rf node_modules && rm -rf package-lock.json && rm -rf dist && rm -rf prisma/generated && npm install",
     "dev:clean": "npm run clear && npm run dev"
   },

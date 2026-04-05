@@ -11,6 +11,15 @@
 .createFieldFull {
   flex: 1 1 100%;
   min-width: 0;
+  /* Fix for iOS date input being wider than other fields */
+  max-width: 100%;
+}
+
+/* Extra fix for iOS Safari: target date input specifically */
+.createFieldFull[type='date'] {
+  max-width: 100%;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .createColorField {
