@@ -4,8 +4,8 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import useStore from '../../lib/store'
 import { getContent } from '../../lib/content'
-import CreateTaskModal from '../home/_components/create-task-modal'
-import EditTaskModal from '../home/_components/edit-task-modal'
+import MobileEditTaskModal from './_components/mobile-edit-task-modal'
+import MobileCreateTaskModal from './_components/mobile-create-task-modal'
 import useHomeWorkspaceData from '../home/_hooks/use-home-workspace-data'
 import useHomeTaskActions from '../home/_hooks/use-home-task-actions'
 import {
@@ -216,96 +216,94 @@ export default function MobilPage() {
           {personInitials}
         </div>
       </header>
-
-      {/* Search */}
-      <div className={styles.searchWrap}>
-        <input
-          className={styles.searchInput}
-          type="search"
-          placeholder={ui.home.quickActions.searchPlaceholder}
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
-      </div>
-
-      {/* Stats strip */}
-      <div className={styles.statsStrip}>
-        <div className={styles.statChip}>
-          <span className={styles.statValue}>{tasks.length}</span>
-          <span className={styles.statLabel}>{ui.home.overview.openTasks}</span>
+      <div className={styles.mainContent}>
+        {/* Search */}
+        <div className={styles.searchWrap}>
+          <input
+            className={styles.searchInput}
+            type="search"
+            placeholder={ui.home.quickActions.searchPlaceholder}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
         </div>
-        <div className={styles.statChip}>
-          <span className={styles.statValue}>{dueThisWeek}</span>
-          <span className={styles.statLabel}>
-            {ui.home.overview.dueThisWeek}
-          </span>
-        </div>
-        <div className={styles.statChip}>
-          <span className={styles.statValue}>{users.length}</span>
-          <span className={styles.statLabel}>{ui.home.overview.users}</span>
-        </div>
-      </div>
-
-      {/* Space picker */}
-      {spaces.length > 1 && (
-        <div className={styles.spacePicker}>
-          {spaces.map((space) => (
-            <button
-              key={space.id}
-              type="button"
-              className={`${styles.spaceChip} ${
-                space.id === selectedSpaceId ? styles.spaceChipActive : ''
-              }`}
-              onClick={() => selectSpace(space)}
-            >
-              {space.name}
-            </button>
-          ))}
-        </div>
-      )}
-
-      {/* Error banner */}
-      {integrationError && (
-        <div className={styles.errorBanner}>{integrationError}</div>
-      )}
-
-      {/* Task feed */}
-      <div className={styles.taskFeed}>
-        {boardGroups.length === 0 ||
-        boardGroups.every((g) => g.items.length === 0) ? (
-          <div className={styles.emptyState}>
-            <span className={styles.emptyIcon}>📋</span>
-            <p className={styles.emptyLabel}>
-              {normalizedSearch
-                ? `No tasks matching "${searchQuery}"`
-                : 'No tasks yet'}
-            </p>
+        {/* Stats strip */}
+        <div className={styles.statsStrip}>
+          <div className={styles.statChip}>
+            <span className={styles.statValue}>{tasks.length}</span>
+            <span className={styles.statLabel}>
+              {ui.home.overview.openTasks}
+            </span>
           </div>
-        ) : (
-          boardGroups.map((group) =>
-            group.items.length === 0 ? null : (
-              <div key={group.label}>
-                <div
-                  className={styles.sectionLabel}
-                  style={{ background: group.color }}
-                >
-                  {group.label}
-                </div>
-                {group.items.map((task) => (
-                  <MobileTaskCard
-                    key={task.id}
-                    task={task}
-                    busy={taskActionBusyId === task.id}
-                    assigneeOptions={assigneeOptions}
-                    onClick={() => handleOpenTask(task)}
-                  />
-                ))}
-              </div>
-            )
-          )
+          <div className={styles.statChip}>
+            <span className={styles.statValue}>{dueThisWeek}</span>
+            <span className={styles.statLabel}>
+              {ui.home.overview.dueThisWeek}
+            </span>
+          </div>
+          <div className={styles.statChip}>
+            <span className={styles.statValue}>{users.length}</span>
+            <span className={styles.statLabel}>{ui.home.overview.users}</span>
+          </div>
+        </div>
+        {/* Space picker */}
+        {spaces.length > 1 && (
+          <div className={styles.spacePicker}>
+            {spaces.map((space) => (
+              <button
+                key={space.id}
+                type="button"
+                className={`${styles.spaceChip} ${
+                  space.id === selectedSpaceId ? styles.spaceChipActive : ''
+                }`}
+                onClick={() => selectSpace(space)}
+              >
+                {space.name}
+              </button>
+            ))}
+          </div>
         )}
+        {/* Error banner */}
+        {integrationError && (
+          <div className={styles.errorBanner}>{integrationError}</div>
+        )}
+        {/* Task feed */}
+        <div className={styles.taskFeed}>
+          {boardGroups.length === 0 ||
+          boardGroups.every((g) => g.items.length === 0) ? (
+            <div className={styles.emptyState}>
+              <span className={styles.emptyIcon}>📋</span>
+              <p className={styles.emptyLabel}>
+                {normalizedSearch
+                  ? `No tasks matching "${searchQuery}"`
+                  : 'No tasks yet'}
+              </p>
+            </div>
+          ) : (
+            boardGroups.map((group) =>
+              group.items.length === 0 ? null : (
+                <div key={group.label}>
+                  <div
+                    className={styles.sectionLabel}
+                    style={{ background: group.color }}
+                  >
+                    {group.label}
+                  </div>
+                  {group.items.map((task) => (
+                    <MobileTaskCard
+                      key={task.id}
+                      task={task}
+                      busy={taskActionBusyId === task.id}
+                      assigneeOptions={assigneeOptions}
+                      onClick={() => handleOpenTask(task)}
+                    />
+                  ))}
+                </div>
+              )
+            )
+          )}
+        </div>
       </div>
-
       {/* FAB */}
       {canWriteTaskData && (
         <button
@@ -321,9 +319,8 @@ export default function MobilPage() {
           +
         </button>
       )}
-
       {/* Modals */}
-      <CreateTaskModal
+      <MobileCreateTaskModal
         open={createTaskModalOpen}
         busy={createTaskBusy}
         title={newTaskTitle}
@@ -351,7 +348,43 @@ export default function MobilPage() {
         onColorChange={setNewTaskColor}
       />
 
-      <EditTaskModal
+      <MobileEditTaskModal
+        open={editTaskModalOpen}
+        busy={taskActionBusyId === editTaskId}
+        title={editTaskTitle}
+        meta={editTaskMeta}
+        dueDate={editTaskDueDate}
+        assigneeIds={editTaskAssigneeIds}
+        assigneeOptions={assigneeOptions}
+        section={editTaskSection}
+        sectionOptions={sectionOptions}
+        priority={editTaskPriority}
+        color={editTaskColor}
+        content={ui.home.editModal}
+        commonContent={ui.common}
+        taskContent={ui.home.task}
+        onClose={() => setEditTaskModalOpen(false)}
+        onSubmit={() => {
+          void saveEditedTask()
+        }}
+        onArchive={() => {
+          if (!editTaskId) return
+          void archiveTaskOnServer(editTaskId)
+        }}
+        onDelete={() => {
+          if (!editTaskId) return
+          void deleteTaskOnServer(editTaskId)
+        }}
+        onTitleChange={handleEditTaskTitleChange}
+        onMetaChange={handleEditTaskMetaChange}
+        onDueDateChange={handleEditTaskDueDateChange}
+        onAssigneeIdsChange={handleEditTaskAssigneeIdsChange}
+        onSectionChange={handleEditTaskSectionChange}
+        onPriorityChange={handleEditTaskPriorityChange}
+        onColorChange={handleEditTaskColorChange}
+      />
+
+      <MobileEditTaskModal
         open={editTaskModalOpen}
         busy={taskActionBusyId === editTaskId}
         title={editTaskTitle}
@@ -436,9 +469,6 @@ function MobileTaskCard({
         />
         <p className={styles.taskTitle}>{task.title}</p>
       </div>
-      {task.meta && task.meta !== `${task.stage} task` && (
-        <p className={styles.taskMeta}>{task.meta}</p>
-      )}
       <div className={styles.taskFooter}>
         <span className={`${styles.taskPriorityBadge} ${priorityClass}`}>
           {task.priority}
