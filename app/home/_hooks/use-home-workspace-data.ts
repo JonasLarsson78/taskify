@@ -116,9 +116,7 @@ export default function useHomeWorkspaceData({
         if (requestId !== taskRequestIdRef.current) return
 
         if (!normalizedTasks) {
-          setIntegrationError(
-            'Kunde inte ladda tasks for space.'
-          )
+          setIntegrationError('Kunde inte ladda tasks for space.')
           return
         }
 
