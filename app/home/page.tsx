@@ -388,7 +388,29 @@ export default function HomePage() {
         />
 
         <section className={styles.content}>
-          <Loader message={ui.home.loading} />
+          <section className={styles.workspaceLoadingCard} aria-live="polite">
+            <div className={styles.workspaceLoadingHeader}>
+              <span className={styles.workspaceLoadingBadge} aria-hidden />
+              <div>
+                <p className={styles.workspaceLoadingKicker}>Taskify Workspace</p>
+                <h1 className={styles.workspaceLoadingTitle}>{ui.home.loading}</h1>
+              </div>
+            </div>
+
+            <p className={styles.workspaceLoadingHint}>
+              Preparing spaces, members and tasks...
+            </p>
+
+            <div className={styles.workspaceLoadingSpinner}>
+              <Loader size="lg" message={ui.home.loading} />
+            </div>
+
+            <div className={styles.workspaceLoadingSkeleton} aria-hidden>
+              <span className={styles.workspaceLoadingLineLong} />
+              <span className={styles.workspaceLoadingLineMedium} />
+              <span className={styles.workspaceLoadingLineShort} />
+            </div>
+          </section>
         </section>
       </main>
     )

@@ -163,8 +163,46 @@ export default function LogPage() {
 
   if (checking) {
     return (
-      <main className="center-screen">
-        <Loader message={ui.log.loading} />
+      <main className={styles.shell}>
+        <HomeSidebar
+          personInitials={personInitials}
+          personName={personName}
+          userEmail={sessionUser?.email || ui.home.signedIn}
+          activeItem="log"
+          content={ui.home.sidebar}
+          onOpenHome={() => router.push('/home')}
+          onOpenArchive={() => router.push('/archive')}
+          onOpenLog={() => router.push('/log')}
+          onOpenGoals={() => router.push('/goals')}
+          onOpenSettings={() => router.push('/settings')}
+          onOpenLogout={() => router.push('/logout')}
+        />
+
+        <section className={styles.content}>
+          <section className={styles.workspaceLoadingCard} aria-live="polite">
+            <div className={styles.workspaceLoadingHeader}>
+              <span className={styles.workspaceLoadingBadge} aria-hidden />
+              <div>
+                <p className={styles.workspaceLoadingKicker}>Taskify Log</p>
+                <h1 className={styles.workspaceLoadingTitle}>{ui.log.loading}</h1>
+              </div>
+            </div>
+
+            <p className={styles.workspaceLoadingHint}>
+              Connecting to activity stream...
+            </p>
+
+            <div className={styles.workspaceLoadingSpinner}>
+              <Loader size="lg" message={ui.log.loading} />
+            </div>
+
+            <div className={styles.workspaceLoadingSkeleton} aria-hidden>
+              <span className={styles.workspaceLoadingLineLong} />
+              <span className={styles.workspaceLoadingLineMedium} />
+              <span className={styles.workspaceLoadingLineShort} />
+            </div>
+          </section>
+        </section>
       </main>
     )
   }
