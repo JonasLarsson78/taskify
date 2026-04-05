@@ -361,10 +361,35 @@ export default function HomePage() {
     applyUrlSpaceState(window.location.search)
   }, [applyUrlSpaceState, spaces.length])
 
+  const personName = user?.name || ui.home.guest
+  const personInitials =
+    personName
+      .split(' ')
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase())
+      .join('') || 'GU'
+
   if (checking) {
     return (
-      <main className="center-screen">
-        <Loader message={ui.home.loading} />
+      <main className={styles.shell}>
+        <HomeSidebar
+          personInitials={personInitials}
+          personName={personName}
+          userEmail={user?.email || ui.home.signedIn}
+          activeItem="home"
+          content={ui.home.sidebar}
+          onOpenHome={() => router.replace(buildHomeUrl(viewMode, null))}
+          onOpenArchive={() => router.push('/archive')}
+          onOpenLog={() => router.push('/log')}
+          onOpenGoals={() => router.push('/goals')}
+          onOpenSettings={() => router.push('/settings')}
+          onOpenLogout={() => router.push('/logout')}
+        />
+
+        <section className={styles.content}>
+          <Loader message={ui.home.loading} />
+        </section>
       </main>
     )
   }
@@ -377,17 +402,9 @@ export default function HomePage() {
     organization?.name ||
     organizations[0]?.name ||
     ui.home.projectFallback
-  const personName = user?.name || ui.home.guest
   const userRole = user?.role || 'guest'
   const canWriteTaskData = userRole !== 'guest'
   const canManageWorkspaceData = userRole === 'admin'
-  const personInitials =
-    personName
-      .split(' ')
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((part) => part[0]?.toUpperCase())
-      .join('') || 'GU'
 
   const usersWithEmail = users.filter((u) => !!u.email).length
 
