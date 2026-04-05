@@ -3,7 +3,10 @@ import { buildAuthHeaders } from '../../../lib/request-headers'
 import type { Space } from '../model'
 
 const SIDEBAR_SPACES_TTL_MS = 20_000
-const sidebarSpacesCache = new Map<number, { data: Space[]; fetchedAt: number }>()
+const sidebarSpacesCache = new Map<
+  number,
+  { data: Space[]; fetchedAt: number }
+>()
 
 type UseAppSidebarSpacesParams = {
   token: string | null
@@ -26,10 +29,7 @@ export default function useAppSidebarSpaces({
       }
 
       const cached = sidebarSpacesCache.get(organizationId)
-      if (
-        cached &&
-        Date.now() - cached.fetchedAt < SIDEBAR_SPACES_TTL_MS
-      ) {
+      if (cached && Date.now() - cached.fetchedAt < SIDEBAR_SPACES_TTL_MS) {
         if (mounted) {
           setSpaces(cached.data)
         }
