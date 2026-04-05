@@ -40,7 +40,8 @@ export default function LoginPage() {
         setMetrics({
           activeProjects:
             typeof data.activeProjects === 'number' ? data.activeProjects : 0,
-          tasksClosed: typeof data.tasksClosed === 'number' ? data.tasksClosed : 0,
+          tasksClosed:
+            typeof data.tasksClosed === 'number' ? data.tasksClosed : 0,
           leadTimeDays:
             typeof data.leadTimeDays === 'number' ? data.leadTimeDays : null,
         })

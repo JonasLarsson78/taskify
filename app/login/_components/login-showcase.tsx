@@ -17,7 +17,9 @@ export default function LoginShowcase({
   const activeProjects = metrics?.activeProjects ?? 0
   const tasksClosed = metrics?.tasksClosed ?? 0
   const leadTime =
-    typeof metrics?.leadTimeDays === 'number' ? `${metrics.leadTimeDays} d` : '--'
+    typeof metrics?.leadTimeDays === 'number'
+      ? `${metrics.leadTimeDays} d`
+      : '--'
 
   return (
     <section className={styles.showcase}>
