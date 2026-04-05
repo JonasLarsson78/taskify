@@ -4,9 +4,13 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:webpack": "next dev --webpack",
+    "dev:turbo": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "clear": "rm -rf .next",
+    "dev:clean": "npm run clear && npm run dev"
   },
   "dependencies": {
     "@prisma/client": "^7.6.0",

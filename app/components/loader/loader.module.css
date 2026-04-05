@@ -4,6 +4,7 @@
   border-color: var(--border);
   border-top-color: var(--primary);
   animation: spin 1s linear infinite;
+  display: inline-block;
 }
 .sm {
   width: 1rem;
@@ -28,6 +29,8 @@
 }
 
 .message {
-  font-size: 0.875rem;
+  font-size: 1rem;
+  font-weight: 500;
   color: var(--muted);
+  margin-left: 10px;
 }
