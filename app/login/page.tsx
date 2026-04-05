@@ -102,7 +102,11 @@ export default function LoginPage() {
       }
 
       // Redirect to /mobil on mobile, otherwise /home
-      const isMobile = typeof window !== 'undefined' && /android|iphone|ipad|ipod|opera mini|iemobile|mobile/i.test(navigator.userAgent)
+      const isMobile =
+        typeof window !== 'undefined' &&
+        /android|iphone|ipad|ipod|opera mini|iemobile|mobile/i.test(
+          navigator.userAgent
+        )
       router.push(isMobile ? '/mobil' : '/home')
     } catch {
       setError(ui.login.networkError)
