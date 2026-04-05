@@ -1,8 +1,8 @@
 {
-  "id": "/",
+  "id": "/mobil",
   "name": "Taskify",
   "short_name": "Taskify",
-  "start_url": "/",
+  "start_url": "/mobil",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
