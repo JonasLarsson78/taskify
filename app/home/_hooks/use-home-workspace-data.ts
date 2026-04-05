@@ -80,8 +80,6 @@ export default function useHomeWorkspaceData({
         return
       }
 
-      const requestId = ++taskRequestIdRef.current
-
       if (cached) {
         setTasks(cached)
       }
@@ -91,6 +89,8 @@ export default function useHomeWorkspaceData({
         await inFlight
         return
       }
+
+      const requestId = ++taskRequestIdRef.current
 
       setTasksLoading(true)
 
