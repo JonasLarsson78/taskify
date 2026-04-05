@@ -1,3 +1,21 @@
+/* Chrome på iOS kan ignorera vissa regler, så vi tvingar bredden med !important och display:block */
+@media screen and (max-width: 600px) {
+  .mobileModalCard input[type='date'].createFieldFull {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    display: block !important;
+    box-sizing: border-box !important;
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    padding: 12px 16px !important;
+    border-radius: 12px !important;
+    border: 1px solid rgba(64, 69, 118, 0.18) !important;
+    background: linear-gradient(180deg, #23273b 0%, #181c2e 100%) !important;
+    color: #fff !important;
+    font-size: 1rem !important;
+  }
+}
 /* Extra iOS Safari fix: tvinga input[type=date] att se ut som övriga fält */
 .mobileModalCard input[type='date'].createFieldFull {
   max-width: 100%;
