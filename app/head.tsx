@@ -3,12 +3,32 @@ export default function Head() {
     <>
       <meta name="viewport" content="width=device-width, initial-scale=1" />
       {/* Favicons */}
-      <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-      <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+      <link
+        rel="icon"
+        type="image/png"
+        sizes="32x32"
+        href="/favicon-32x32.png"
+      />
+      <link
+        rel="icon"
+        type="image/png"
+        sizes="16x16"
+        href="/favicon-16x16.png"
+      />
       <link rel="icon" href="/favicon.ico" />
       {/* Android Chrome icons */}
-      <link rel="icon" type="image/png" sizes="192x192" href="/android-chrome-192x192.png" />
-      <link rel="icon" type="image/png" sizes="512x512" href="/android-chrome-512x512.png" />
+      <link
+        rel="icon"
+        type="image/png"
+        sizes="192x192"
+        href="/android-chrome-192x192.png"
+      />
+      <link
+        rel="icon"
+        type="image/png"
+        sizes="512x512"
+        href="/android-chrome-512x512.png"
+      />
       {/* Apple Touch Icon */}
       <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
       {/* SVGs for reference (not standard for favicons, but can be used elsewhere) */}
@@ -36,7 +56,7 @@ export default function Head() {
           `,
         }}
       />
-      <link rel="manifest" href="/site.webmanifest" />
+      {/* Manifest länkas automatiskt av Next.js via app/manifest.ts */}
       <meta name="apple-mobile-web-app-capable" content="yes" />
       <meta name="apple-mobile-web-app-title" content="Taskify" />
       <meta name="mobile-web-app-capable" content="yes" />
