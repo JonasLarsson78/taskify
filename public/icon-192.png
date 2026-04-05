@@ -1,0 +1,6 @@
+<svg width="192" height="192" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="256" height="256" fill="#18192a"/>
+  <g transform="scale(1.2) translate(21,21)">
+    <image href="/vercel.svg" width="160" height="160"/>
+  </g>
+</svg>
